@@ -84,33 +84,6 @@ load.runJAGSmodule,
 unload.runjagsmodule,
 unload.runJAGSmodule,
 
-xgrid.run.jags,
-xgrid.autorun.jags,
-xgrid.extend.jags,
-xgrid.autoextend.jags,
-xgrid.submit.jags,
-xgrid.run.jagsfile,
-xgrid.autorun.jagsfile,
-xgrid.submit.jagsfile,
-xgrid.results.jags,
-xgrid.run.JAGS,
-xgrid.autorun.JAGS,
-xgrid.extend.JAGS,
-xgrid.autoextend.JAGS,
-xgrid.submit.JAGS,
-xgrid.run.JAGSfile,
-xgrid.autorun.JAGSfile,
-xgrid.submit.JAGSfile,
-xgrid.results.JAGS,
-
-xgrid.run,
-xgrid.submit,
-xgrid.results,
-xapply,
-
-xgrid.jobs,
-xgrid.delete,
-
 runjags.options,
 runjags.getOption
 

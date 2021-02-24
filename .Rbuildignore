@@ -1,3 +1,7 @@
 ^runjags\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+NAMESPACE_OLD
+NAMESPACE_RG2
+notebooks
+reports
