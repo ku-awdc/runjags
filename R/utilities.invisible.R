@@ -1004,7 +1004,7 @@ getargs <- function(functions, passed, returnall=TRUE, otherfnames=character(0))
 	return(passed)
 }
 
-tailf <- function(file, start=1, refresh=0.1, min.static=1, max.static=Inf, stop.function=function() return(FALSE), stop.text=character(0), print=TRUE, return=!print){
+tailf <- function(file, start=1, refresh=0.1, min.static=1, max.static=Inf, stop.function=function() return(FALSE), stop.text=character(0), print=TRUE, returntext=!print){
 
 	done <- FALSE
 
@@ -1089,7 +1089,7 @@ tailf <- function(file, start=1, refresh=0.1, min.static=1, max.static=Inf, stop
 	}, finally={
 	
 		retval <- list(text=text, lines=length(output), interrupt=!done)
-		if(return) return(retval)
+		if(returntext) return(retval)
 	
 		})
 }
@@ -1199,6 +1199,14 @@ checkvalidrunjagsobject <- function(runjags.object){
 	# Only add things if not debugging:
 	if(!runjags.getOption('debug')){
 		
+		# Requried for back-compatibility with 1.2:
+		if(is.null(runjags.object$noread.monitor))
+			runjags.object$noread.monitor <- character(0)
+		if(is.null(runjags.object$modules))
+			runjags.object$modules <- character(0)
+		if(is.null(runjags.object$factories))
+			runjags.object$factories <- character(0)
+		
 	  # Added for version 2.0:
 		if(is.null(runjags.object$summary.pars))
 			runjags.object$summary.pars <- getdefaultsummarypars()
@@ -1281,7 +1289,7 @@ checkvalidrunjagsobject <- function(runjags.object){
 	invisible(runjags.object)
 }
 
-checkvalidmonitorname <- function(monitor){
+checkvalidmonitorname <- function(monitor, expand=TRUE){
 	
 	if(is.logical(monitor) && length(monitor)>0 && !identical(NA, monitor)){
 		if(any(is.na(monitor))){
@@ -1325,8 +1333,21 @@ checkvalidmonitorname <- function(monitor){
 	if(!all(is.na(monitor)) && any(monitor=='to'))
 		warning('Use of the monitor name "to" may cause problems with some JAGS methods', call.=FALSE)
 	
-	monitor <- expandindexnames(monitor)
+	if(expand)
+		monitor <- expandindexnames(monitor)
+
 	return(monitor)
+}
+
+getmonitortype <- function(monitor){
+	mons <- t(vapply(strsplit(monitor, '[\\(\\)]'), function(x){
+		if(length(x)==1){
+			x <- c('trace', x)
+		}
+		return(x)
+	}, rep('',2)))[,2:1,drop=FALSE]
+	dimnames(mons) <- list(NULL, c('monitor','type'))
+	return(mons)
 }
 
 # Required for modified read.coda function to work properly:
@@ -1714,3 +1735,9 @@ loadandcheckrjags <- function(stop=TRUE, silent=FALSE){
 	
 	return(!fail)
 }
+
+jags_obs_stoch_var_name <- "_osv_"
+
+# Utility function to determine if we should generate JAGS 5 compatible code (currently a placeholder):
+jags5 <- function() FALSE
+

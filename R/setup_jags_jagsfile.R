@@ -24,6 +24,10 @@ setup.jags <- function(model, monitor = stop("No monitored variables supplied"),
 	if(inherits(data, "runjagsdata")) class(data) <- "character"
 	if(inherits(inits, "runjagsinits")) class(inits) <- "character"
 	
+	if(class(model)!="character" | length(model)!=1){
+		stop("The model must be provided in the form of a character string")
+	}
+	
 	if(identical(inits, list()) || is.null(inits))
 		inits <- NA
 	
@@ -53,40 +57,69 @@ setup.jags <- function(model, monitor = stop("No monitored variables supplied"),
 	if(rjagsmethod)
 		loadandcheckrjags()
 	
+	
+	
+	osvname <- jags_obs_stoch_var_name  # Declared in runjags namespace
+	
+	# Monitored variables can be a list of different types:
+	if(inherits(monitor, 'list')){
+		if(is.null(names(monitor))){
+			names(monitor) <- rep('trace', length(monitor))
+		}
+		monitor <- unlist(lapply(1:length(monitor), function(i){
+			if(gsub(' ', '', names(monitor)[i])==''){
+				mons <- monitor[[i]]
+			}else{
+				mons <- paste0(names(monitor)[i], '(', monitor[[i]], ')')
+			}
+			return(mons)
+		}))
+		
+	}
+	
 	if(!inherits(monitor, "character") | all(is.na(monitor))){
 		stop("Monitored variable(s) must be provided in the form of a character vector or named list of character vectors")
 	}
-	monitor <- checkvalidmonitorname(monitor)		
-
-	if(any(tolower(monitor)=="deviance") && (any(tolower(monitor)=="full.pd") || any(tolower(monitor)=="pd"))){
-		monitor <- c(monitor, "dic")
-	}
-	if(any(tolower(monitor)=="deviance") && any(tolower(monitor)=="popt")){
-		monitor <- c(monitor, "ped")
-	}
+	monitor <- checkvalidmonitorname(monitor, expand=FALSE)
 	
+	## For historical compatibility:
 	monitor[monitor=="DIC"] <- "dic"
 	monitor[monitor=="PED"] <- "ped"
-	monitor[monitor=="pD"] <- "pd"
-	monitor[monitor=="full.pD"] <- "full.pd"
+	monitor[monitor=="pd"] <- "pD"
+	monitor[monitor=="full.pd"] <- "full.pD"
 	monitor[monitor=="pOpt"] <- "popt"	
-
 	monitor[monitor=="pD.i"] <- "pd.i"
-	monitor <- na.omit(monitor[monitor!=""])
-	monitor <- (unique(monitor))
-	
 	if(any(monitor=='pd.i')){
 		warning('Ignoring deprecated pd.i monitor', call.=FALSE)
 		monitor <- monitor[monitor!='pd.i']
 	}
 	
-	if(any(c("popt", "pd", "full.pd", "deviance", "dic", "ped") %in% monitor)){
+	## Catch special monitors with empty node name:
+	# Translation of deprecated full.pd to pd_total:
+	monitor[monitor=="full.pD"] <- "pD_total"
+	tys <- c('dic','ped','waic','pD','pD_total','popt','popt_total','pv')
+	tys <- c(tys, apply(expand.grid(c('deviance','density','logdensity'),c('trace','mean','variance','total','poolmean','poolvariance')),1,paste,collapse='_'))
+	for(ty in tys){
+		sm <- monitor==ty | grepl(paste0(ty,'\\([[:space:]]\\)'), monitor)
+		if(any(sm)){
+			monitor <- c(monitor[!sm], paste0(ty, '(', jags_obs_stoch_var_name, ')'))
+		}
+	}
+
+	## Detect anything that requires the DIC module:
+	if(any(sapply(tys, function(x) any(grepl(x, monitor))))){
 		if(identical(modules, ''))
 			modules <- list(c("dic","TRUE"))
 		if(!any(sapply(modules,function(x) return(x[1]))=='dic'))
 			modules <- c(modules, list(c("dic","TRUE")))
 	}
-	monitor <- (unique(monitor))
+	
+
+	## Remove duplicate monitors and check conversion to types:
+	monitor <- unique(monitor)
+	monmat <- getmonitortype(monitor)
+	
+	### Check model:
 	
 	if(class(model)!="character" | length(model)!=1){
 		stop("The model must be provided in the form of a character string")
@@ -143,7 +176,7 @@ setup.jags <- function(model, monitor = stop("No monitored variables supplied"),
 	if(length(grep('base::Mersenne-Twister', inits)>0) & as.numeric(jags.status$JAGS.major) < 2) warning('Using the RNG "base::Mersenne-Twister" (used by default for chain 4) may cause problems with restarting subsequent simulations using the end state of previous simulations due to a bug in JAGS version 1.x.  If you encounter the error "Invalid .RNG.state", please update JAGS to version 2.x and try again.  Or, you can change the random number generator by changing the .RNG.name to (for example) "base::Super-Duper" and remove the .RNG.state element of the list.', call.=FALSE)
 	
 	if(any(c("pd","full.pd","popt") %in% monitor) & (n.chains < 2 )) stop("The DIC, pD, full.pD and pOpt cannot be assessed with only 1 chain")
-	if(any(c("pd","full.pd","popt","deviance") %in% monitor) & jags.status$JAGS.major < 2) stop('Support for the deviance, pD and popt monitors is no longer available for JAGS version 1.x.  Please update to JAGS version 3.x')
+	if(any(c("pd","full.pd","popt","deviance") %in% monitor) & jags.status$JAGS.major < 2) stop('Support for the deviance, pD and popt monitor is no longer available for JAGS version 1.x.  Please update to JAGS version 3.x')
 	
 	
 	# Combine model blocks, change \r to \n and get rid of double spacing:
@@ -153,7 +186,7 @@ setup.jags <- function(model, monitor = stop("No monitored variables supplied"),
 	model <- gsub("\n\n","\n",model)
 	
 	monitorcollapse <- ">\nmonitor set <"
-	monitors <- paste("monitor set <", paste(monitor, collapse=monitorcollapse), ">\n", sep="")
+	monitorstring <- paste("monitor set <", paste(monitor, collapse=monitorcollapse), ">\n", sep="")
 	n.params <- length(monitor)
 	params.names <- monitor
 	
@@ -400,9 +433,10 @@ setup.jagsfile <- function(model, n.chains=NA, data=NA, inits=NA, monitor=NA, mo
 	
 	if(!identical(monitor, NA) && !identical(params$monitor, NA)){
 		if(runjags.getOption('blockignore.warning'))
-			warning('Monitors specified in the model file are ignored when a monitors argument is given', call.=FALSE)
+			warning('Monitors specified in the model file are ignored when a monitor argument is given', call.=FALSE)
 		params$monitor <- NA
 	}
+	
 	monitor <- (unique(na.omit(c(monitor, params$monitor))))
 	outmonitor <- monitor[monitor!='']
 	if(length(outmonitor)==0 && failincomplete)

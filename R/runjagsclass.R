@@ -255,6 +255,8 @@ as.jags.runjags <- function(x, adapt=1000, quiet=FALSE, ...){
 		if(class(checkcompiled)=="try-error") stop(paste("There was an unexpected error re-compiling this JAGS model:  ", as.character(checkcompiled), sep=""))
 	}
 	
+	flush.console()
+	
 	return(jags.object)
 }
 

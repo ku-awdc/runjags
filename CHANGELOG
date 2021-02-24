@@ -1,4 +1,4 @@
-This package is now (relatively) feature stable, however I am continually using and improving the functions - so if you find a bug (especially under Windows), or if you have any comments/criticisms/questions about this package, then please feel free to email the package developer.  I am grateful to John Kruschke, Stefano Conti, Carsten Dormann, Ed Merkle, Andrew Cohen, Steven Novick, David Norris, Gregory Hart, Tomas Telensky, Michael Hoehle, Darren Shaw, Ollie Wearn, Glenn Meyers, Rebecca Taylor, Avraham Adler, Jared Laufenberg, Jonathan Bartlett, Miriam Casey, Bob O'Hara, Kristin Broms, Bryan Matthias, Torrin Liddell, Jan Glaescher, Tyson Wepprich, Benedict Escoto, Xavier Harrison, Balthasar Bickel, Johannes Bjork, Ghislain Vieilledent, Georges Kunstler, Ian Handel and Richard Reeve for reporting bugs and making suggestions over the years that I have been developing runjags.  Thanks also to Martyn Plummer for developing JAGS.
+This package is now (relatively) feature stable, however I am continually using and improving the functions - so if you find a bug (especially under Windows), or if you have any comments/criticisms/questions about this package, then please feel free to email the package developer.  I am grateful to John Kruschke, Stefano Conti, Hefin Williams, Carsten Dormann, Ed Merkle, Andrew Cohen, Steven Novick, David Norris, Gregory Hart, Tomas Telensky, Michael Hoehle, Darren Shaw, Ollie Wearn, Glenn Meyers, Rebecca Taylor, Avraham Adler, Jared Laufenberg, Jonathan Bartlett, Miriam Casey, Bob O'Hara, Kristin Broms, Bryan Matthias, Torrin Liddell, Jan Glaescher, Tyson Wepprich, Benedict Escoto, Xavier Harrison, Balthasar Bickel, Johannes Bjork, Ghislain Vieilledent, Georges Kunstler, Ian Handel and Richard Reeve for reporting bugs and making suggestions over the years that I have been developing runjags.  Thanks also to Martyn Plummer for developing JAGS.
 
 
 OPEN ISSUES
@@ -42,6 +42,8 @@ A bug preventing back-compatibility with runjags 1.2.0 was fixed (thanks to Olli
 
 Renamed an argument in the tailf function to avoid the use of 'return' as a variable name
 
+Bug fixed in drop.k that could cause issues with reading data correctly
+
 
 
 Version 2.0.4-6
@@ -51,7 +53,7 @@ Update required by CRAN due to change in the behaviour of class(c('matrix','arra
 
 Version 2.0.4-4
 
-Update required by CRAN to allow compilation on the new toolchain for Windows 
+Update required by CRAN to allow compilation on the new toolchain for Windows
 
 
 Version 2.0.4

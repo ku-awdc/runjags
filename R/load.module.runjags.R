@@ -140,11 +140,11 @@ userunjagsmodule <- function(distribution, funtype, parameters, x, uselog=FALSE,
 		stopifnot(dynloadmodule())
 	}
 	
-	if(class(distribution)!="character") stop("The distribution type must be one of par1, par2, par3, par4, lomax, mouch, genpar or halfcauchy")
+	if(!is.character(distribution)) stop("The distribution type must be one of par1, par2, par3, par4, lomax, mouch, genpar or halfcauchy")
 	disttype <- switch(distribution, par1=1, par2=2, par3=3, par4=4, lomax=5, mouch=6, genpar=7, hcauchy=8, halfcauchy=8, 0)
 	if(disttype==0) stop("The distribution type must be one of par1, par2, par3, par4, lomax, mouch, genpar or halfcauchy")
 
-	if(class(funtype)!="character") stop("The function type must be one of d, p and q")
+	if(!is.character(funtype)) stop("The function type must be one of d, p and q")
 	dpqr <- switch(funtype, d=1, p=2, q=3, r=4, 0)
 	if(dpqr==0) stop("The function type must be one of d, p and q")
 	if(dpqr==4) stop("The function type must be one of d, p and q - r is not available")

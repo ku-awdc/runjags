@@ -4,7 +4,7 @@ Version: 2.2.0-0
 Date: 2021-02-24
 Authors@R: c(person("Matthew", "Denwood", role=c("aut","cre"), email="md@sund.ku.dk"),
              person("Martyn", "Plummer", role="cph", 
-             comment="Copyright holder of the code in src/distributions/DPar1.*, configure.ac, and original copyright holder of some modified code where indicated"))
+             comment="Copyright holder of the code in src/distributions/DPar1.*, configure.ac, R/rjags_functions.R, and original copyright holder of some modified code where indicated"))
 Description: User-friendly interface utilities for MCMC models via
     Just Another Gibbs Sampler (JAGS), facilitating the use of parallel
     (or distributed) processors for multiple chains, automated control

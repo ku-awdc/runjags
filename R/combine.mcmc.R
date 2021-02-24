@@ -46,7 +46,7 @@ NULL
 #' @rdname combine.mcmc
 combine.mcmc <- function(mcmc.objects=list(), thin=1, return.samples=NA, collapse.chains=if(length(mcmc.objects)==1) TRUE else FALSE, vars=NA, add.mutate=TRUE){
 
-	if(class(mcmc.objects)!="list"){
+	if(!is.list(mcmc.objects)){
 		if(inherits(mcmc.objects,c("mcmc.list", "mcmc", "runjags"))){
 			mcmc.objects <- list(mcmc.objects)
 		}else{
@@ -54,10 +54,10 @@ combine.mcmc <- function(mcmc.objects=list(), thin=1, return.samples=NA, collaps
 		}
 	}
 	
-	if(!class(thin)%in%c('numeric','integer')) stop('Invalid value provided for "thin"')
+	if(!is.numeric(thin)) stop('Invalid value provided for "thin"')
 	
 	mcmc.objects <- lapply(mcmc.objects, function(x){
-		if(class(x)=="runjags") return(as.mcmc.list(x, add.mutate=add.mutate)) else return(x)   # using as.mcmc.list adds the mutated function
+		if(inherits(x, "runjags")) return(as.mcmc.list(x, add.mutate=add.mutate)) else return(x)   # using as.mcmc.list adds the mutated function
 	})
 		
 	returnmcmcs <- all(sapply(mcmc.objects,class)=="mcmc")
@@ -67,7 +67,7 @@ combine.mcmc <- function(mcmc.objects=list(), thin=1, return.samples=NA, collaps
 	}
 	
 	mcmc.objects <- lapply(mcmc.objects, function(x){
-		if(class(x)=="mcmc") return(as.mcmc.list(x)) else return(x)
+		if(inherits(x, "mcmc")) return(as.mcmc.list(x)) else return(x)
 	})
 		
 	no.objects <- length(mcmc.objects)
@@ -99,11 +99,11 @@ combine.mcmc <- function(mcmc.objects=list(), thin=1, return.samples=NA, collaps
 		
 		for(i in 1:no.objects){
 		
-			if(class(mcmc.objects[[i]])=="mcmc.list"){
+			if(inherits(mcmc.objects[[i]], "mcmc.list")){
 				n.chains[i] <- length(mcmc.objects[[i]])
 				returnlist <- TRUE
 			}else{
-				if(class(mcmc.objects[[i]])=="mcmc"){
+				if(inherits(mcmc.objects[[i]]), "mcmc")){
 					n.chains[i] <- 1
 					mcmc.objects[[i]] <- mcmc.list(mcmc.objects[[i]])
 					returnlist <- FALSE
@@ -216,7 +216,7 @@ combine.MCMC <- combine.mcmc
 #' @rdname combine.mcmc
 combine.jags <- function(runjags.objects=list(), summarise=TRUE, ...){
 	
-	if(class(runjags.objects)!='list' || length(runjags.objects)==0)
+	if(!is.list(runjags.objects) || length(runjags.objects)==0)
 		stop('A list of runjags objects must be supplied')
 	
 	if(length(runjags.objects)==1)

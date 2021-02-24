@@ -18,7 +18,7 @@ dump.format <- function(namedlist=list(), checkvalid=TRUE, convertfactors=TRUE){
 	if(length(unique(names(data)))!=length(data)) stop('All elements in the data list must have unique names', call.=FALSE)
 	
 	if(convertfactors){
-		for(c in which(sapply(data,class)=='factor'))
+		for(c in which(sapply(data,inherits,what='factor')))
 			data[[c]] <- as.numeric(data[[c]])
 	}
 	

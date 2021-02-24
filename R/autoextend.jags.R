@@ -358,7 +358,7 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 		
 		# Run for some more iterations:
 		additional <- extend.jags(runjags.object, combine=runjags.object$sample>0, burnin=startburnin, sample=initialsample, adapt=adapt, jags = jags, silent.jags = silent.jags, summarise = FALSE, thin = thin, keep.jags.files = keep.jags.files, tempdir=tempdir, jags.refresh=jags.refresh, batch.jags=batch.jags)
-		if(class(additional)=='runjagsbginfo') stop("The method specified to autorun.jags and autoextend.jags must run JAGS and wait for the results (ie the background method, and possibly other user specified methods, cannot be used)")
+		if(inherits(additional,'runjagsbginfo')) stop("The method specified to autorun.jags and autoextend.jags must run JAGS and wait for the results (ie the background method, and possibly other user specified methods, cannot be used)")
 				
 		if(niter(additional$mcmc) < initialsample){
 			repeat{
@@ -410,11 +410,9 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 	}
 
 	if(unconverged > 0){
-		if(!is.numeric(convergence$mpsrf)){
+		mpsrfstring <- try(paste(" (multi-variate psrf = ", round(convergence$mpsrf, digits=3), ")", sep=""), silent=TRUE)
+		if(inherits(mpsrfstring,'try-error'))
 			mpsrfstring <- " (Unable to calculate the multi-variate psrf)"
-		}else{
-			mpsrfstring <- paste(" (multi-variate psrf = ", round(convergence$mpsrf, digits=3), ")", sep="")
-		}
 			
 		swcat("The Gelman-Rubin statistic was above ", psrf.target, " for ", unconverged, " parameter", if(unconverged>1) "s", " after ", additional$burnin+additional$sample, " iterations taking ", timestring(additional$timetaken), " ", mpsrfstring, ".  This may indicate poor convergence.\n", sep="")
 		time.taken <- timestring(starttime, Sys.time(), units="secs", show.units=FALSE)
@@ -495,11 +493,9 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 				}	
 			}
 									
-			if(!is.numeric(convergence$mpsrf)){
+			mpsrfstring <- try(paste(" (multi-variate psrf = ", round(convergence$mpsrf, digits=3), ")", sep=""), silent=TRUE)
+			if(inherits(mpsrfstring,'try-error'))
 				mpsrfstring <- " (Unable to calculate the multi-variate psrf)"
-			}else{
-				mpsrfstring <- paste(" (multi-variate psrf = ", round(convergence$mpsrf, digits=3), ")", sep="")
-			}
 				
 			if(unconverged > 0){
 				swcat("The Gelman-Rubin statistic was still above ", psrf.target, " for ", unconverged, " parameter", if(unconverged>1) "s", " after ", additional$burnin+additional$sample, " iterations taking ", timestring(additional$timetaken), " ", mpsrfstring, ".\n", sep="")

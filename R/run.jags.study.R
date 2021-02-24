@@ -92,6 +92,16 @@ drop.k <- function(runjags.object, dropvars, k=1, simulations=NA, ...){
 	vars <- jagsnames[matchvars(checkvalidmonitorname(dropvars), jagsnames)]
 	newinits <- basedata[vars]
 	
+	# Remove the baseinits that overlap with the dropvars variable (data that is already missing):
+	fake <- numeric(length(vars))
+	names(fake) <- vars
+	torem <- names(getarraynames(fake))
+	torem <- torem[torem %in% names(baseinits[[1]])]
+	if(length(torem)>0){
+		## TODO: Give a warning here??
+		baseinits <- lapply(baseinits, function(x) return(x[!names(x)%in%torem]))
+	}
+
 	if(k > length(vars)){
 		stop('Specified "k" was greater than the number of data points', call.=FALSE)
 	}
@@ -164,6 +174,8 @@ drop.k <- function(runjags.object, dropvars, k=1, simulations=NA, ...){
 		thisdata <- getjagsnames(data)
 		# And the baseinits exported onto the cluster:
 		baseinits <- baseinits
+		# And the basedata exported onto the cluster:
+    	basedata <- basedata
 		# And the new inits:
 		# Taking them from newinits only works if the array is complete - safer to take everything in data and make it NA:
 		# thisinits <- newinits
@@ -172,8 +184,8 @@ drop.k <- function(runjags.object, dropvars, k=1, simulations=NA, ...){
 		thisinits <- thisdata
 		thisinits[] <- as.numeric(NA)
 		# Find which are NA in the data:
-		bringback <- names(which(is.na(thisdata)))
-		thisinits[bringback] <- newinits[bringback]
+		bringback <- names(thisdata)[is.na(thisdata)]
+		thisinits[bringback] <- basedata[bringback]
 		# And return all inits:
 		toreturn <- c(baseinits[[chain]], getarraynames(thisinits))
 		toreturn <- toreturn[sapply(toreturn, function(x) return(!all(is.na(x))))]
@@ -181,7 +193,7 @@ drop.k <- function(runjags.object, dropvars, k=1, simulations=NA, ...){
 		return(dump.format(toreturn))
     }
 
-	results <- run.jags.study(simulations, model=model, datafunction=datafunction, data='', targets=basedata[vars], n.chains=n.chains, inits=inits, export.cluster=list(baseinits=baseinits, newinits=newinits, getjagsnames=getjagsnames, getarraynames=getarraynames), forceaverage=avs, ...)
+	results <- run.jags.study(simulations, model=model, datafunction=datafunction, data='', targets=basedata[vars], n.chains=n.chains, inits=inits, export.cluster=list(baseinits=baseinits, basedata=basedata, newinits=newinits, getjagsnames=getjagsnames, getarraynames=getarraynames), forceaverage=avs, ...)
 	
 	return(results)
 	

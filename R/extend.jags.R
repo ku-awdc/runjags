@@ -362,8 +362,8 @@ extend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=c
 	runjags.object$modules <- checkmodfact(runjags.object$modules, 'module')
 	
 	if(length(keep.jags.files)!=1) stop("keep.jags.files must be either TRUE, FALSE or a character string specifying a folder to save results to")
-	if(class(tempdir)!="logical") stop("tempdir must be either TRUE or FALSE")
-	if(class(keep.jags.files)=="character"){
+	if(!is.logical(tempdir) || length(tempdir)!=1 || is.na(tempdir)) stop("tempdir must be either TRUE or FALSE")
+	if(is.character(keep.jags.files)){
 		tempdir <- FALSE
 		directory <- keep.jags.files
 		keep.jags.files <- TRUE
@@ -469,7 +469,7 @@ extend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=c
  	modules <- checkmodfact(modules, 'module')
 	
 	monitor[monitor==""] <- NA
-	if(class(monitor)!="character" | all(is.na(monitor))){
+	if(!is.character(monitor) || all(is.na(monitor))){
 		stop("Monitored variable(s) must be provided in the form of a character vector")
 	}
 	monitor <- unique(na.omit(monitor))
@@ -553,7 +553,7 @@ extend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=c
 			checkcompiled <- try(stats::coef(runjags.object$method.options$rjags),silent=TRUE)
 			
 			# If repeatable methods force a recompile:
-			if(runjags.getOption('repeatable.methods') || forcerecompile || class(checkcompiled)=='try-error'){
+			if(runjags.getOption('repeatable.methods') || forcerecompile || inherits(checkcompiled, 'try-error')){
 				runjags.object$method.options <- runjags.object$method.options[names(runjags.object$method.options)!='rjags']
 				method.options$rjags <- as.jags(runjags.object, adapt=0, quiet=silent.jags)
 			}
@@ -745,7 +745,7 @@ extend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=c
 				
 				new.directory <- startinfo$directory
 				if(keep.jags.files && tempdir){
-					new.directory <- if(class(method)=="list" && method$method=='xgrid') new_unique(method$jobname, touch=TRUE, type='folder') else new_unique('runjagsfiles', touch=TRUE, type='folder')			
+					new.directory <- if(is.list(method) && method$method=='xgrid') new_unique(method$jobname, touch=TRUE, type='folder') else new_unique('runjagsfiles', touch=TRUE, type='folder')			
 					if(new.directory=="Directory not writable"){
 						warning("JAGS files could not be copied to the working directory as it is not writable")
 					}else{
@@ -810,7 +810,7 @@ extend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=c
 			newoutput$mcmc[[i]] <- mcmc(newoutput$mcmc[[i]], start=burnin+1, thin=thin)
 			dimnames(newoutput$mcmc[[i]]) <- list(iternames, currentdn[[2]])
 		}
-		if(class(newoutput$pd)=="mcmc" && !is.na(newoutput$pd)){
+		if(inherits(newoutput$pd, "mcmc") && !is.na(newoutput$pd)){
 			dimnames(newoutput$pd) <- list(iternames, dimnames(newoutput$pd)[[2]])
 			newoutput$pd <- mcmc(newoutput$pd, start=burnin+1, thin=thin)		
 		}	
@@ -818,7 +818,7 @@ extend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=c
 		# Combine runjags objects if necessary:
 		if(combine){
 			s <- try(combpd <- if('full.pd'%in%monitor) combine.mcmc(list(runjags.object$pd, newoutput$pd), collapse.chains=FALSE) else NA)
-			if(class(s)=='try-error'){
+			if(inherits(s, 'try-error')){
 				warning('An unexpected error occured while trying to combine the full.pD from the old and new simulations - it has been removed', call.=FALSE)
 				monitor <- monitor[monitor!='full.pd']
 				combpd <- NA
@@ -846,7 +846,7 @@ extend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=c
 	if(sample > 0)
 		swcat("Finished running the simulation\n")
 	
-	stopifnot(class(combinedoutput$end.state)=='runjagsinits')
+	stopifnot(inherits(combinedoutput$end.state, 'runjagsinits'))
 	
 	
 #	if(identical(combinedoutput$samplers, NA) && runjags.getOption('nodata.warning'))

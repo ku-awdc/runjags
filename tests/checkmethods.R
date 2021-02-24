@@ -15,7 +15,7 @@ true.y[i] <- (m * X[i]) + c; #data# X
 m ~ dunif(-1000,1000); #inits# m
 c ~ dunif(-1000,1000);
 precision ~ dexp(1);
-#monitor# m, c, precision
+#monitor# m, c, precision, dic, full.pd, popt, pd
 }"
 
 # Simulate the data

@@ -53,7 +53,7 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 	options(show.error.messages = FALSE)
 	success <- try({
 	  suppressWarnings(tsummary <- summary(combine.mcmc(thinnedmcmclist, collapse.chains=FALSE)))
-	  if(inherits(tsummary$statistics, "numeric")){
+	  if(is.numeric(tsummary$statistics)){
 	    tsummary$statistics <- t(as.matrix(tsummary$statistics))
 	    dimnames(tsummary$statistics)[[1]] <- varnames(thinnedmcmclist)
 	    tsummary$quantiles <- t(as.matrix(tsummary$quantiles))
@@ -109,11 +109,9 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 			}
 
 			if(n.chains > 1 && n.iter > 1){
-				if(!is.numeric(convergence$mpsrf)){
+				mpsrfstring <- try(paste(" (multi-variate psrf = ", round(convergence$mpsrf, digits=3), ")", sep=""), silent=TRUE)
+				if(inherits(mpsrfstring,'try-error'))
 					mpsrfstring <- " (Unable to calculate the multi-variate psrf)"
-				}else{
-					mpsrfstring <- paste(" (multi-variate psrf = ", round(convergence$mpsrf, digits=3), ")", sep="")
-				}
 			}
 		
 			##########################################################

@@ -56,7 +56,7 @@ extract <- function(x, what, ...){
 #' @method extract runjags
 extract.runjags <- function(x, what, force.resample=FALSE, ...){
 	
-	if(missing(what) || length(what)!=1 || class(what)!='character')
+	if(missing(what) || length(what)!=1 || !is.character(what))
 		stop('A character vector of length 1 must be supplied for "what"')
 	
 	if(x$sample==0 && !what%in%c('model','data','end.state'))
@@ -209,11 +209,19 @@ dic.runjags <- function(x, type='pD', force.resample=FALSE, adapt=1000, n.iter=x
 	}
 
   if(redo){
-		if(!quiet) swcat('Obtaining DIC samples...\n')
-		newobj <- as.jags(runjags.object, adapt=adapt, quiet=quiet)
+	newobj <- as.jags(runjags.object, adapt=adapt, quiet=quiet)
+	
+	if(!quiet)
+		swcat('Obtaining DIC samples from ', n.iter, ' iterations...\n')
+	
+	if(quiet){
+		dics <- rjags::dic.samples(newobj, type=type, n.iter=n.iter, progress.bar='none', ...)
+	}else{
 		dics <- rjags::dic.samples(newobj, type=type, n.iter=n.iter, ...)
-		if(runjags.getOption('repeatable.methods'))
-			warning('The rjags object has been updated, so subsequent samples taken with extend.jags(..., method="rjags") will not match those taken using other methods!')
+	}
+
+	if(runjags.getOption('repeatable.methods'))
+		warning('The rjags object has been updated, so subsequent samples taken with extend.jags(..., method="rjags") will not match those taken using other methods!')
 			
 	}else{
 		pencol <- if(type=='pD') 2 else 3

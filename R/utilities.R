@@ -105,7 +105,7 @@ findjags <- function(ostype = .Platform$OS.type, look_in = NA, ...){
 		
 		# First check if the environmental variable is set (by rjags), then this will work:
 		suppressWarnings(s <- try(system('where jags',intern=TRUE),silent=TRUE))
-		if(is.null(attr(s,'status'))){
+		if(!inherits(s, 'try-error') && is.null(attr(s,'status'))){
 			s <- gsub('jags.bat','jags-terminal.exe',s)
 			s <- gsub('\\','/',s,fixed=TRUE)
 			return(s)
@@ -505,7 +505,8 @@ testJAGS <- testjags
 
 runjagsprivate <- new.env()
 # Use 'expression' for functions to avoid having to evaluate before the package is fully loaded:
-assign("defaultoptions",list(jagspath=expression(findjags()),method=expression(if('rjags' %in% .packages(TRUE)){'rjags'}else{if(Sys.info()['user']=='nobody') 'simple' else 'interruptible'}), tempdir=TRUE, plot.layout=c(2,2), new.windows=TRUE, modules="", factories="", bg.alert='beep', linenumbers=TRUE, inits.warning=TRUE, rng.warning=TRUE, summary.warning=TRUE, blockcombine.warning=TRUE, blockignore.warning=TRUE, tempdir.warning=FALSE, nodata.warning=TRUE, adapt.incomplete='warning', repeatable.methods=FALSE, silent.jags=FALSE, silent.runjags=FALSE, predraw.plots=FALSE, force.summary=FALSE, mode.continuous=expression('modeest' %in% .packages(TRUE)), timeout.import=30, partial.import=FALSE, keep.crashed.files=TRUE, full.cleanup=FALSE, debug=FALSE), envir=runjagsprivate)
+assign("defaultoptions",list(jagspath=expression(findjags()),method=expression(if('rjags' %in% .packages(TRUE)){'rjags'}else{if(Sys.info()['user']=='nobody') 'simple' else 'interruptible'}), tempdir=TRUE, plot.layout=c(2,2), new.windows=TRUE, modules="", factories="", bg.alert='beep', linenumbers=TRUE, inits.warning=TRUE, rng.warning=TRUE, summary.warning=TRUE, blockcombine.warning=TRUE, blockignore.warning=TRUE, tempdir.warning=FALSE, nodata.warning=TRUE, adapt.incomplete='warning', repeatable.methods=FALSE, silent.jags=FALSE, silent.runjags=FALSE, predraw.plots=FALSE, force.summary=FALSE, mode.continuous=expression('modeest' %in% .packages(TRUE)), timeout.import=30, partial.import=FALSE, keep.crashed.files=TRUE, full.cleanup=FALSE, debug=FALSE, jags5=FALSE), envir=runjagsprivate)
+
 assign("options",runjagsprivate$defaultoptions,envir=runjagsprivate)
 assign("rjagsmethod",c('rjags','rjparallel'),envir=runjagsprivate)
 assign("bgmethod",c('background','bgparallel'),envir=runjagsprivate)
