@@ -20,8 +20,8 @@
 ###  JAGS_MAJOR_ASSUMED is not needed (always 0) on unix
 ###############
 
-PKG_CPPFLAGS=@JAGS_CFLAGS@ -D JAGS_MAJOR_FORCED=0$(JAGS_MAJOR_VERSION) -D JAGS_MAJOR_ASSUMED=0
-PKG_LIBS=@JAGS_LIBS@ @JAGS_RPATH@
+PKG_CPPFLAGS=-I/usr/local/include/JAGS -D JAGS_MAJOR_FORCED=0$(JAGS_MAJOR_VERSION) -D JAGS_MAJOR_ASSUMED=0
+PKG_LIBS=-L/usr/local/lib -ljags 
 
 ###############
 
