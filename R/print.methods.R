@@ -2,8 +2,6 @@
 #' @name runjags.printmethods
 #' @aliases runjags.printmethods print.runjagsmodel print.runjagsdata print.runjagsinits print.runjagsoutput print.mcsestats print.crosscorrstats print.gelman.with.target print.dicstats print.runjagsbginfo
 
-#' @export
-
 #' @description
 #' Print methods for a number of classes that are associated with runjags objects, such as model, data and initial values files etc.
 
@@ -23,11 +21,10 @@
 #' @param digits the number of digits to display for printed numerical output.
 
 #' @param ... other arguments which are passed to the default print method for some methods but ignored (with/without a warning) for others
-NULL
 
 #' @references
 #' Matthew J. Denwood (2016). runjags: An R Package Providing Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS. Journal of Statistical Software, 71(9), 1-25. doi:10.18637/jss.v071.i09
-
+NULL
 
 #' @rdname runjags.printmethods
 #' @method print failedjags
@@ -229,6 +226,7 @@ print.gelmanwithtarget <- function(x, vars=NA, digits = 3, ...){
     cat("\n")
 	invisible(x)
 }
+
 #' @rdname runjags.printmethods
 #' @method print dicstats
 print.dicstats <- function(x, digits=3, ...){

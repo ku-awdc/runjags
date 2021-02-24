@@ -1,7 +1,6 @@
 #' @title Drop-k and simulated dataset studies using JAGS
 #' @name run.jags.study
 #' @aliases run.jags.study run.JAGS.study drop.k drop.k.jags drop.k.JAGS
-#' @export
 
 #' @description
 #' These functions can be used to fit a user specified JAGS model to multiple datasets with automatic control of run length and convergence, over a distributed computing cluster such as that provided by snow.  The results for monitored variables are compared to the target values provided and a summary of the model performance is returned.  This may be used to facilitate model validation using simulated data, or to assess model fit using a 'drop-k' type cross validation study where one or more data points are removed in turn and the model's ability to predict that datapoint is assessed. 
@@ -62,6 +61,7 @@ NULL
 
 
 #' @rdname run.jags.study
+#' @export
 drop.k <- function(runjags.object, dropvars, k=1, simulations=NA, ...){
 	
 	runjags.object <- checkvalidrunjagsobject(runjags.object)
@@ -198,10 +198,17 @@ drop.k <- function(runjags.object, dropvars, k=1, simulations=NA, ...){
 	return(results)
 	
 }
+
+#' @rdname run.jags.study
+#' @export
 drop.k.jags <- drop.k
+
+#' @rdname run.jags.study
+#' @export
 drop.k.JAGS <- drop.k.jags
 
 #' @rdname run.jags.study
+#' @export
 run.jags.study <- function(simulations, model, datafunction, targets=list(), confidence=0.95, record.chains=FALSE, max.time="15m", silent.jags=TRUE, parallel.method=parLapply, n.cores=NA, export.cluster=character(0), inits=list(), ...){
 	
 	# ... is passed either to autorun.jags (add.monitor not allowed, combine not allowed, maybe others) or to parallel.method function

@@ -1,181 +1,175 @@
-#' @title Extract Any Models, Data, Monitored Variables or Initial Values As Character Vectors from a JAGS or WinBUGS Format Textfile
-#' @name read.jagsfile
-#' @aliases read.jagsfile read.winbugs read.WinBUGS read.JAGSfile
+#' @title Write a complete JAGS model to a text file
+#' @name write.jagsfile
+#' @aliases write.jagsfile write.JAGSfile
 
 #' @description
-#' Read a user specified BUGS or JAGS textfile or character variable and extract any models, data, monitored variables or initial values as character vectors.  Used by (auto)run.jags to interpret the input file(s) or strings.  This function is more likely to be used via \code{\link{run.jags}} where the model specified to run.jags is the path used by this function.  The read.winbugs function is an alias to read.jagsfile.
-#'
-#' @details
-#' There are a number of special strings permitted inside the model
-#' specification as follows:
-#'
-#' #data# variables to be retrieved from a list or environment
-#'
-#' #inits# variables to be retrieved from a list or environment
-#'
-#' #monitors# monitored variables to use
-#'
-#' #modules# JAGS extension modules optionally also specifying the status
-#' (e.g. #modules# glm on, dic on)
-#'
-#' #factories# JAGS factories and types required, optionally also specifying
-#' the status (e.g. #factories# mix::TemperedMix sampler on)
-#'
-#' #response# - a single variable name specifying the response variable
-#' (optional)
-#'
-#' #residual# - a single variable name specifying a variable that represents
-#' the residuals (optional)
-#'
-#' #fitted# - a single variable name specifying a variable that represents
-#' the fitted value (optional)
-#'
-#' #Rdata# when placed inside a data{ } or inits{ } block, this signifies
-#' that any arrays indside are in column major order. This is the default
-#' for any blocks that are not specified as a list( ).
-#'
-#' #BUGSdata# when placed inside a data{ } or inits{ } block, this signifies
-#' that any arrays indside are in row major order. This is the default
-#' for any blocks that are specified as a list( ), such as those that
-#' have been created for use with WinBUGS.
-#'
-#' #modeldata# when placed inside a data{ } block, this signifies that
-#' the code is to be passed to JAGS along with the model{ } block
-#'
-#' @param file either a relative or absolute path to a textfile (including the file extension) containing a model in the JAGS language and possibly monitored variable names, data and/or initial values, or a character string of the same.  May also be a vector of paths to different text files, possibly separately containing the model, data and intitial values.  No default.  The model must be started with the string 'model\{' and ended with '\}' on new lines.  Data must be similarly started with 'data\{', monitored variables with 'monitor\{', and initial values as 'inits\{', and all ended with '\}'.  Seperate variables in such blocks must be separated by a line break.  If multiple models are found, all but the first one are ignored with a warning.  Multiple data blocks and monitor blocks are combined, multiple inits blocks are used for different chains.  Monitors may also be given using the phrase '#monitor# variable' within the model block, in which case 'variable' is added to the list of monitored variables found in the monitor block(s).  The use of automatically generated data and initial values is also supported using similar syntax, with '#data# variable' for automatically generated data variables or '#inits# variable' for automatically generated initial value variables in which case 'variable' is used as data or initial values with a value taken by \code{\link{run.jags}} from datalist, initlist or R objects as appropriate.  '#inits#', '#data#' and '#monitor#' statements can appear on the same line as model code, but no more than one of these statements should be used on the same line.  Examples of acceptable model syntax are given below.
-#'
+#' Writes the JAGS model, data, initial values and monitored variables etc to a file.  The model can then be run using a call to \code{link{run.jags}} with the filename as the model argument.
+#' 
 #' @keywords methods
 
 #' @return
-#' A named list of elements required to compile a model.  These can be used to create a call to \code{\link{run.jags}}, but it would be more usual to call this function directly on the model file.
-#'
-#' @seealso
-#' \code{\link{run.jags}} and \code{\link{write.jagsfile}} for the reverse operation, and possibly an example of the formatting allowed
+#' Returns the filename that the model was saved to (invisibly)
 
-#' @references
+#' @seealso
+#' \code{\link{read.jagsfile}} and \code{\link{run.jags}} for the reverse operation
+
+#' @references 
 #' Lunn D, Jackson C, Best N, Thomas A, Spiegelhalter D (2012). The BUGS book: A practical introduction to Bayesian analysis. CRC press; and Matthew J. Denwood (2016). runjags: An R Package Providing Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS. Journal of Statistical Software, 71(9), 1-25. doi:10.18637/jss.v071.i09
 
 #' @examples
-#' # ALL SYNTAX GIVEN BELOW IS EQUIVALENT
-#'
-#' # Use a modified WinBUGS text file with manual inits and manual data and
-#' # a seperate monitor block (requires least modification from a WinBUGS
-#' # file).  For compatibility with WinBUGS, the use of list() to enclose
-#' # data and initial values is allowed and ignored, however all seperate
-#' # variables in the data and inits blocks must be seperated with a line
-#' # break (commas or semicolons before linebreaks are ignored).  'data\{'
-#' # and 'inits\{' must also be added to WinBUGS textfiles so that the
-#' # function can seperate data from initial values.  Iterative loops are
-#' # allowed in data blocks but not in init blocks.  See also the differences
-#' # in JAGS versus WinBUGS syntax in the JAGS help file.
-#'
-#' # The examples below are given as character strings for portability,
-#' # but these could also be contained in a separate model file with the
-#' # arguments to read.jagsfile and run.jags specified as the file path
-#'
-#'
-#' # A model that could be used with WinBUGS, incorporating data and inits.
-#' # A note will be produced that the data and inits are being converted
-#' # from WinBUGS format:
-#'
-#' string <- "
-#' model{
-#'
-#' 	for(i in 1:N){
-#' 		Count[i] ~ dpois(mean)
-#' 	}
-#' 	mean ~ dgamma(0.01, 100)
+
+#' # Set up a model:
+#' # y = m x + c, assuming normal observation errors for y:
+#' 
+#' # Simulate the data
+#' X <- 1:100
+#' Y <- rnorm(length(X), 2*X + 10, 1)
+#' 
+#' # Model in the JAGS format
+#' model <- "model { 
+#' for(i in 1 : N){ 
+#' 	Y[i] ~ dnorm(true.y[i], precision);
+#' 	true.y[i] <- (m * X[i]) + c
+#' } 
+#' m ~ dunif(-1000,1000)
+#' c ~ dunif(-1000,1000) 
+#' precision ~ dexp(1)
+#' }"
+#' 
+#' # Data and initial values in a named list format, 
+#' # with explicit control over the random number
+#' # generator used for each chain (optional): 
+#' data <- list(X=X, Y=Y, N=length(X))
+#' inits1 <- list(m=1, c=1, precision=1,
+#' .RNG.name="base::Super-Duper", .RNG.seed=1)
+#' inits2 <- list(m=0.1, c=10, precision=1,
+#' .RNG.name="base::Wichmann-Hill", .RNG.seed=2)
+#' 
+#' \dontrun{
+#' # Compile the model but don't update it (sample=0):
+#' compiled <- run.jags(model=model, monitor=c("m", "c", "precision"), 
+#' data=data, n.chains=2, inits=list(inits1,inits2), sample=0)
+#' 
+#' # Save the complete model to a file:
+#' filepath <- write.jagsfile(compiled, file='model.txt')
+#' 
+#' # And run the model from the file:
+#' results <- run.jags(filepath)
+#' 
 #' }
 #'
-#' data{
-#' list(Count = c(1,2,3,4,5,6,7,8,9,10),
-#' N = 10)
-#' }
-#'
-#' inits{
-#' list(
-#' 	mean = 1)
-#' }
-#'
-#' inits{
-#' list(
-#' 	mean = 100)
-#' }
-#'
-#' "
-#'
-#' model <- read.winbugs(string)
-#' results <- run.jags(string, monitor='mean')
-#'
-#' # The same model but specified in JAGS format.  This syntax also defines
-#' # monitors in the model, and uses data retrieved from the R environment:
-#'
-#' string <- "
-#' model{
-#'
-#' 	for(i in 1:N){
-#' 		Count[i] ~ dpois(mean) #data# Count, N
-#' 	}
-#' 	mean ~ dgamma(0.01, 100)
-#' 	#monitor# mean
-#' }
-#'
-#' inits{
-#' 	mean <- 1
-#' }
-#'
-#' inits{
-#' 	mean <- 100
-#' }
-#' "
-#'
-#' model <- read.jagsfile(string)
-#' Count <- 1:10
-#' N <- length(Count)
-#' results <- run.jags(string)
-#'
-#'
-#' # The same model using autoinits and a mixture of manual and autodata:
-#' string <- "
-#' model{
-#'
-#' 	for(i in 1:N){
-#' 		Count[i] ~ dpois(mean) #data# Count
-#' 	}
-#' 	mean ~ dgamma(0.01, 100)
-#' 	#monitor# mean
-#' 	#inits# mean
-#' }
-#'
-#' data{
-#'
-#' 	N <- 10
-#'
-#' }
-#' "
-#'
-#' model <- read.jagsfile(string)
-#' Count <- 1:10
-#' mean <- list(1, 100)
-#' results <- run.jags(string, n.chains=2)
-#'
+#' @param runjags.object a valid (but not necessarily updated) runjags object to be saved to file.  No default.
+
+#' @param file a filename to which the model will be written.  Note that any files already existing in that location will be overwritten with no warning (see \code{\link{new_unique}} for a way to generate unique filenames).  No default.
+
+#' @param remove.tags should the runjags tags #data#, #inits#, #monitors#, #modules#, #factories#, #residual#, #fitted# and #response# be removed from the original model code before writing it to file?  If left in, these may create conflicts with the tags automatically added to the new file.
+
+#' @param write.data should the data also be written to file?  If FALSE, the model may not run from the file without specifying a new source of data.
+
+#' @param write.inits should the data also be written to file?  If FALSE, the model may not run from the file without specifying new initial values.
 NULL
 
-#' @rdname read.jagsfile
-#' @export
-read.jagsfile <- function(file){
 
+#' @rdname write.jagsfile
+#' @export
+write.jagsfile <- function(runjags.object, file, remove.tags=TRUE, write.data=TRUE, write.inits=TRUE){
+	
+	# Don't check valid runjags object, just check model, data, end.state, monitors, modules, factories
+	if(class(runjags.object)!='runjags' || !all(c('model','data','end.state','monitor','modules','factories','response','residual','fitted')%in%names(runjags.object)))
+		stop('Invalid runjags object provided')
+	
+	if(missing(file))
+		stop('argument "file" is missing')
+	s <- try(cat('', file=file, append=FALSE))
+	if(class(s)=='try-error')
+		stop('Unable to create the file - check directory permissions and that the filename given is valid on your system')
+		
+	model <- runjags.object$model
+	# May need to remove #data#, #inits#, #monitor#, #modules#, #factories# from model description:
+	if(remove.tags){
+		modelsplit <- strsplit(model, split='[\n\r]')[[1]]
+		modelsplit <- gsub('#data#.*','',modelsplit)
+		modelsplit <- gsub('#inits#.*','',modelsplit)
+		modelsplit <- gsub('#monitor#.*','',modelsplit)
+		modelsplit <- gsub('#modules#.*','',modelsplit)
+		modelsplit <- gsub('#factories#.*','',modelsplit)
+		modelsplit <- gsub('#response#.*','',modelsplit)
+		modelsplit <- gsub('#residual#.*','',modelsplit)
+		modelsplit <- gsub('#fitted#.*','',modelsplit)
+		model <- paste(modelsplit, collapse='\n')
+	}	
+	
+	if(all(runjags.object$end.state=='') || !write.inits){
+		initsline <- ''
+	}else{
+		initsline <- paste('\n######################################################################################################\n######################################################################################################\n#### Initial values \n######################################################################################################\n######################################################################################################\n\n', paste(paste('inits{\n', runjags.object$end.state, '}\n\n', sep=''), collapse=''), sep='')
+	}
+	
+	magicline <- paste('#monitor# ', paste(runjags.object$monitor, collapse=', '), '\n', sep='')
+	
+	runjags.object$modules <- checkmodfact(runjags.object$modules, 'module')
+	if(!identical(runjags.object$modules, '') && !all(is.na(runjags.object$modules)))
+		magicline <- paste(magicline, '#modules# ', paste(sapply(runjags.object$modules,function(x){
+			return(paste(x[1], c('off','on')[as.logical(x[2])+1], sep=' '))
+		}), collapse=', '), '\n', sep='')
+	
+	runjags.object$factories <- checkmodfact(runjags.object$factories, 'factory')
+	if(!identical(runjags.object$factories, '') && !all(is.na(runjags.object$factories)))
+		magicline <- paste(magicline, '#factories# ', paste(sapply(runjags.object$factories,function(x){
+			return(paste(x[1], x[2], c('off','on')[as.logical(x[3])+1], sep=' '))
+		}), collapse=', '), '\n', sep='')
+	
+	if(!identical(runjags.object$response, '') && !all(is.na(runjags.object$response)))
+		magicline <- paste(magicline, '#response# ', paste(runjags.object$response, collapse=', '), '\n', sep='')
+	
+	if(!identical(runjags.object$residual, '') && !all(is.na(runjags.object$residual)))
+		magicline <- paste(magicline, '#residual# ', paste(runjags.object$residual, collapse=', '), '\n', sep='')
+	
+	if(!identical(runjags.object$fitted, '') && !all(is.na(runjags.object$fitted)))
+		magicline <- paste(magicline, '#fitted# ', paste(runjags.object$fitted, collapse=', '), '\n', sep='')
+	
+	if(!is.null(runjags.object$summary.pars$mutate)){
+		mutate <- runjags.object$summary.pars$mutate
+		if(is.character(mutate)){
+			s <- try(mutate <- get(mutate))
+			if(class(s)=='try-error'){
+				warning('Attempting to retrieve the mutate function failed; writing the JAGS file with mutate as a character instead', call.=FALSE)
+				mutate <- runjags.object$summary.pars$mutate
+			}
+		}
+		dfm <- paste(capture.output(dump('mutate', file='', evaluate=FALSE, envir=as.environment(list(mutate=mutate)))), collapse='\n')
+		magicline <- paste(magicline, '\nmutate{\n', dfm, '\n}\n', sep='')
+	}
+	
+	if(identical(runjags.object$data, '') || !write.data)
+		dataline <- ''
+	else
+		dataline <- paste('\n\n######################################################################################################\n######################################################################################################\n#### Data \n######################################################################################################\n######################################################################################################\n\ndata{\n', runjags.object$data, '\n}\n\n', sep='')
+	
+	cat('######################################################################################################\n######################################################################################################\n#### JAGS model file written by runjags version ', runjagsprivate$runjagsversion, ' on ', as.character(Sys.time()), ' \n######################################################################################################\n######################################################################################################\n\n', model, '\n', magicline, initsline, dataline,  '######################################################################################################\n######################################################################################################\n', file=file, append=TRUE, sep='')
+	
+	invisible(file)
+	
+}
+
+
+write.JAGSfile <- write.jagsfile
+
+
+
+read.jagsfile <- function(file){
+  
 #	if(!is.character(file) || any(class(zz)=='connection'))
 	if(is.runjags(file))
     	stop('Invalid model file - this argument must be specified as a character string or a character string giving a path to a file', call.=FALSE)
-
+  
 	st <- Sys.time()
-
+	
 	exists = likelystring <- logical(length(file))
 
 	for(i in 1:length(file)){
 		likelystring[i] <- any(grepl('\n',file[i],fixed=TRUE) || grepl('\r',file[i],fixed=TRUE) || (grepl('{',file[i],fixed=TRUE) && grepl('}',file[i],fixed=TRUE)))
-
+	
 		if(!likelystring[i]){
 			exists[i] <- FALSE
 			for(end in c('','.txt','.bug', '.R')){
@@ -188,7 +182,7 @@ read.jagsfile <- function(file){
 			}
 		}
 	}
-
+	
 	if(all(!likelystring) & all(!exists)){
 	  if(length(file)==1){
 	    error <- paste("No model file found at the file path provided: '", file.path(getwd(),file), "'", sep='')
@@ -200,11 +194,11 @@ read.jagsfile <- function(file){
 
 	if(length(file)==1){
 		if(exists[1]) string <- paste(readLines(file, warn=FALSE), collapse="\n") else string <- file
-
+	
 	}else{
 		string <- ""
 		for(i in 1:length(file)){
-
+	
 			if(likelystring[i]==FALSE & exists[i]==FALSE) warning(paste("Specified file '", file[i], "' does not exist", sep=""))
 			if(exists[i]) string <- paste(string, paste(readLines(file[i], warn=FALSE), collapse="\n"), sep="\n") else string <- paste(string, file[i], sep="\n")
 		}
@@ -216,11 +210,11 @@ read.jagsfile <- function(file){
 	#find <- c("\n\t", "\n ", "\r\t", "\r ", "\n\n", "\r\r") # ",\n", ",\r", ";\n", ";\r", - removed these since we need ',\n' for some winbugs data but they are added again later on after spaces between () are removed
 	#for(i in 1:length(find)){
 	#	repeat{
-
+	
 	#		splits <- strsplit(string, split=find[i])
 	#		string <- paste(splits[[1]], collapse="\n")
 	#		if(length(splits[[1]])==1) break
-
+	
 	#	}
 	#}
 
@@ -232,7 +226,7 @@ read.jagsfile <- function(file){
 	string <- gsub("\r", "\n", string, fixed=TRUE)
 	# Remove excess white space at the start of lines:
 	string <- gsub("\n[[:space:]]*", "\n", string)
-
+	
 	# Get rid of all commented out lines - leaving in the special ones we need to keep:
 	tokeep <- c('#bugsdata#','#Rdata#','#modeldata#','#BUGSdata#','#Rdata#')
 	changeto <- c('--bugsformat--', '--rformat--', '--modelformat--', '--bugsformat--', '--rformat--')
@@ -247,14 +241,14 @@ read.jagsfile <- function(file){
 	}
 
 	# No helpful conversion of = to <- any more (was it doing this beforehand?)
-
+	
 #   MOVED TRAILING COMMA FIX ELSEWHERE
 	# Remove remaining commas and semi-colons from end of lines (allowing for as many spaces as you like between, and \n)
 #	nohashstring <- gsub(",[[:space:]]*\n", "\n", nohashstring)
 #	nohashstring <- gsub(";[[:space:]]*\n", "\n", nohashstring)
 	# the , .Dim will be put back in later
 	#   MOVED TRAILING COMMA FIX ELSEWHERE
-
+	
 	if(!grepl('model[[:space:]]*\\{',string))
 		stop("No valid model was found", call.=FALSE)
 
@@ -266,7 +260,7 @@ read.jagsfile <- function(file){
 
 	# First extract model:
 	model <- paste("model{\n", winbugs.extract.big("model", string)[[1]], "\n}\n", sep="")
-
+	
 	if(length(model)>1){
 		warning("More than 1 model block was found in the file - the first model was used and other(s) ignored", call.=FALSE)
 		model <- model[1]
@@ -274,9 +268,9 @@ read.jagsfile <- function(file){
 
 	mainmutate <- winbugs.extract.big("mutate", nohashstring, remove.list=FALSE)[[1]]
 	automutate <- winbugs.extract.small('mutate', string)
-
+	
 	maindata <- winbugs.extract.big("data", nohashstring)
-	maindata <- sortjagsvsbugs(maindata, data.type=TRUE)
+	maindata <- sortjagsvsbugs(maindata, data.type=TRUE)	
 	model <- paste(maindata$model,model,sep='')
 	maindata <- maindata$fixed
 
@@ -284,15 +278,15 @@ read.jagsfile <- function(file){
 
 	maininits <- winbugs.extract.big("inits", nohashstring)
 	maininits <- sortjagsvsbugs(maininits, data.type=FALSE)$fixed
-
-
+	
+	
 	############### to remove ->
 	if(FALSE){
 	####### Was previously in extract.big but now here as I want to see the = before converting the data.  Still always want to convert inits though.
 	newstring <- maininits
 	for(i in 1:length(newstring)){
 		temp <- strsplit(newstring[i], "")[[1]]
-
+	
 		#  Because you can't have .Dim <- structure or variable = value:
 		numbers <- which(temp=="=")
 		if(length(numbers)>0){
@@ -300,11 +294,11 @@ read.jagsfile <- function(file){
 				tstring <- character(length=10)
 				for(j in 1:10){
 					tstring[j] <- paste(temp[pmax((numbers[k]-3-j):(numbers[k]-j), 1)], collapse="")
-				}
+				}	
 				if(all(tstring!=".Dim")) temp[numbers[k]] <- "<-"
 			}
 		}
-
+	
 		newstring[i] <- paste(temp, collapse="")
 	}
 	maininits <- newstring
@@ -326,11 +320,11 @@ read.jagsfile <- function(file){
 	if(s[1]!=-1){ # If it doesn't find anything, s=-1
 	finalstring <- strsplit(maininits[i], "", fixed=TRUE)[[1]]
 	for(j in 1:length(s)){
-
+	
 		tstring <- finalstring[s[j]:e[j]]
 		newstring <- gsub(",", "\n", tstring)
 		finalstring[s[j]:e[j]] <- newstring
-
+	
 	}
 	maininits[i] <- paste(finalstring, collapse="")
 	}
@@ -350,7 +344,7 @@ read.jagsfile <- function(file){
 
 	}
 	############### -> to remove
-
+	
 
 	autoinits <- winbugs.extract.small("inits", string)
 
@@ -367,7 +361,7 @@ read.jagsfile <- function(file){
 		tempy <- strsplit(tempy, "*", fixed=TRUE)[[1]]
 		monitors <- c(monitors, tempy[tempy!=""])
 	}
-	#######
+	####### 
 
 	monitors <- checkvalidmonitorname(c(monitors, winbugs.extract.small("monitor", string)))
 	modules <- checkmodfact(winbugs.extract.small('modules', string), 'module')
@@ -387,8 +381,8 @@ read.jagsfile <- function(file){
 	maininits[maininits==''] <- NA
 	autoinits[autoinits==''] <- NA
 	monitors[monitors==''] <- NA
-  mainmutate[mainmutate==''] <- NA
-  automutate[automutate==''] <- NA
+  mainmutate[mainmutate==''] <- NA	
+  automutate[automutate==''] <- NA	
 
 	if(is.null(model) || length(model)==0 || all(is.na(model)))
 		model <- NA
@@ -421,7 +415,7 @@ read.jagsfile <- function(file){
 		modules <- ''
 	if(identical(factories, as.character(NA)))
 		factories <- ''
-
+		
 	output <- list(model=model, data=maindata, autodata=autodata, inits=maininits, autoinits=autoinits, monitor=monitors, modules=modules, factories=factories, response=response, residual=residual, fitted=fitted, mutate=mainmutate, automutate=automutate)
 
 	if(runjags.getOption('debug')>=10)
@@ -431,16 +425,7 @@ read.jagsfile <- function(file){
 
 }
 
-#' @rdname read.jagsfile
+
+#' @rdname write.jagsfile
 #' @export
-read.JAGSfile <- read.jagsfile
-
-#' @rdname read.jagsfile
-#' @export
-read.winbugs <- read.jagsfile
-
-#' @rdname read.jagsfile
-#' @export
-read.WinBUGS <- read.winbugs
-
-
+write.JAGSfile <- write.jagsfile

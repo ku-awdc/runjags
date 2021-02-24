@@ -1,7 +1,6 @@
 #' @title Mutate functions to be used with runjags summary methods
 #' @name mutate.functions
 #' @aliases mutate.functions contrasts.mcmc contrasts.MCMC prec2sd
-#' @export
 
 #' @description
 #' Objects of class \code{\link{runjags-class}} have specialised options available for print, plot and summary.  These methods allow a mutate function to be specified which produces additional variables based on the monitor variables.  These functions are examples of valid syntax, and may be useful in their own right.
@@ -21,14 +20,14 @@
 #' @param x an object of class MCMC.
 
 #' @param vars an optional character vector of variable names.  If supplied, only variable names in the object supplied with a partial match to anything in 'vars' will be used.  Note that regular expressions are not allowed, but the caret (^) token can be used to specify the match at the start of a variable name, and a quoted vars will be matched exactly.  Default NA meaning all variables available are returned.
-NULL
 
 #' @references
 #' Matthew J. Denwood (2016). runjags: An R Package Providing Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS. Journal of Statistical Software, 71(9), 1-25. doi:10.18637/jss.v071.i09
-
+NULL
 
 
 #' @rdname mutate.functions
+#' @export
 contrasts.mcmc <- function(x, vars){
   if(missing(vars) || length(vars)==0)
 	  stop('A character string of length >0 must be provided for "vars"')
@@ -64,6 +63,7 @@ contrasts.mcmc <- function(x, vars){
 contrasts.MCMC <- contrasts.mcmc
 
 #' @rdname mutate.functions
+#' @export
 prec2sd <- function(x, vars){
   if(missing(vars) || length(vars)==0)
 	  stop('A character string of length >0 must be provided for "vars"')

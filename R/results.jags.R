@@ -1,7 +1,6 @@
 #' @title Importing of saved JAGS simulations with partial error recovery
 #' @name results.jags
 #' @aliases results.jags results.JAGS
-#' @export
 
 #' @description
 #' Imports a completed JAGS simulation from a folder created by \code{\link{run.jags}} using the background or bgparallel methods, or any other method where the keep.jags.files=TRUE option was used. Partial recovery simulations is possible for parallel methods where one or more simulation failed to complete. Additional chain thinning and parameter import selection is also supported.
@@ -76,6 +75,7 @@ NULL
 
 
 #' @rdname results.jags
+#' @export
 results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jags.files=NA, read.monitor=NA, return.samples=NA, recover.chains=NA, ...){
 	
 	starttime <- Sys.time()
@@ -303,5 +303,7 @@ results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jag
 
 }
 
+#' @rdname results.jags
+#' @export
 results.JAGS <- results.jags
 

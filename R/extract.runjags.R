@@ -2,8 +2,6 @@
 #' @name extract.runjags
 #' @aliases extract.runjags extract extract.jags dic.runjags
 
-#' @export
-
 #' @description
 #' Objects of class 'runjags' are produced by \code{\link{run.jags}}, \code{\link{results.jags}} and \code{\link{autorun.jags}}, and contain the MCMC chains as well as all information required to extend the simulation.  This function allows specific information to be extracted from these functions.  For other utility methods for the runjags class, see \code{\link{runjags-class}}.
 
@@ -42,12 +40,12 @@
 #' @param force.resample option to re-draw new deviance/DIC/PED etc samples from the model (using \code{\link[rjags]{dic.samples}}) rather than using any statistics that may already be available from the saved runjags object
 
 #' @param ... additional options to be passed to \code{\link[rjags]{dic.samples}}
-NULL
 
 #' @references
 #' Matthew J. Denwood (2016). runjags: An R Package Providing Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS. Journal of Statistical Software, 71(9), 1-25. doi:10.18637/jss.v071.i09
+NULL
 
-		
+#' @export
 extract <- function(x, what, ...){
 	UseMethod("extract")
 }

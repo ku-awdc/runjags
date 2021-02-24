@@ -1,11 +1,8 @@
 #' @title Run or extend a user-specified Bayesian MCMC model in JAGS with automatically calculated run-length and convergence diagnostics
 #' @name autorun.jags
 #' @aliases autorun.jags autorun.JAGS autoextend.jags autoextend.JAGS
-#' @export
-
 #' @description
 #' Runs or extends a user specified JAGS model from  within R, returning an object of class \code{\link{runjags-class}}.  The model is automatically assessed for convergence and adequate sample size before being returned.
-
 #' @details
 #' The autorun.jags function reads, compiles, and updates a JAGS model based on a model representation (plus data, monitors and initial values) input by the user.  The autoextend.jags function takes an existing \code{\link{runjags-class}} object and extends the simulation as required.  Chain convergence over the first run of the simulation is assessed using Gelman and Rubin's convergence diagnostic.  If necessary, the simulation is extended to improve chain convergence (up to a user-specified maximum time limit), before the required sample size of the Markov chain is calculated using Raftery and Lewis's diagnostic.  The simulation is extended to the required sample size dependant on autocorrelation and the number of chains. Note that automated convergence diagnostics are not perfect, and should not be considered as a replacement for manually assessing convergence and Monte Carlo error using the results returned.  For more complex models, the use of \code{\link{run.jags}} directly with manual assessment of necessary run length may be preferable.
 #'
@@ -135,6 +132,7 @@ NULL
 
 
 #' @rdname autorun.jags
+#' @export
 autorun.jags <- function(model, monitor = NA, data=NA, n.chains=NA, inits = NA, startburnin = 4000, startsample = 10000, adapt=1000, datalist=NA, initlist=NA, jags = runjags.getOption('jagspath'), silent.jags = runjags.getOption('silent.jags'), modules=runjags.getOption('modules'), factories=runjags.getOption('factories'), summarise = TRUE, mutate = NA, thin = 1, thin.sample = FALSE, raftery.options = list(), crash.retry=1, interactive=FALSE, max.time=Inf, tempdir=runjags.getOption('tempdir'), jags.refresh=0.1, batch.jags=silent.jags, method=runjags.getOption('method'), method.options=list(), ...){
 	
 	listwarn <- FALSE
@@ -172,6 +170,7 @@ autorun.jags <- function(model, monitor = NA, data=NA, n.chains=NA, inits = NA, 
 	
 
 #' @rdname autorun.jags
+#' @export
 autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=character(0), drop.chain=numeric(0), combine=length(c(add.monitor,drop.monitor,drop.chain))==0, startburnin = 0, startsample = 10000, adapt=1000, jags = NA, silent.jags = NA, summarise = TRUE, thin = NA, thin.sample = FALSE, raftery.options = list(), crash.retry=1, interactive=FALSE, max.time=Inf, tempdir=runjags.getOption('tempdir'), jags.refresh=NA, batch.jags=NA, method=NA, method.options=NA, ...){
 
 	runjags.object <- checkvalidrunjagsobject(runjags.object)

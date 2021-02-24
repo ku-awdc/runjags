@@ -1,7 +1,6 @@
 #' @title Run or extend a user-specified Bayesian MCMC model in JAGS from within R
 #' @name run.jags
 #' @aliases run.jags run.JAGS extend.jags extend.JAGS
-#' @export
 
 #' @description
 #' Runs or extends a user specified JAGS model from within R, returning an object of class \code{\link{runjags-class}}.  
@@ -204,12 +203,13 @@
 #' @param method.options a deprecated argument currently permitted for backwards compatibility, but this will be removed from a future version of runjags.  Pass these arguments directly to run.jags or extend.jags.
 
 #' @param ... summary parameters to be passed to \code{\link{add.summary}}, and/or additional options to control some methods including n.sims for parallel methods, cl for rjparallel and snow methods, remote.jags for snow, and by and progress.bar for the rjags method.
-NULL
 
 #' @references
 #' Matthew J. Denwood (2016). runjags: An R Package Providing Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS. Journal of Statistical Software, 71(9), 1-25. doi:10.18637/jss.v071.i09
+NULL
 
 #' @rdname run.jags
+#' @export
 run.jags <- function(model, monitor = NA, data=NA, n.chains=NA, inits = NA, burnin = 4000, sample = 10000, adapt=1000, noread.monitor=NULL, datalist=NA, initlist=NA, jags = runjags.getOption('jagspath'), silent.jags = runjags.getOption('silent.jags'), modules=runjags.getOption('modules'), factories=runjags.getOption('factories'), summarise = TRUE, mutate = NA, thin = 1, keep.jags.files = FALSE, tempdir=runjags.getOption('tempdir'), jags.refresh=0.1, batch.jags=silent.jags, method=runjags.getOption('method'), method.options=list(), ...){
 	
 	listwarn <- FALSE
@@ -246,6 +246,7 @@ run.jags <- function(model, monitor = NA, data=NA, n.chains=NA, inits = NA, burn
 }
 
 #' @rdname run.jags
+#' @export
 extend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=character(0), drop.chain=numeric(0), combine=length(c(add.monitor,drop.monitor,drop.chain))==0, burnin = 0, sample = 10000, adapt=1000, noread.monitor = NA, jags = NA, silent.jags = NA, summarise = sample >= 100, thin = NA, keep.jags.files = FALSE, tempdir=runjags.getOption('tempdir'), jags.refresh=NA, batch.jags=silent.jags, method=NA, method.options=NA, ...){
 	
 	runjags.object <- checkvalidrunjagsobject(runjags.object)
@@ -857,5 +858,10 @@ extend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=c
 }
 
 
+#' @rdname run.jags
+#' @export
 run.JAGS <- run.jags
+
+#' @rdname run.jags
+#' @export
 extend.JAGS <- extend.jags

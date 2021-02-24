@@ -1,7 +1,6 @@
 #' @title Combining and dividing runjags and MCMC objects
 #' @name combine.mcmc
 #' @aliases combine.mcmc combine.MCMC combine.jags combine.JAGS divide.jags divide.JAGS
-#' @export
 
 #' @description
 #' Utility functions for combining separate MCMC or runjags objects into a single object, or the reverse operation
@@ -44,6 +43,7 @@ NULL
 
 
 #' @rdname combine.mcmc
+#' @export
 combine.mcmc <- function(mcmc.objects=list(), thin=1, return.samples=NA, collapse.chains=NA, vars=NA, add.mutate=TRUE){
 
 	if(inherits(mcmc.objects,c("mcmc.list", "mcmc", "runjags"))){
@@ -220,6 +220,7 @@ combine.MCMC <- combine.mcmc
 
 
 #' @rdname combine.mcmc
+#' @export
 combine.jags <- function(runjags.objects=list(), summarise=TRUE, ...){
 
 	if(!is.list(runjags.objects) || length(runjags.objects)==0)
@@ -284,9 +285,11 @@ combine.jags <- function(runjags.objects=list(), summarise=TRUE, ...){
 	return(newobj)
 }
 
+#' @export
 combine.JAGS <- combine.jags
 
 #' @rdname combine.mcmc
+#' @export
 divide.jags <- function(runjags.object, which.chains=1:nchain(as.mcmc.list(runjags.object)), summarise=TRUE, ...){
 
 	# Add vars as an option?
@@ -309,5 +312,6 @@ divide.jags <- function(runjags.object, which.chains=1:nchain(as.mcmc.list(runja
 	return(newobj)
 }
 
+#' @export
 divide.JAGS <- divide.jags
 

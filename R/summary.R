@@ -1,9 +1,6 @@
 #' @title Summary statistics and plot methods for runjags class objects
 #' @name add.summary
 #' @aliases add.summary summary.runjags plot.runjags
-#' @export
-#' @export print runjags
-#' @export plot runjags
 
 #' @description
 #' Objects of class \code{\link{runjags-class}} have specialised options available for print, plot and summary.  These allow various options for controlling how the output is presented, including sub-selection of variables of interest (using partial matching).
@@ -98,6 +95,7 @@ NULL
 
 
 #' @rdname add.summary
+#' @export
 add.summary <- function(runjags.object, vars=NA, mutate=NA, psrf.target = 1.05, normalise.mcmc = TRUE, modeest.opts=list(), confidence=c(0.95), autocorr.lags=c(10), custom=NULL, silent.jags=runjags.getOption('silent.jags'), plots=runjags.getOption('predraw.plots'), plot.type=c('trace','ecdf','histogram','autocorr','key','crosscorr'), col=NA, summary.iters=20000, trace.iters=1000, separate.chains=FALSE, trace.options=list(), density.options=list(), histogram.options=list(), ecdfplot.options=list(), acplot.options=list()){
 
 	# We may be passed some unevaluated function arguments from parent functions using getargs so evaluate everything here:
@@ -177,6 +175,7 @@ add.summary <- function(runjags.object, vars=NA, mutate=NA, psrf.target = 1.05, 
 }
 
 #' @rdname add.summary
+#' @method summary runjags
 summary.runjags <- function(object, ...){
 
 	# Check ... doesn't contain plots
@@ -211,6 +210,7 @@ summary.runjags <- function(object, ...){
 
 
 #' @rdname add.summary
+#' @method plot runjags
 plot.runjags <- function(x, plot.type=c("trace","ecdf","histogram","autocorr","crosscorr"), vars=NA, layout=runjags.getOption('plot.layout'), new.windows=runjags.getOption('new.windows'), file="", mutate=NULL, col=NA, trace.iters=NA, separate.chains=NA, trace.options=NA, density.options=NA, histogram.options=NA, ecdfplot.options=NA, acplot.options=NA, ...){
 
 	passed <- list(...)

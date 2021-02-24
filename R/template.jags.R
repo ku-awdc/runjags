@@ -1,7 +1,6 @@
 #' @title Generate a generalised linear mixed model (GLMM) specification in JAGS
 #' @name template.jags
 #' @aliases template.jags template.JAGS
-#' @export
 
 #' @description
 #' Use an lme4 style syntax to create a JAGS model representation of a GLMM, including all data, initial values and monitor specifications required to run the model using \code{\link{run.jags}}.
@@ -76,6 +75,7 @@
 NULL
 
 #' @rdname template.jags
+#' @export
 template.jags <- function(formula, data, file='JAGSmodel.txt', family='gaussian', write.data=TRUE, write.inits=TRUE, precision.prior='dgamma(0.001, 0.001)', effect.prior='dnorm(0, 10^-6)', n.chains=2, precision.inits=c(0.01,10), effect.inits=c(-1, 1), inits=NULL){
 	
 	formula <- as.formula(formula)
@@ -543,4 +543,6 @@ template.jags <- function(formula, data, file='JAGSmodel.txt', family='gaussian'
 }
 
 
+#' @rdname template.jags
+#' @export
 template.JAGS <- template.jags

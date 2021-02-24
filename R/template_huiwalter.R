@@ -6,11 +6,8 @@
 #' @param se_priors
 #' @param sp_priors
 #'
-#' @return
 #' @export
-#'
-#' @examples
-auto_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covon=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)'){
+template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covon=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)'){
 
 	version <- 0.1 # 2019-05-16
 

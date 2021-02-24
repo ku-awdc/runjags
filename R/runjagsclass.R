@@ -2,8 +2,6 @@
 #' @name runjags-class
 #' @aliases runjags-class runjagsclass runjagsstudy-class runjagsstudyclass as.jags as.runjags as.mcmc.runjags as.mcmc.list.runjags cleanup.jags cleanup.JAGS failed.jags failed.JAGS failedjags fitted.runjags residuals.runjags predict.runjags
 
-#' @export
-
 #' @description
 #' Objects of class 'runjags' are produced by \code{\link{run.jags}}, \code{\link{results.jags}} and \code{\link{autorun.jags}}, and contain the MCMC chains as well as all information required to extend the simulation.  These are a number of utility functions associated with these objects.
 
@@ -295,11 +293,13 @@ as.runjags.jags <- function(jags.model, monitor = stop("No monitored variables s
 }
 
 #' @rdname runjags-class
+#' @export
 is.runjags <- function(x){
   return(class(x) %in% c("runjags","runjagsbginfo"))
 }
 
 #' @rdname runjags-class
+#' @export
 cleanup.jags <- function(all.folders=FALSE, silent=FALSE){
 	if(all.folders){
 		tobin <- c(runjagsprivate$simfolders, runjagsprivate$failedsimfolders)
@@ -326,10 +326,13 @@ cleanup.jags <- function(all.folders=FALSE, silent=FALSE){
 
 	invisible(tobin)
 }
-cleanup.JAGS <- cleanup.jags
-
 
 #' @rdname runjags-class
+#' @export
+cleanup.JAGS <- cleanup.jags
+
+#' @rdname runjags-class
+#' @export
 failed.jags <- function(show=c('model','output')){	
 	type <- tolower(show)
 	possibilities <- c("model", "data", "inits", "output", "end.state")
@@ -350,16 +353,26 @@ failed.jags <- function(show=c('model','output')){
 failed.JAGS <- failed.jags
 
 
-# Not documented specifically:
+#' @rdname runjags-class
+#' @export
 as.jags <- function(x, adapt=1000, quiet=FALSE, ...){
 	UseMethod("as.jags")
 }
+
+#' @rdname runjags-class
+#' @method as.jags default
 as.jags.default <- function(x, ...){
 	stop("Conversion to jags objects is only possible for specific classes of object (such as objects of class 'runjags')")
 }
+
+#' @rdname runjags-class
+#' @export
 as.runjags <- function(jags.model, ...){
 	UseMethod("as.runjags")
 }
+
+#' @rdname runjags-class
+#' @method as.runjags default
 as.runjags.default <- function(jags.model, ...){
 	stop("Conversion to runjags objects is only possible for specific classes of object (such as objects of class 'jags')")
 }
@@ -467,7 +480,6 @@ residuals.runjags <- function(object, variable=object$residual, show.summary=FAL
 
 #' @rdname runjags-class
 #' @method fitted runjags
-
 fitted.runjags <- function(object, variable=object$fitted, show.summary=FALSE, output='mean', ...){
 	
 	if(length(output)!=1 || class(output)!='character')
