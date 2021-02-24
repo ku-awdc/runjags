@@ -1,0 +1,39 @@
+######################################################################################################
+###
+###  This file is based on that in the rjags package (version 3-10)
+###  Original file is Copyright (C) Martyn Plummer, licensed under GPL-2
+###
+###  This file allows compilation between JAGS 3 and 4 (or later) without modifying runjags.
+###  To force the package to compile assuming a given JAGS version is installed, use the 
+###  JAGS_MAJOR_FORCED environmental variable.  This should not be necessary on unix.
+###  
+###  Once JAGS version 3 is obsolete, the module will be simplified to be dependent on JAGS >= 4
+###  
+###  Matthew Denwood, 29th March 2016
+###
+######################################################################################################
+
+
+###############
+###  Flags
+###  Prepending 0 to JAGS_MAJOR_VERSION prevents it being set as blank (the C++ code requires a number)
+###  JAGS_MAJOR_ASSUMED is not needed (always 0) on unix
+###############
+
+PKG_CPPFLAGS = -I"@JAGS_INCLUDE@" -D JAGS_MAJOR_FORCED=0$(JAGS_MAJOR_VERSION) -D JAGS_MAJOR_ASSUMED=0
+PKG_LIBS=-L@JAGS_LIB@ -ljags @JAGS_RPATH@
+
+###############
+
+
+###############
+###  LIBS and objects to be compiled
+###  NB: the objects in distributions/jags are only necessary for JAGS <=3, and are excluded by the sources when compiling against JAGS >= 4
+###############
+
+OBJECTS = distributions/jags/DFunction.o distributions/jags/DPQFunction.o distributions/jags/PFunction.o distributions/jags/QFunction.o distributions/jags/RScalarDist.o distributions/DPar1.o distributions/DPar2.o distributions/DPar3.o distributions/DPar4.o distributions/DLomax.o distributions/DMouchel.o distributions/DGenPar.o distributions/DHalfCauchy.o init.o runjags.o testrunjags.o
+
+###############
+
+
+

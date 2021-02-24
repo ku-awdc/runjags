@@ -1,0 +1,231 @@
+\name{read.jagsfile}
+
+\alias{read.winbugs}
+\alias{read.WinBUGS}
+\alias{read.jagsfile}
+\alias{read.JAGSfile}
+
+
+\title{Extract Any Models, Data, Monitored Variables or Initial Values
+As Character Vectors from a JAGS or WinBUGS Format Textfile}
+
+\description{
+
+Read a user specified BUGS or JAGS textfile or character variable and
+extract any models, data, monitored variables or initial values as
+character vectors.  Used by (auto)run.jags to interpret the input
+file(s) or strings.  This function is more likely to be used via
+\code{\link{run.jags}} where the model specified to run.jags is the path
+used by this function.  The read.winbugs function is an alias to
+read.jagsfile.
+
+}
+
+\usage{
+
+	read.jagsfile(file)
+
+	read.winbugs(file)
+
+}
+
+\arguments{
+
+\item{file}{either a relative or absolute path to a textfile (including
+the file extension) containing a model in the JAGS language and possibly
+monitored variable names, data and/or initial values, or a character
+string of the same.  May also be a vector of paths to different text
+files, possibly separately containing the model, data and intitial
+values.  No default.  The model must be started with the string
+'model\{' and ended with '\}' on new lines.  Data must be similarly
+started with 'data\{', monitored variables with 'monitor\{', and initial
+values as 'inits\{', and all ended with '\}'.  Seperate variables in
+such blocks must be separated by a line break.  If multiple models are
+found, all but the first one are ignored with a warning.  Multiple data
+blocks and monitor blocks are combined, multiple inits blocks are used
+for different chains.  Monitors may also be given using the phrase
+'#monitor# variable' within the model block, in which case 'variable' is
+added to the list of monitored variables found in the monitor block(s). 
+The use of automatically generated data and initial values is also
+supported using similar syntax, with '#data# variable' for automatically
+generated data variables or '#inits# variable' for automatically
+generated initial value variables in which case 'variable' is used as
+data or initial values with a value taken by \code{\link{run.jags}}
+from datalist, initlist or R objects as appropriate.  '#inits#',
+'#data#' and '#monitor#' statements can appear on the same line as model
+code, but no more than one of these statements should be used on the
+same line.  Examples of acceptable model syntax are given below.}
+
+}
+
+\value{A named list of elements required to compile a model.  These can
+be used to create a call to \code{\link{run.jags}}, but it would be
+more usual to call this function directly on the model file.
+}
+
+\details{
+
+There are a number of special strings permitted inside the model
+specification as follows:
+
+#data# variables to be retrieved from a list or environment
+
+#inits# variables to be retrieved from a list or environment
+
+#monitors# monitored variables to use
+
+#modules# JAGS extension modules optionally also specifying the status 
+(e.g. #modules# glm on, dic on)
+
+#factories# JAGS factories and types required, optionally also specifying 
+the status (e.g. #factories# mix::TemperedMix sampler on)
+
+#response# - a single variable name specifying the response variable 
+(optional)
+
+#residual# - a single variable name specifying a variable that represents 
+the residuals (optional)
+
+#fitted# - a single variable name specifying a variable that represents 
+the fitted value (optional)
+
+#Rdata# when placed inside a data{ } or inits{ } block, this signifies
+that any arrays indside are in column major order. This is the default
+for any blocks that are not specified as a list( ).
+
+#BUGSdata# when placed inside a data{ } or inits{ } block, this signifies
+that any arrays indside are in row major order. This is the default
+for any blocks that are specified as a list( ), such as those that
+have been created for use with WinBUGS.
+
+#modeldata# when placed inside a data{ } block, this signifies that
+the code is to be passed to JAGS along with the model{ } block
+
+}
+
+\seealso{
+
+\code{\link{run.jags}},
+
+\code{\link{write.jagsfile}} for the reverse operation, and possibly
+an example of the formatting allowed
+
+
+}
+
+
+
+
+\examples{
+# ALL SYNTAX GIVEN BELOW IS EQUIVALENT
+
+# Use a modified WinBUGS text file with manual inits and manual data and
+# a seperate monitor block (requires least modification from a WinBUGS
+# file).  For compatibility with WinBUGS, the use of list() to enclose
+# data and initial values is allowed and ignored, however all seperate
+# variables in the data and inits blocks must be seperated with a line
+# break (commas or semicolons before linebreaks are ignored).  'data\{'
+# and 'inits\{' must also be added to WinBUGS textfiles so that the
+# function can seperate data from initial values.  Iterative loops are
+# allowed in data blocks but not in init blocks.  See also the differences
+# in JAGS versus WinBUGS syntax in the JAGS help file.
+
+# The examples below are given as character strings for portability,
+# but these could also be contained in a separate model file with the
+# arguments to read.jagsfile and run.jags specified as the file path
+
+
+# A model that could be used with WinBUGS, incorporating data and inits.
+# A note will be produced that the data and inits are being converted
+# from WinBUGS format:
+
+string <- "
+model{
+
+	for(i in 1:N){
+		Count[i] ~ dpois(mean)
+	}
+	mean ~ dgamma(0.01, 100)
+}
+
+data{
+list(Count = c(1,2,3,4,5,6,7,8,9,10),
+N = 10)
+}
+
+inits{
+list(
+	mean = 1)
+}
+
+inits{
+list(
+	mean = 100)
+}
+
+"
+
+model <- read.winbugs(string)
+results <- run.jags(string, monitor='mean')
+
+# The same model but specified in JAGS format.  This syntax also defines
+# monitors in the model, and uses data retrieved from the R environment:
+
+string <- "
+model{
+
+	for(i in 1:N){
+		Count[i] ~ dpois(mean) #data# Count, N
+	}
+	mean ~ dgamma(0.01, 100)
+	#monitor# mean
+}
+
+inits{
+	mean <- 1
+}
+
+inits{
+	mean <- 100
+}
+"
+
+model <- read.jagsfile(string)
+Count <- 1:10
+N <- length(Count)
+results <- run.jags(string)
+
+
+# The same model using autoinits and a mixture of manual and autodata:
+string <- "
+model{
+
+	for(i in 1:N){ 
+		Count[i] ~ dpois(mean) #data# Count
+	}
+	mean ~ dgamma(0.01, 100) 
+	#monitor# mean
+	#inits# mean
+}
+
+data{
+
+	N <- 10
+
+}
+"
+
+model <- read.jagsfile(string)
+Count <- 1:10
+mean <- list(1, 100)
+results <- run.jags(string, n.chains=2)
+
+
+
+}
+
+\references{
+Lunn D, Jackson C, Best N, Thomas A, Spiegelhalter D (2012). The BUGS book: A practical introduction to Bayesian analysis. CRC press; and Matthew J. Denwood (2016). runjags: An R Package Providing Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS. Journal of Statistical Software, 71(9), 1-25. doi:10.18637/jss.v071.i09
+}
+
+\keyword{methods}

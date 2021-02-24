@@ -1,0 +1,709 @@
+This package is now (relatively) feature stable, however I am continually using and improving the functions - so if you find a bug (especially under Windows), or if you have any comments/criticisms/questions about this package, then please feel free to email the package developer.  I am grateful to John Kruschke, Stefano Conti, Carsten Dormann, Ed Merkle, Andrew Cohen, Steven Novick, David Norris, Gregory Hart, Tomas Telensky, Michael Hoehle, Darren Shaw, Ollie Wearn, Glenn Meyers, Rebecca Taylor, Avraham Adler, Jared Laufenberg, Jonathan Bartlett, Miriam Casey, Bob O'Hara, Kristin Broms, Bryan Matthias, Torrin Liddell, Jan Glaescher, Tyson Wepprich, Benedict Escoto, Xavier Harrison, Balthasar Bickel, Johannes Bjork, Ghislain Vieilledent, Georges Kunstler, Ian Handel and Richard Reeve for reporting bugs and making suggestions over the years that I have been developing runjags.  Thanks also to Martyn Plummer for developing JAGS.
+
+
+OPEN ISSUES
+
+
+BUGS
+
+The adapt.incomplete option may not function correctly depending on the version of JAGS and the batch.jags argument - this will be fixed in a future update, but will not be back-compatible with JAGS 3.x
+
+
+
+FEATURES TO BE IMPLEMENTED
+
+A predict method for runjags objects
+
+Capability to have no valid monitored variables
+
+Implement concurrent trace, mean and variance monitors
+
+
+
+VERSION HISTORY
+
+
+Version 2.2.0
+
+NEW FEATURES
+
+Migration to GitHub and re-structuring of the package to use tidy package development
+
+Start of migration of code base away from run.jags and towards run_jags
+
+Compatibility with the modeest package version >= 2.3.2
+
+Removal of support for xgrid
+
+
+BUG FIXES
+
+A bug preventing back-compatibility with runjags 1.2.0 was fixed (thanks to Ollie Wearn)
+
+Renamed an argument in the tailf function to avoid the use of 'return' as a variable name
+
+
+
+Version 2.0.4-6
+
+Update required by CRAN due to change in the behaviour of class(c('matrix','array'))
+
+
+Version 2.0.4-4
+
+Update required by CRAN to allow compilation on the new toolchain for Windows 
+
+
+Version 2.0.4
+
+NEW FEATURES
+
+The accompanying manuscript has now been accepted in JSS - please use the following citation for runjags in publications using results generated using runjags:
+Matthew J. Denwood (2016). runjags: An R Package Providing Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS. Journal of Statistical Software, 71(9), 1-25. doi:10.18637/jss.v071.i09
+
+A warning is now given when interrupting snow and rjparallel methods that zombie JAGS processes may remain in the background
+
+A warning is now given when using missing values with predictor variables in template.jags
+
+
+BUG FIXES
+
+A bug fixed that could cause an error and/or failure to calculate the mpsrf within autoextend.jags
+
+The timestring function is updated to work correctly with R 3.3.0 (with a single time object)
+
+A bug fixed in the testjags function that gave an unhelpful error message when neither JAGS or rjags were installed
+
+A number of other minor bugs have also been addressed
+
+
+Version 2.0.3
+
+NEW FEATURES
+
+The configure file should now detect the correct version of JAGS more often (particularly on Windows)
+
+A JAGS_MAJOR_VERSION environmental variable can now be set in case of problems - see the README file
+
+The argument NULL can now be used equivalently to NA for autorun.jags and run.jags
+
+Simulations started with keep.jags.files = TRUE are no longer deleted when R exits, even if the simulation failed
+
+The key plot is no longer produced by default
+
+The testjags function now compares the installed versions of JAGS and rjags and gives a warning if there is a mismatch
+
+The summary statistics are now calculated on 20,000 thinned iterations by default (instead of 10,000)
+
+
+BUG FIXES
+
+The autocorrelation and crosscorrelation is now calculated on un-thinned chains for summary statistics
+
+A nasty bug was fixed that could cause issues with reading the devaince correctly for models run using rjags methods
+
+A bug was fixed that prevented runjags working with dataframes created by dplyr
+
+Bug fixed that prevented re-calculation of the DIC under some circumstances (penalty would be returned as NA)
+
+The force.summary option is now respected, and the default behaviour is to omit calculating summary statistics for > 50 variables
+
+Quoted variable names (and the use of $, ^, and logical vectors) now works as expected
+
+A number of other minor bugs (and improvements in error handling) have also been addressed
+
+
+Version 2.0.2
+
+NEW FEATURES
+
+The runjags package should now compile using either JAGS version 3 or JAGS version 4 (beta)
+
+New capability to specify raftery.options=FALSE to deactivate extending chains for sample size
+
+The autocorrelation plot is now among the default plots produced
+
+Attempts to specify a lag of > 60 seconds for jags.refresh now get a warning (and the help fle has been clarified)
+
+It is now possible to get summary statistics for less than 100 iterations if runjags.options(force.summary=TRUE)
+
+If is now possible to have only non-stochastic monitored variables
+
+
+BUG FIXES
+
+A bug fixed that caused incorrect indexing for variables read in using the read.monitor argument for results.jags
+
+A bug fixed that resulted in errors for modules and factories with names containing '-'
+
+Issues with reading results from models with too-short adaptive phases should now be resolved
+
+Errors in calculating the effective sample size are now caught (with a warning) and will not prevent calculation of other summary statistics
+
+Bug fixed which could cause errors in max.time of autorun.jags
+
+Bug fixed giving strange errors if the modeest package was not installed
+
+Problems with LaTeX code in vignette fixed
+
+
+Version 2.0.1
+
+NEW FEATURES
+
+The extract method now allows a logical vector indicating stochastic variables to be extracted (and the help page has been improved)
+
+Martyn Plummer is now listed as an author [cph] to acknowledge the inclusion of code in /src/distributions/jags (and elsewhere where indicated)
+
+BUG FIXES
+
+A bug fixed that gave an incorrect number of burnin iterations when extending models with a different thin (thanks to Tomas Telensky)
+
+A bug fixed that failed to recognise that some curly braces were commented out (thanks to Michael Höhle)
+
+
+Version 2.0.0
+
+DEPRECATED ARGUMENTS
+
+method.options - permitted (with a note) for now, but it is preferred to pass the method arguments directly to the parent function call
+
+datalist and initlist - permitted (with a note) for now, but it is preferred to pass these lists to data and inits
+
+check.conv and check.stochastic - deprecated and ignored with a note - if summary=TRUE then both must be performed
+
+monitor.deviance, monitor.pd, monitor.pd.i, monitor.popt - deprecated and ignored with a warning
+
+Direct access to the failedjags environment is deprecated - use the failed.jags() function instead
+
+
+NEW FEATURES
+
+Added a quickstart vignette
+
+The behaviour of data and inits has changed somewhat - if #data# and #inits# are specified in the model, not all variables in the data or inits will be passed to JAGS
+
+The behaviour of the pD and pOpt monitors has changed to allow these to work with the rjags method:  pd.i no longer exists and is now pd, and what was pd is now full.pd.  The popt monitor remains unchanged.  See the help file for extract for more details.
+
+New failed.jags() function for viewing failed JAGS models
+
+New drop.k function
+
+New write.jagsfile function
+
+New read.jagsfile function to distinguish between row-major order (WinBUGS) and column-major (JAGS/R) arrays more easily
+
+New template.jags function for common GLMM applications
+
+New residuals and fitted methods for runjags objects
+
+New plotting and summary system allows plots and summary statistics to be post-calculated (see add.summary).  The default option for pre-calculating plots is now FALSE.
+
+New mutate option to summary functions, and contrasts.mcmc function provided to generate pairwise comparisons within fixed effects
+
+The Half Cauchy distribution is now implemented in the JAGS extension module
+
+There are now more options for recovering crashed models, particularly for parallel simulations, using results.jags
+
+Error messages for failed data and inits functions are now more helpful
+
+Variables that are stochastic in one chain but do not change in another chain are now handled specially
+
+If a model looks like a file path, the extensions .bug and .txt are now tried if the specified file couldn't be found
+
+For background methods, tempdir is now set to FALSE if not done so by the user (with a warning which can be deactivated via runjags.options())
+
+It is now possible to re-read any JAGS simulation (run with keep.jags.files=TRUE) using results.jags(path-to-folder)
+
+Many of the internal methods for reading JAGS files have been re-written to improve efficiency
+
+The autoextend.jags function is now compatible with the rjparallel method (although re-compilation will be required!)
+
+
+BUG FIXES
+
+Too many to detail here!
+
+
+Version 1.2.1
+
+NEW FEATURES
+
+Contact details updated to reflect my move to the University of Copenhagen
+
+Default .runjags.options can now be set at package load
+
+runjags.options has additional features such as total suppression of all messages to screen (intended for use in batch mode - thanks to Avraham Adler for the suggestion), and suppression of pre-drawn plots
+
+If a function is provided as the 'inits' argument, the data is now available internally to this function at evaluation time
+
+The version of runjags is now included as part of the runjags object (this will be used to determine plotting methods for saved objects in future)
+
+Failed JAGS objects can now be passed directly to run.jags
+
+
+BUG FIXES
+
+Check bypass introduced in case the rjags package isn't installed
+
+Bug fixed that prevented the adaptive phase length being passed to the rjags method
+
+Bug fixed that caused the thin argument to combine.mcmc to be ignored (thanks to Jared Laufenberg for pointing out the bug)
+
+Bug fixed that could cause the number of iterations returned by combine.mcmc to be less than specified by the return.samples argument
+
+Duplicate names in inits and data are now detected, and a related typo has been fixed in the inits specification for one of the examples in the run.jags help file
+
+Bug fixed that prevented the DIC monitor being added when extending a simulation using the rjags method
+
+Bugs fixed in run.jags.study relating to matching target variable names, and erroneous error message about no data being present
+
+Other minor bug fixes
+
+
+
+Version 1.2.0
+
+NEW FEATURES
+
+Added rjparallel method for using parallel rjags models (possibly over a snow cluster)
+
+The rjags method will now try to avoid re-compiling the model wherever possible
+
+Changed the behaviour of adapt and burnin to be consistent between rjags methods and methods calling separate JAGS executables
+
+All methods now try to stop() using the specific error that crashed the model
+
+The simulation study function now returns error messages from crashed models
+
+Added runjags.options to suppress or reduce the output of warning messages (amongst other things)
+
+Added a load.runjagsmodule function to explicitly load the bundled JAGS extension module
+
+The inits option can now be used with a function (this mimics the equivalent behaviour of rjags)
+
+
+BUG FIXES
+
+Issue resolved that would prevent chains being dropped with the rjags method
+
+Bug resolved that gave an error 'Error in lapply(X = X, FUN = FUN, ...) : object 'newinits' not found' when using a list of initial value lists
+
+Issue resolved to (hopefully) fix test errors on solaris sparc hardware
+
+Other minor bug fixes
+
+
+
+Version 1.1.0
+
+NEW FEATURES
+
+The runjags package now contains a JAGS extension module providing the Pareto family of distributions
+
+Improved crash handling
+
+Simulation results should now be loaded much more quickly
+
+
+BUG FIXES
+
+Issue resolved that prevented some simulations from being loaded correctly
+
+Bug fixed that prevented model code with trailing commas from being read correctly
+
+Other minor bug fixes
+
+
+
+Version 1.0.1
+
+NEW FEATURES
+
+run.jags.study now reports the time taken for simulation studies
+
+
+BUG FIXES
+
+Issue resolved that required rjags to be loaded to use the snow method
+
+Bug fixed in testjags that would incorrectly report that rjags wasn't installed if it wasn't loaded
+
+Bug fixed in dump.format that caused an issue with missing values in large arrays - thanks to Jan Gläscher for spotting this!
+
+Bug fixed that could cause runjags to crash when attempting to process MCMC results containing -/+Inf values
+
+Bug fixed that prevented data being log/logit transformed (if necessary to improve normality) before calculating the Gelman Rubin statistic
+
+Tidied up formatting of the PDF manual
+
+
+Version 1.0.0-6
+
+This is the first 'release' version of runjags with major changes over the 0.9.x versions.
+
+
+NEW FEATURES
+
+Substantial re-write of internal methods
+
+New methods to improve distributed computing and multi-core capapilities of runjags, and a new rjags method which can be used if rjags is installed
+
+Improved compatibility with the rjags package
+
+New run.jags.study function to facilitate validation of models using simulated data, and drop-k type cross validation studies
+
+New runjags class (and other classes) with associated S3 methods for runjags objects to facilitate summarising and plotting results of function calls
+
+New version of mgrid (with substantial changes and new features) included to facilitate integration with Xgrid, and no longer requires installation by the user
+
+Several other enhancements and new features
+
+
+BUG FIXES
+
+Too numerous to note...
+
+
+
+Version 0.9.9-2
+
+BUG FIXES
+
+Improved compatibility with JAGS version 3 and JAGS executable finding for Windows (includes support for disabling/enabling jags batch mode as output is now handled differently for batch mode and non batch mode by JAGS)
+
+The combine.mcmc function should now be faster at thinning and collapsing chains
+
+Fixed issue with combine.mcmc and a single object
+
+Fixed a (rarely observed) bug in interruptible and parallel methods (unix only)
+
+
+
+Version 0.9.9
+
+NEW FEATURES
+
+The development version of runjags is now being hosted on sourceforge using svn
+
+Setting a monitor of 'dic' now results in DIC calculations being returned (monitor 'deviance' can also be used as an alternative to monitor.deviance)
+
+An 'xapply' function (convenience wrapper for xgrid.run) has been added
+
+All feedback using cat now wraps to the screen width nicely
+
+combine.mcmc (and therefore autorun.jags) now returns the exact number of iterations specified to return.samples rather than just the closest ceiling
+
+The xgrid.results function can now return partially completed jobs
+
+run.jags now checks that it is not being run on Xgrid to resolve a problem with the interruptible method when being run as 'nobody'
+
+The parallel and xgrid JAGS methods now ensure that up to 4 chains have different RNG names and give a warning if more than 4 chains are used.  The issue of chain independence is discussed in the help files
+
+The run.jags function now aborts if attempting to monitor DIC, pd, popt or pd.i with a single chain (or parallel or separate chains)
+
+JAGS functions now return HPD intervals as well as summary statistics
+
+Introduced a new autocorr.diag function which will be much faster for models with lots of monitored variables
+
+Introduced the capability to specify R64 over R32 etc with Rbuild
+
+
+BUG FIXES
+
+A warning message about start values not being changed has been removed
+
+The name of pd.i has been corrected on model outputs
+
+Fixed scoping bug that could cause functions sent to Xgrid to fail to find variables that should be available
+
+Bug preventing monitoring pd.i for large models fixed
+
+Fixed a bug in autorun.jags which crashed the function if the time limit was exceeded
+
+Bug fixed preventing tempdir=FALSE from working
+
+Potential bug when attempting to parallelise chains in Windows fixed
+
+Fixed an issue that could cause errors when normalising chains of less than 1000 iterations
+
+Misuse of the Sys.which function corrected
+
+Fixed issues with backslashes and over-writing global variables in Windows that could cause modules to fail to load
+
+Improved error handling for potentially misconfigured JAGS installations
+
+Many other miscellaneous code tweaks and bug fixes.
+
+
+
+Version 0.9.7
+
+NEW FEATURES
+
+The object list supplied to xgrid.submit/xgrid.run can now be a character list, for which objects will be looked for in the global environment.
+
+The 'cleanup' and 'keep files' options have been moved to the retrieving xgrid functions.  Options relating to processing the MCMC chains (such as convergence and plotting options) can now be provided to xgrid.results.jags.
+
+Code for autorun.jags optimised in several places to speed up processing of large MCMC objects between runs.
+
+Support for factories added.
+
+Support for new popt/deviance/pd features of JAGS 2 added.
+
+The number of variables is now displayed when calculating convergence statistics.
+
+xgrid.results and xgrid.results.jags now display the output so far if the job isn't complete
+
+
+BUG FIXES
+
+Bug fixed that could cause the .jagsfile functions to not find objects correctly.
+
+Bug fixed in autorun.jags preventing modules from being loaded
+
+Bugs fixed that prevented errors being reported under Windows
+
+Bug fixed in mgrid that prevented directory names with spaces being used.
+
+Manual over-hauled to improve appearance and prevent truncation of examples on PDF version.
+
+Bug fixed that could mistake error returns from mgrid/xgrid as job numbers
+
+New examples added and some examples corrected.
+
+Many other miscellaneous code tweaks and bug fixes.
+
+
+
+Version 0.9.6
+
+NEW FEATURES
+
+There are new methods for calling JAGS under unix-alikes.  You can now specify 'interruptible' which allows JAGS to be fully interruptible using sigterm on the terminal/console, 'parallel' which runs each chain as a separate task, 'xgrid' which sends the JAGS call to an xgrid distributed computing cluster, or 'simple' which runs JAGS as a single process in the foreground (legacy behaviour and sole option on Windows).  The run.jags function now has the new arguments 'method' and 'xgrid.options' to control these settings.
+
+There are also new functions for running JAGS models remotely on Apple Xgrid distributed computing clusters, as well as functions for running arbitrary code over Xgrid.  A BASH shell script called mgrid which extends the functionality of the base Apple Xgrid software is also now included, but needs to be installed manually if required.
+
+The locally specified temporary directory is now used rather than the working directory if tmpdir=TRUE (default).  Any temporary files created are always deleted even if the process is killed by sigterm etc.
+
+If keep.jags.files then the jags directory is copied to the working directory with a unique filename based on the name 'runjagsfiles'
+
+In new_unique if the suffix supplied does not start with '.' one is now automatically prepended
+
+(auto)run.jags can now take inits as named lists or a list of named lists
+
+(auto)run.jags now returns a named list as end.state rather than a dump.format string
+
+new_unique now has a touch option (default TRUE) which creates the named directory (if new option type=='d') or file (if type=='f)
+
+/usr/local/bin/jags now examined for JAGS if popen=TRUE
+
+
+BUG FIXES
+
+The densityplot and traceplot returned by (auto)run.jags now only return one plot per variable, rather than two with one printed over the top of the other.  The 'plotindpages' class is also now documented in the help files for run.jags/autorun.jags under the values for trace and density.
+
+Popen=TRUE is now more accurate for testjags
+
+Bug fixed in read.winbugs that failed to identify separate variables specified on the same line
+
+Many other miscellaneous code tweaks and bug fixes.
+
+
+
+Version 0.9.5
+
+NEW FEATURES
+
+The default value of collapse.chains in the combine.mcmc function is now to automatically collapse the chains if a single mcmc object is provided, and not otherwise.
+
+The data block returned by read.winbugs is now returned within a 'data{}' block for consistency with the model block.
+
+Data blocks are now passed directly to JAGS rather than being interpreted to allow use of iterative loops etc.
+
+The autorun.jags function now has a keep.jags.files option similar to run.jags.
+
+The (auto)run.jagsfile and read.winbugs functions are now able to differentiate data that should be passed to jags in the model code from data that should be passed as data.  Substantial parts of the read.winbugs function were modified to achieve this, so some behaviours may be slightly different.  The relevant help files have also been updated.
+
+
+BUG FIXES
+
+The summary statistics returned by run.jags and autorun.jags now report the correct number of chains.
+
+Bug fixed in run.jags that would cause an error when calculating summary statistics with only 1 chain
+
+Citation information updated for compatibility with R version 2.10
+
+
+Version 0.9.4
+
+NEW FEATURES
+
+dump.format now checks for '.RNG.name' and double quotes the value if not already double quoted
+
+Help files updated to explain how to explicitly control the random number generators in JAGS
+
+
+BUG FIXES
+
+Hideous bug fixed in combine.mcmc that prevented 3 or more objects being combined correctly
+
+timestring now rounds the time in seconds to 0.1 seconds (more consistent with other units)
+
+Bug fixed in combine.mcmc that prevented thinning being applied correctly if the objects were already thinned; help page updated to better explain the results of thinning chains that are already thinned
+
+Bug fixed that could cause autorun.jags to update only a small number of iterations to improve convergence if the model ran very slowly the first time
+
+Bug fixed in find.parameters that could cause problems when an init/data list with more parameters than needed was provided
+
+Bug fixed in find.parameters that could result in the output list being formatted wrongly causing dump.format to return an error
+
+Bug fixed that could prevent re-use of existing chains in run.jags
+
+Check added to make sure dev.new exists before calling it for compatibility with older (Linux) versions of R
+
+
+Version 0.9.3
+
+NEW FEATURES
+
+Chains can now be combined using combine.mcmc (new option collapse.chains)
+
+Thinning of chains in JAGS is now supported in autorun.jags and run.jags via a new thin option
+
+autorun.jags and run.jags now also return a value for 'thin' representing the thin amount of the chains in JAGS
+
+Usage of external JAGS modules is now supported, including the DIC module
+
+New options for monitor.deviance, monitor.popt, and monitor.pd now available
+
+Explanation for summary not calculated now returned when psrf not being calculated
+
+autorun.jags now checks that there is sufficient memory available to store all values of an MCMC chain before calling the simulation
+
+plot is now default TRUE in autorun.jags and run.jags
+
+autorun.jags now thins chains before calculating summary statistics
+
+New option for keeping MCMC files in run.jags added
+
+The plots from autorun.jags and run.jags are now done using a print method which should be more efficient
+
+Summary statistics are now taken from the combined chains
+
+
+BUG FIXES
+
+Fixed a bug causing convergence extensions to go beyond max.time in autorun.jags(file)
+
+Commas added between 'seealso' items in help files
+
+Fixed bug in autorun.jags that could cause a crash when the multivariate PRSF could not be calculated
+
+Bugs preventing the correct value for jags being passed from autorun.jags to run.jags now fixed
+
+Occasional bug in calculating the Gelman-Rubin statistic fixed
+
+The required sample size is now calculated taking into account the number of chains correctly
+
+Bug causing the calculated time remaining to be wrong when the simulation did not converge quickly now fixed
+
+
+Version 0.9.2
+
+NEW FEATURES
+
+autorun.jags and run.jags now produce trace and density plots of all monitored variables (if plots==TRUE), which are returned as $trace[[variable]] and $density[[variable]]
+
+Multiple model files or strings (or a mixture) can now be specified as a character vector to read.winbugs
+
+User can now change options for the Raftery and Lewis diagnostic via 'raftery.options' for autorun.jags(file)
+
+When a simulation is aborted due to crashes or unexpected results from autorun.jags(file), an error message is now printed as well as returned
+
+combine.mcmc will now ignore a request to return more samples than provided rather than returning an error
+
+combine.mcmc can now accept a single mcmc list or mcmc object to be thinned (or returned unchanged if thin=1)
+
+autodata and autoinits can now be specified as a vector (or array) of missing data
+
+
+BUG FIXES
+
+Bug fixed that could result in chain values being returned as infinite causing an error with the gelman rubin statistic if normalise==TRUE
+
+Bug fixed in combine.mcmc that resulted in mcmcchains with only 1 variable causing an error
+
+Bug fixed that resulted in models being specified to (auto)run.jagsfile being ignored
+
+Errors resulting from use of 'summary' in autorun.jags and run.jags now suppressed correctly
+
+Efficiency of the normalise.mcmc function dramatically increased for chains with many variables
+
+Time limit in autorun.jags now does not include time spent waiting for dialogs to be answered, and is only used for simulation extensions to improve convergence (simulation is always extended for sample size if necessary)
+
+Bug fixed that could result in extended chains with non-stochastic monitored nodes causing an error in autorun.jags
+
+Bug fixed that resulted in crashed datasets always causing autorun.jags to return an error
+
+Bug fixed that prevented parameters specified as functions inside the datalist or initlist lists (or functions) being interpreted correctly
+
+
+Version 0.9.1
+
+NEW FEATURES
+
+Number of failures to calculate the gelman-rubin statistic reduced by:
+Checking for monitored variables that are not stochastic and remove from inclusion in gelman-rubin statistic
+Option to improve normality of posterior distributions before estimating the gelman rubin statistic in run.jags and autorun.jags (normalise.mcmc option).
+New function to catch instances where gelman.diag fails for multiple parameters and calcualte the psrf individually (without multivariate psrf)
+
+autorun.jags and run.jags now returns 'psrf.target' as part of $psrf
+
+psrf.target added as an option to run.jags the same as autorun.jags
+
+NAMESPACE file used now
+
+Output of read.winbugs is now consistent - if data or initial value blocks are not found their values are returned as NA
+
+Warning that JAGS under Windows may be slower than Unix now removed
+
+
+BUG FIXES
+
+Bug fixed in combine.mcmc that could prevent thinning being performed as specified
+
+Bug fixed in autorun.jags that resulted in the output chain being replicated and combined together
+
+Bug fixed in run.jagsfile that caused problems when monitors weren't supplied in the model file
+
+Typo fixed in run.jags that caused simulations with only 1 chain to print a converged message
+
+Behaviour changed in run.jags so that a warning is printed if initial values are not the right length
+
+Bug fixed in run.jagsfile (findparams) that caused data containing any missing data to not be found
+
+autorun.jags now recalculates the gelman rubin statistic on the final chains and prints a warning if the chains have fallen out of convergence
+
+Bug fixed in run.jags that caused issues with calculating the Gelman Rubin statistic when the number of expected monitored nodes was not equal to the number of actual monitored nodes
+
+Bug fixed in autorun.jags and run.jags that caused the gelman rubin diagnostic to be calculated on the second half of the chain only
+
+For run.jagsfile, when n.chains was not consistent with length of inits it was ignored.  Now the length of inits is altered to match n.chains, with a warning.
+
+Bug fixed in new_unique that caused the counter to be added and not incremented if a file ending with '_1' existed already
+
+Delay after reading coda files partially replaced with flush.console() for Windows/Aqua, and removed for other OS types
+
+Bug fixed in autorun.jags that could produce a warning message if the chains were extended for convergence
+
+Bug fixed in run.jags that resulted in an error if the convergence calculation failed
+
+autorun.jags modified to attempt to reduce some of the strange errors and warnings sometimes encountered
+
+
+
+Version 0.9.0
+
+New to version 0.9; separated from bayescount to form 2 distinct packages.
+For version history of the package before 0.9 see the version_history file for bayescount.
