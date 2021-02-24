@@ -325,7 +325,7 @@ summary.runjagsstudy <- function(object,...){
 }
 
 #' @rdname runjags.printmethods
-#' @method plot runjagsstudy
+#' @export
 plot.runjagsstudy <- function(x, ...){
 	stop('There is currently no plot method assocaited with the runjagsstudy class', call.=FALSE)
 }

@@ -1,7 +1,7 @@
 #' @title Extract Any Models, Data, Monitored Variables or Initial Values As Character Vectors from a JAGS or WinBUGS Format Textfile
 #' @name read.jagsfile
 #' @aliases read.jagsfile read.winbugs read.WinBUGS read.JAGSfile
-
+#'
 #' @description
 #' Read a user specified BUGS or JAGS textfile or character variable and extract any models, data, monitored variables or initial values as character vectors.  Used by (auto)run.jags to interpret the input file(s) or strings.  This function is more likely to be used via \code{\link{run.jags}} where the model specified to run.jags is the path used by this function.  The read.winbugs function is an alias to read.jagsfile.
 #'
@@ -45,16 +45,16 @@
 #' @param file either a relative or absolute path to a textfile (including the file extension) containing a model in the JAGS language and possibly monitored variable names, data and/or initial values, or a character string of the same.  May also be a vector of paths to different text files, possibly separately containing the model, data and intitial values.  No default.  The model must be started with the string 'model\{' and ended with '\}' on new lines.  Data must be similarly started with 'data\{', monitored variables with 'monitor\{', and initial values as 'inits\{', and all ended with '\}'.  Seperate variables in such blocks must be separated by a line break.  If multiple models are found, all but the first one are ignored with a warning.  Multiple data blocks and monitor blocks are combined, multiple inits blocks are used for different chains.  Monitors may also be given using the phrase '#monitor# variable' within the model block, in which case 'variable' is added to the list of monitored variables found in the monitor block(s).  The use of automatically generated data and initial values is also supported using similar syntax, with '#data# variable' for automatically generated data variables or '#inits# variable' for automatically generated initial value variables in which case 'variable' is used as data or initial values with a value taken by \code{\link{run.jags}} from datalist, initlist or R objects as appropriate.  '#inits#', '#data#' and '#monitor#' statements can appear on the same line as model code, but no more than one of these statements should be used on the same line.  Examples of acceptable model syntax are given below.
 #'
 #' @keywords methods
-
+#'
 #' @return
 #' A named list of elements required to compile a model.  These can be used to create a call to \code{\link{run.jags}}, but it would be more usual to call this function directly on the model file.
 #'
 #' @seealso
 #' \code{\link{run.jags}} and \code{\link{write.jagsfile}} for the reverse operation, and possibly an example of the formatting allowed
-
+#'
 #' @references
 #' Lunn D, Jackson C, Best N, Thomas A, Spiegelhalter D (2012). The BUGS book: A practical introduction to Bayesian analysis. CRC press; and Matthew J. Denwood (2016). runjags: An R Package Providing Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS. Journal of Statistical Software, 71(9), 1-25. doi:10.18637/jss.v071.i09
-
+#'
 #' @examples
 #' # ALL SYNTAX GIVEN BELOW IS EQUIVALENT
 #'
@@ -63,8 +63,8 @@
 #' # file).  For compatibility with WinBUGS, the use of list() to enclose
 #' # data and initial values is allowed and ignored, however all seperate
 #' # variables in the data and inits blocks must be seperated with a line
-#' # break (commas or semicolons before linebreaks are ignored).  'data\{'
-#' # and 'inits\{' must also be added to WinBUGS textfiles so that the
+#' # break (commas or semicolons before linebreaks are ignored).  data{ ... }
+#' # and inits{ ... } must also be added to WinBUGS textfiles so that the
 #' # function can seperate data from initial values.  Iterative loops are
 #' # allowed in data blocks but not in init blocks.  See also the differences
 #' # in JAGS versus WinBUGS syntax in the JAGS help file.
@@ -88,18 +88,22 @@
 #' }
 #'
 #' data{
-#' list(Count = c(1,2,3,4,5,6,7,8,9,10),
-#' N = 10)
+#' list(
+#'  Count = c(1,2,3,4,5,6,7,8,9,10),
+#'  N = 10
+#'  )
 #' }
 #'
 #' inits{
 #' list(
-#' 	mean = 1)
+#' 	mean = 1
+#' 	)
 #' }
 #'
 #' inits{
 #' list(
-#' 	mean = 100)
+#' 	mean = 100
+#' 	)
 #' }
 #'
 #' "

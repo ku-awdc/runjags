@@ -32,7 +32,7 @@
 #' @param convertfactors option to automatically convert any factor variables to numeric (otherwise the presence of factors will create an error if checkvalid==TRUE).
 NULL
 
-#' @rdname list.dump.format
+#' @rdname dump.list.format
 #' @export
 dump.format <- function(namedlist=list(), checkvalid=TRUE, convertfactors=TRUE){
 
@@ -98,7 +98,7 @@ dump.format <- function(namedlist=list(), checkvalid=TRUE, convertfactors=TRUE){
 }
 
 
-#' @rdname list.dump.format
+#' @rdname dump.list.format
 #' @export
 list.format <- function(data=character(), checkvalid=TRUE){
 

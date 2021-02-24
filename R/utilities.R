@@ -644,6 +644,7 @@ getdefaultmethodoptions <- function(){
 
 #' Options for the runjags package
 #'
+#' @name runjags.options
 #' @aliases runjags.options runJAGS.options runjags.getOption runJAGS.getOption
 #'
 #' @description
@@ -762,6 +763,7 @@ getdefaultmethodoptions <- function(){
 #' keep these, they will have to be copied manually.
 #'
 #' \item \bold{debug} - display internal debugging output.
+#' }
 #'
 #' @param name the name of the option to get the current value of - for a  list of available options, see details below.
 #' @param ... named option(s) to change - for a list of available options, see details below.

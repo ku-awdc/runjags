@@ -17,14 +17,14 @@
 #' \code{\link{run.jags}} for fixed run length models, \code{\link{read.winbugs}} for details of model specification options, \code{\link{read.jagsfile}} and \code{\link{summary.runjags}} for details on available methods for the returned models, and \code{\link{run.jags.study}} for examples of simulation studies using automated model control provided by autorun.jags
 
 #' @examples
-#' # Run a model to calculate the intercept and slope of the expression 
+#' # Run a model to calculate the intercept and slope of the expression
 #' # y = m x + c, assuming normal observation errors for y:
-#' 
+#'
 #' # Simulate the data
 #' N <- 100
 #' X <- 1:N
 #' Y <- rnorm(N, 2*X + 10, 1)
-#' 
+#'
 #' # Model in the JAGS format
 #' model <- "model {
 #' for(i in 1 : N){
@@ -34,24 +34,24 @@
 #' m ~ dunif(-1000,1000)
 #' c ~ dunif(-1000,1000)
 #' precision ~ dexp(1)
-#' 
+#'
 #' #data# N, X, Y
 #' #inits# m, c, precision
 #' }"
-#' 
+#'
 #' # Initial values to be used:
 #' m <- list(-10, 10)
 #' c <- list(-10, 10)
 #' precision <- list(0.1, 10)
 #' \dontrun{
 #' # Run the model using rjags with a 5 minute timeout:
-#' results <- autorun.jags(model=model, max.time="5m", 
+#' results <- autorun.jags(model=model, max.time="5m",
 #' monitor=c("m", "c", "precision"), n.chains=2,
 #' method="rjags")
-#' 
+#'
 #' # Analyse standard plots of the results to assess convergence:
 #' plot(results)
-#' 
+#'
 #' # Summary of the monitored variables:
 #' results
 #'
@@ -96,7 +96,7 @@
 
 #' @param modules a character vector of external modules to be loaded into JAGS, either as the module name on its own or as the module name and status separated by a space, for example 'glm on'.
 
-#' @param factories a character vector of factory modules to be loaded into JAGS.  Factories should be provided in the format '<facname> <factype> <status>' (where status is optional), for example: factories='mix::TemperedMix sampler on'.  You must also ensure that any required modules are also specified (in this case 'mix').
+#' @param factories a character vector of factory modules to be loaded into JAGS.  Factories should be provided in the format '\<facname\> \<factype\> \<status\>' (where status is optional), for example: factories='mix::TemperedMix sampler on'.  You must also ensure that any required modules are also specified (in this case 'mix').
 
 #' @param summarise should summary statistics be automatically calculated for the output chains?  Default TRUE (but see also ?runjags.options -> force.summary).
 
@@ -122,7 +122,7 @@
 
 #' @param method the method with which to call JAGS; probably a character vector specifying one of 'rjags', 'simple', 'interruptible', 'parallel', 'rjparallel', or 'snow'. The 'rjags' and 'rjparallel' methods run JAGS using the rjags package, whereas other options do not require the rjags package and call JAGS as an external executable.  The advantage of the 'rjags' method is that the model will not need to be recompiled between successive calls to extend.jags, all other methods require a re-compilation (and adaptation if necessary) every time the model is extended.  Note that the 'rjparallel' and 'snow' methods may leave behind zombie JAGS processes if the user interrupts the R session used to start the simulations - for this reason the 'parallel' method is recommended for interactive use with parallel chains. The 'parallel' and 'interruptible' methods for Windows require XP Professional, Vista or later (or any Unix-alike).  For more information refer to the userguide vignette.
 
-#' @param method.options a deprecated argument currently permitted for backwards compatibility, but this will be removed from a future version of runjags.  Pass these arguments directly to autorun.jags or autoextend.jags. 
+#' @param method.options a deprecated argument currently permitted for backwards compatibility, but this will be removed from a future version of runjags.  Pass these arguments directly to autorun.jags or autoextend.jags.
 
 #' @param ... summary parameters to be passed to \code{\link{add.summary}}, and/or additional options to control some methods including n.sims for parallel methods, cl for rjparallel and snow methods, remote.jags for snow, and by and progress.bar for the rjags method.
 NULL
@@ -134,7 +134,7 @@ NULL
 #' @rdname autorun.jags
 #' @export
 autorun.jags <- function(model, monitor = NA, data=NA, n.chains=NA, inits = NA, startburnin = 4000, startsample = 10000, adapt=1000, datalist=NA, initlist=NA, jags = runjags.getOption('jagspath'), silent.jags = runjags.getOption('silent.jags'), modules=runjags.getOption('modules'), factories=runjags.getOption('factories'), summarise = TRUE, mutate = NA, thin = 1, thin.sample = FALSE, raftery.options = list(), crash.retry=1, interactive=FALSE, max.time=Inf, tempdir=runjags.getOption('tempdir'), jags.refresh=0.1, batch.jags=silent.jags, method=runjags.getOption('method'), method.options=list(), ...){
-	
+
 	listwarn <- FALSE
 	if(!identical(datalist, NA)){
 		listwarn <- TRUE
@@ -150,7 +150,7 @@ autorun.jags <- function(model, monitor = NA, data=NA, n.chains=NA, inits = NA, 
 	}
 	if(listwarn)
 		warning('The datalist and initlist arguments are deprecated and will be removed from a future version of runjags - please use the data and inits arguments instead')
-	
+
 	# If data and inits are NA then grab the parent frame for first identification of variables:
 	if(identical(data, NA))
 		data <- parent.frame()
@@ -159,25 +159,25 @@ autorun.jags <- function(model, monitor = NA, data=NA, n.chains=NA, inits = NA, 
 
 	if(!identical(method.options, list()))
 		swcat('Note:  the method.options argument is deprecated and will be removed from a future release of runjags\n')
-		
+
 	method <- getrunjagsmethod(method)
 	obj <- setup.jagsfile(model=model, n.chains=n.chains, data=data, inits=inits, monitor=monitor, modules=modules, factories=factories, jags=jags, call.setup=TRUE, method=method, mutate=mutate)
-	
+
 	res <- autoextend.jags(runjags.object=obj, add.monitor=character(0), drop.monitor=character(0), drop.chain=numeric(0), combine=FALSE, startburnin=startburnin, startsample=startsample, adapt=adapt, jags=jags, silent.jags=silent.jags, summarise=summarise, thin=thin, thin.sample=thin.sample, raftery.options=raftery.options, crash.retry=crash.retry, interactive=interactive, max.time=max.time, tempdir=tempdir, jags.refresh=jags.refresh, batch.jags=batch.jags, method=method, method.options=method.options, ...)
-	
+
 	return(res)
 }
-	
+
 
 #' @rdname autorun.jags
 #' @export
 autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=character(0), drop.chain=numeric(0), combine=length(c(add.monitor,drop.monitor,drop.chain))==0, startburnin = 0, startsample = 10000, adapt=1000, jags = NA, silent.jags = NA, summarise = TRUE, thin = NA, thin.sample = FALSE, raftery.options = list(), crash.retry=1, interactive=FALSE, max.time=Inf, tempdir=runjags.getOption('tempdir'), jags.refresh=NA, batch.jags=NA, method=NA, method.options=NA, ...){
 
 	runjags.object <- checkvalidrunjagsobject(runjags.object)
-	
+
 	# We get unhelpful error messages otherwise:
 	if(identical(NA, method))
-		method <- runjags.object$method	
+		method <- runjags.object$method
 	if(identical(NA, method.options) || identical(list(), method.options)){
 		method.options <- runjags.object$method.options
 	}else{
@@ -206,24 +206,24 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 		jags.refresh <- runjags.object$method.options$jags.refresh
 	if(identical(NA, batch.jags))
 		batch.jags <- runjags.object$method.options$batch.jags
-	
+
 	# We may be passed some unevaluated function arguments so evaluate everything here:
 	argnames <- names(formals(autoextend.jags))
 	argnames <- argnames[argnames!='...']
 	for(i in 1:length(argnames)){
-		success <- try(assign(argnames[i], eval(get(argnames[i]))), silent=TRUE)		
+		success <- try(assign(argnames[i], eval(get(argnames[i]))), silent=TRUE)
 		if(inherits(success, 'try-error')){
 			stop(paste("object '", strsplit(as.character(success),split="'",fixed=TRUE)[[1]][2], "' not found", sep=""), call.=FALSE)
 		}
 	}
-	
+
 	# The summary parameters are checked by extend.jags and returned
-	
+
 	starttime <- Sys.time()
-	
+
 	# It's not clear which jags files to keep for autorun functions so disable:
 	keep.jags.files <- FALSE
-	
+
 	method <- getrunjagsmethod(method)
 	# Can't use background methods:
 	if(method %in% c("background","bgparallel"))
@@ -240,23 +240,23 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 
 	if(thin.sample==TRUE) thin.sample <- startsample
 	if(thin.sample==FALSE) thin.sample <- Inf
-	
+
 	if(startsample!=0 && startsample < 4000)
 		stop("A startsample of 4000 or more iterations (after thinning) is required to complete the Raftery and Lewis's diagnostic", call.=FALSE)
-	
+
 	# reftery.diag options are passed as a list or just FALSE (or list(FALSE)):
 	if(identical(raftery.options, TRUE))
 		raftery.options <- list()
 	if(inherits(raftery.options,'list') && length(raftery.options)==1 && length(raftery.options[[1]])==1 && raftery.options[[1]]==FALSE){
 		raftery.options <- FALSE
 	}
-	
+
 	doraftery <- FALSE
 	if(!identical(raftery.options, FALSE)){
 		doraftery <- TRUE
-		if(!is.list(raftery.options)) 
+		if(!is.list(raftery.options))
 			stop("Options to raftery.diag must be provided as a named list")
-		if(any(names(raftery.options)=="data")) 
+		if(any(names(raftery.options)=="data"))
 			warning("The 'data' argument specified in raftery.options was ignored")
 		raftery.args <- formals(raftery.diag)
 		raftery.names <- names(raftery.args)
@@ -267,61 +267,61 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 				if(any(raft.opt.names[i]==raftery.names)){
 					raftery.args[raft.opt.names[i]] <- raftery.options[i]
 				}else{
-					if(raft.opt.names[i]=="") stop("All arguments to raftery.diag must be named") else stop(paste(raft.opt.names[i], " is not a recognised argument to raftery.diag", sep=""))	
-				}	
-			}	
+					if(raft.opt.names[i]=="") stop("All arguments to raftery.diag must be named") else stop(paste(raft.opt.names[i], " is not a recognised argument to raftery.diag", sep=""))
+				}
+			}
 
 		}
-		if(startsample!=0){	
+		if(startsample!=0){
 			success <- try({
 			raftery.args$data <- mcmc(1:startsample)
 			class(raftery.args) <- "list"
 			test <- do.call("raftery.diag", raftery.args)
-			})	
-			if(inherits(success, 'try-error')) stop("The arguments specified for raftery.diag are not valid")	
+			})
+			if(inherits(success, 'try-error')) stop("The arguments specified for raftery.diag are not valid")
 			if(test$resmatrix[1]=="Error") stop(paste("You need a startsample size of at least", test$resmatrix[2], "with the values of q, r and s specified for the raftery.options", sep=" "))
 		}
 	}
-	
-	
+
+
 	# Get the maximum timeout:
 	if(is.numeric(max.time)){
 		max.time <- max.time #DEFAULT NOW SECONDS * 60
 	}else{
 		if(!is.character(max.time))
 			stop("max.time must be either a numeric or character value")
-		
+
 		time.unit <- tolower(gsub('[^[:alpha:]]', '', max.time))
 		if(time.unit=='secs')
 			time.unit <- 'seconds'
 		if(time.unit=='mins')
-			time.unit <- 'minutes'		
+			time.unit <- 'minutes'
 		if(time.unit%in%c('hrs','hr'))
-			time.unit <- 'hours'		
+			time.unit <- 'hours'
 		possunits <- c('seconds','minutes','hours','days','weeks')
 		matched.unit <- possunits[pmatch(time.unit, possunits)]
 		if(is.na(matched.unit))
 			stop(paste("Unrecognised unit of maximum time: '", time.unit, "'", sep=''))
-		
+
 		multiplier <- c(seconds=1, minutes=60, hours=60*60, days=24*60*60, weeks=24*60*60*7)[matched.unit]
-		
+
 		num.time <- suppressWarnings(as.numeric(gsub('[^[:digit:][:punct:]]', ' ', max.time)))
 		if(is.na(num.time))
 			stop(paste('Unable to extract a number from the value of "', max.time, '" specified to max.time', sep=''))
-		
+
 		max.time <- num.time * multiplier
 		names(max.time) <- NULL
 	}
-	
+
 	if(runjags.getOption('debug')){
 		if(runjags.getOption('debug')>=10)
 			print(max.time)
 	}
-	
-	
+
+
 	newlines <- if(silent.jags) "\n" else "\n\n"
-	
-	
+
+
 	initialtimetaken <- runjags.object$timetaken
 
 	# First run an extend.jags call with sample=0 - this deals with the add monitor and combine options, as well assummary.arg, method.options etc and checks JAGS etc etc - set silent.jags to TRUE though:
@@ -332,12 +332,12 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 	# Catch where we want a model with no updates and return:
 	if(startsample==0)
 		return(runjags.object)
-	
+
 	summaryargs <- runjags.object$summary.pars
 	psrf.target <- summaryargs$psrf.target
 	method.options <- runjags.object$method.options
-	
-	swcat("\nAuto-run JAGS",newlines,sep="")	
+
+	swcat("\nAuto-run JAGS",newlines,sep="")
 
 	# This function call gave the necessary initial value and data etc warnings, so make sure we don't get them again:
 	currentinitwarn <- runjags.getOption('inits.warning')
@@ -347,25 +347,25 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 	runjags.options(inits.warning=FALSE)
 	runjags.options(nodata.warning=FALSE)
 	runjags.options(partial.import=FALSE)
-	
+
 	if(startsample > runjags.object$sample){
-		
+
 		swcat("Running a pilot chain...\n")
-		
+
 		# runjags.object$sample and $burnin may be 0:
 		initialsample <- startsample - runjags.object$sample
-		
+
 		# Run for some more iterations:
 		additional <- extend.jags(runjags.object, combine=runjags.object$sample>0, burnin=startburnin, sample=initialsample, adapt=adapt, jags = jags, silent.jags = silent.jags, summarise = FALSE, thin = thin, keep.jags.files = keep.jags.files, tempdir=tempdir, jags.refresh=jags.refresh, batch.jags=batch.jags)
 		if(inherits(additional,'runjagsbginfo')) stop("The method specified to autorun.jags and autoextend.jags must run JAGS and wait for the results (ie the background method, and possibly other user specified methods, cannot be used)")
-				
+
 		if(niter(additional$mcmc) < initialsample){
 			repeat{
 				time.taken <- timestring(starttime, Sys.time(), units="secs", show.units=FALSE)
 				if(time.taken > max.time | crash.retry==0){
 					stop("The simulation exceeded the number of crashes allowed by crash.retry and so was aborted", call.=FALSE)
 				}
-				swcat("\nThe simulation crashed; retrying...",newlines,sep="")			
+				swcat("\nThe simulation crashed; retrying...",newlines,sep="")
 				crash.retry <- crash.retry - 1
 
 				additional <- extend.jags(runjags.object, combine=TRUE, burnin=startburnin, sample=initialsample, adapt=adapt, jags = jags, silent.jags = silent.jags, summarise = FALSE, thin = thin, keep.jags.files = keep.jags.files, tempdir=tempdir, jags.refresh=jags.refresh, batch.jags=batch.jags)
@@ -373,27 +373,27 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 				if(niter(additional$mcmc) == initialsample) break
 			}
 		}
-		
+
 		swcat("\n")
-	
+
 	}else{
 		additional <- runjags.object
 	}
 	firsttimetaken = time.taken <- timestring(starttime, Sys.time(), units="secs", show.units=FALSE)
 
 	swcat("Calculating the Gelman-Rubin statistic for ", nvar(additional$mcmc), " variables....\n", sep="")
-	
+
 	suppressWarnings(success <- try(convergence <- safe.gelman.diag(normalise.mcmcfun(additional$mcmc, normalise=summaryargs$normalise.mcmc, warn=FALSE, remove.nonstochastic = TRUE)$mcmc, transform=FALSE, autoburnin=FALSE), silent=TRUE))
 	if(inherits(success, 'try-error')){
 		stop("An error occured while calculating the Gelman-Rubin statistic.  Check that different chains have not been given the same starting values and random seeds, and that there is at least one monitored stochastic variable.",call.=FALSE)
 	}
-	
+
 	convergence <- c(convergence, psrf.target=psrf.target)
 	class(convergence) <- "gelmanwithtarget"
-	
+
 	n.params <- nrow(convergence$psrf)
 	n.iters <- niter(additional$mcmc)
-	
+
 	if(n.params==1) convergence$mpsrf <- convergence$psrf[1,1]
 	unconverged <- 0
 
@@ -412,59 +412,59 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 		mpsrfstring <- try(paste(" (multi-variate psrf = ", round(convergence$mpsrf, digits=3), ")", sep=""), silent=TRUE)
 		if(inherits(mpsrfstring,'try-error'))
 			mpsrfstring <- " (Unable to calculate the multi-variate psrf)"
-			
+
 		swcat("The Gelman-Rubin statistic was above ", psrf.target, " for ", unconverged, " parameter", if(unconverged>1) "s", " after ", additional$burnin+additional$sample, " iterations taking ", timestring(additional$timetaken), " ", mpsrfstring, ".  This may indicate poor convergence.\n", sep="")
 		time.taken <- timestring(starttime, Sys.time(), units="secs", show.units=FALSE)
 		stop <- time.taken > max.time
-			
+
 		if(interactive){
 			time.taken <- timestring(starttime, Sys.time(), units="secs", show.units=FALSE)
 			stop <- !ask("Extend the simulation to attempt to improve convergence?")
 			starttime <- Sys.time()-time.taken
 		}
 		if(stop){
-			
+
 			if(!interactive)
 				swcat("Maximum time limit exceeded; chains unconverged.  Try restarting the simulation using the end state values of the chains provided.\n")
-				
+
 			swcat("Calculating autocorrelation and summary statistics...\n")
-			
+
 			timetaken <- (difftime(Sys.time(), starttime, units='secs') + initialtimetaken)
-	
+
 			if(niter(additional$mcmc)>thin.sample){
 				additional$mcmc <- combine.mcmc(additional$mcmc, collapse.chains=FALSE, return.samples=thin.sample)
 				if(!identical(additional$pd, NA)) additional$pd <- combine.mcmc(additional$pd, collapse.chains=FALSE, return.samples=thin.sample)
 			}
-	
+
 			combinedoutput <- makerunjagsobject(additional, summarise=summarise, summaryargs=summaryargs, burnin=additional$burnin, sample=niter(additional$mcmc), thin=thin, model=runjags.object$model, data=runjags.object$data, monitor=runjags.object$monitor, noread.monitor=runjags.object$noread.monitor, modules=runjags.object$modules, factories=runjags.object$factories, response=runjags.object$response, residual=runjags.object$residual, fitted=runjags.object$fitted, method=runjags.object$method, method.options=runjags.object$method.options, timetaken=timetaken)
-				
+
 			swcat("Returning UNCONVERGED simulation results\n\n")
 			return(combinedoutput)
 		}
-		
+
 		finishconv <- FALSE
 		swcat("Extending the simulation to attempt to improve convergence...\n")
-						
+
 		while(!finishconv){
-			
+
 			# Run for some more iterations:
 			extended <- extend.jags(additional, combine=FALSE, burnin=0, sample=startsample, adapt=adapt, jags = jags, silent.jags = silent.jags, summarise = FALSE, thin = thin, keep.jags.files = keep.jags.files, tempdir=tempdir, jags.refresh=jags.refresh, batch.jags=batch.jags)
-					
+
 			if(niter(extended$mcmc) < startsample){
 				repeat{
 					time.taken <- timestring(starttime, Sys.time(), units="secs", show.units=FALSE)
 					if(time.taken > max.time | crash.retry==0){
 						stop("The simulation exceeded the number of crashes allowed by crash.retry and so was aborted", call.=FALSE)
 					}
-					swcat("\nThe simulation crashed; retrying...",newlines,sep="")			
+					swcat("\nThe simulation crashed; retrying...",newlines,sep="")
 					crash.retry <- crash.retry - 1
-					
+
 					extended <- extend.jags(additional, combine=FALSE, burnin=0, sample=startsample, adapt=adapt, jags = jags, silent.jags = silent.jags, summarise = FALSE, thin = thin, keep.jags.files = keep.jags.files, tempdir=tempdir, jags.refresh=jags.refresh, batch.jags=batch.jags)
-					
+
 					if(niter(extended$mcmc) == startsample) break
 				}
 			}
-			
+
 			additional <- extended
 
 			swcat("Calculating the Gelman-Rubin statistic for ", nvar(additional$mcmc), " variables....\n", sep="")
@@ -472,15 +472,15 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 			if(inherits(success, 'try-error')){
 				stop("An error occured while calculating the Gelman-Rubin statistic.  Check that different chains have not been given the same starting values and random seeds, and that there is at least one stochastic monitored variable.", call.=FALSE)
 			}
-				
+
 			convergence <- c(convergence, psrf.target=psrf.target)
 			class(convergence) <- "gelmanwithtarget"
-				
-			n.params <- nrow(convergence$psrf)				
-				
+
+			n.params <- nrow(convergence$psrf)
+
 			unconverged <- 0
 			if(n.params==1) convergence$mpsrf <- convergence$psrf[1,1]
-			
+
 			for(j in 1:n.params){
 				param.conv <- convergence$psrf[j, 1]
 				if(!is.na(param.conv)){
@@ -489,29 +489,29 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 					}
 				}else{
 					warning(paste("The Gelman-Rubin statistic for '", varnames(additional$mcmc)[j], "' could not be calculated", sep=""))
-				}	
+				}
 			}
-									
+
 			mpsrfstring <- try(paste(" (multi-variate psrf = ", round(convergence$mpsrf, digits=3), ")", sep=""), silent=TRUE)
 			if(inherits(mpsrfstring,'try-error'))
 				mpsrfstring <- " (Unable to calculate the multi-variate psrf)"
-				
+
 			if(unconverged > 0){
 				swcat("The Gelman-Rubin statistic was still above ", psrf.target, " for ", unconverged, " parameter", if(unconverged>1) "s", " after ", additional$burnin+additional$sample, " iterations taking ", timestring(additional$timetaken), " ", mpsrfstring, ".\n", sep="")
-				
+
 				stop <- difftime(Sys.time(), starttime, units='secs') > max.time
-				
+
 				if(interactive){
 					stop <- !ask("Extend the simulation to attempt to improve convergence?")
 					starttime <- Sys.time()
 				}
 				if(stop){
-					
+
 					if(!interactive)
 						swcat("Maximum time limit exceeded; chains still unconverged.  Try restarting the simulation using the end state values of the chains provided.\n")
-					
+
 					swcat("Calculating autocorrelation and summary statistics...\n")
-		
+
 					timetaken <- (difftime(Sys.time(), starttime, units='secs') + initialtimetaken)
 
 					if(niter(additional$mcmc)>thin.sample){
@@ -520,72 +520,72 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 					}
 
 					combinedoutput <- makerunjagsobject(additional, summarise=summarise, summaryargs=summaryargs, burnin=additional$burnin, sample=niter(additional$mcmc), thin=thin, model=runjags.object$model, data=runjags.object$data, monitor=runjags.object$monitor, noread.monitor=runjags.object$noread.monitor, modules=runjags.object$modules, factories=runjags.object$factories, response=runjags.object$response, residual=runjags.object$residual, fitted=runjags.object$fitted, method=runjags.object$method, method.options=runjags.object$method.options, timetaken=timetaken)
-			
+
 					swcat("Returning UNCONVERGED simulation results\n\n")
 					return(combinedoutput)
-												
+
 				}else{
 					swcat("Extending the simulation to attempt to improve convergence...\n")
 				}
-					
+
 			}else{
 				swcat(paste("The Gelman-Rubin statistic is now below ", psrf.target, " for all parameters\n", sep=""))
 				finishconv <- TRUE
 			}
 		}  # End of the while loop
-	
+
 	}else{
 		swcat(paste("The Gelman-Rubin statistic is below ", psrf.target, " for all parameters\n", sep=""))
-	}	
-	
-	
+	}
+
+
 	moreupdates <- 0
 	if(doraftery){
 		swcat("\nCalculating the necessary sample length based on the Raftery and Lewis's diagnostic...\n")
-			
+
 		success <- try({
 		raftery.args$data <- normalise.mcmcfun(additional$mcmc, normalise=FALSE, warn=FALSE, remove.nonstochastic = TRUE)$mcmc
 		class(raftery.args) <- "list"
 		raftery <- do.call("raftery.diag", raftery.args)
 		})
-	
+
 		if(inherits(success, 'try-error')) stop("An error occured while calculating the Raftery and Lewis's diagnostic",call.=FALSE)
 		if(raftery[[1]]$resmatrix[1]=="error") stop("Error", "An error occured while calculating the Raftery and Lewis diagnostic",call.=FALSE)
-	
+
 		# to correct for monitoring arrays and non-stochastic nodes:
 		newmonitor <- dimnames(raftery[[1]]$resmatrix)[[1]]
 		n.chains <- length(additional$end.state)
-	
+
 		dependance = burnin = sample <- matrix(ncol=n.chains, nrow=length(newmonitor), dimnames=list(dimnames(raftery[[1]]$resmatrix)[[1]], 1:n.chains))
-	
-		for(i in 1:n.chains){	
+
+		for(i in 1:n.chains){
 			dependance[,i] <- raftery[[i]]$resmatrix[,"I"]
 			burnin[,i] <- raftery[[i]]$resmatrix[,"M"]
 			sample[,i] <- raftery[[i]]$resmatrix[,"N"]
 		}
-	
+
 		dependancethreshold <- 3
-	
+
 	#	if(any(dependance > dependancethreshold) & killautocorr==FALSE){
 	#		swcat("IMPORTANT:  The sample size of monitored node(s) '", paste(dimnames(dependance)[[1]][apply(dependance, 1, function(x) if(any(x>dependancethreshold)) return(TRUE) else return(FALSE))], collapse="' & '"), "' have a high autocorrelation dependance in chain(s) ", paste(seq(1, n.chains)[apply(dependance, 2, function(x) if(any(x>dependancethreshold)) return(TRUE) else return(FALSE))], collapse= " & "), ".  Re-running the model with a different formulation or better initial values may help to reduce autocorrelation.\n", sep="")
 	#	}
-	
+
 		#### raftery.diag takes account of the chain thinning already, so we need to multiply the number of iterations done by the thinning to work out what we have left:
 		totalunthinnedperchain <- max(sample)/n.chains
 		moreupdates <- max(totalunthinnedperchain - (thin*niter(additional$mcmc)), 0) / thin
 		moreupdates <- ceiling(moreupdates)
-	
+
 		if(runjags.getOption('debug')){
 			if(runjags.getOption('debug')>=10)
 				print(raftery)
-		
+
 			swcat('Raftery diag:  maxsample=', max(sample), '/', thin, '=', max(sample)/thin, ', current=', niter(additional$mcmc), '*', n.chains, '=', niter(additional$mcmc)*n.chains, ', more=', moreupdates, '*', n.chains, '\n', sep='')
 
 		}
 	}
-	
+
 	if(moreupdates > 0){
-		
+
 		# There must be a better way to do this...
 		success <- try({
 			testmatrix <- matrix(nrow=(max(sample)/thin)*n.chains, ncol=length(varnames(additional$mcmc)))
@@ -594,14 +594,14 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 		if(inherits(success, 'try-error')){
 			stop(paste("The model needs to be run for a further ", moreupdates, " iterations.  This would create a vector too large to be read into R.  Try re-parameterising the model to reduce autocorrelation, using the thin option to reduce autocorrelation, or monitoring less variables.  The simulation can be extended using the return value provided.", sep=""), call.=FALSE)
 		}
-		
+
 		swcat("The model will need to be run for a further ", moreupdates, " updates.  This will take approximately ", timestring((firsttimetaken*moreupdates/(startsample+startburnin))), ".\n", sep="")
 		if(interactive & (timestring((time.taken*moreupdates/(startsample+startburnin)), units="s", show.units=FALSE)>60)){
 			time.taken <- timestring(starttime, Sys.time(), units="secs", show.units=FALSE)
 			if(!ask("Continue with the simulation?")){
-					
+
 				swcat("Calculating autocorrelation and summary statistics...\n")
-	
+
 				timetaken <- (difftime(Sys.time(), starttime, units='secs') + initialtimetaken)
 
 				if(niter(additional$mcmc)>thin.sample){
@@ -610,52 +610,52 @@ autoextend.jags <- function(runjags.object, add.monitor=character(0), drop.monit
 				}
 
 				combinedoutput <- makerunjagsobject(additional, summarise=summarise, summaryargs=summaryargs, burnin=additional$burnin, sample=niter(additional$mcmc), thin=thin, model=runjags.object$model, data=runjags.object$data, monitor=runjags.object$monitor, noread.monitor=runjags.object$noread.monitor, modules=runjags.object$modules, factories=runjags.object$factories, response=runjags.object$response, residual=runjags.object$residual, fitted=runjags.object$fitted, method=runjags.object$method, method.options=runjags.object$method.options, timetaken=timetaken)
-		
+
 				swcat("Simulation aborted\n\n")
 				return(combinedoutput)
-					
+
 			}
 		}
-		
+
 		swcat("\n")
-		
+
 		# Run for some more iterations:
 		extended <- extend.jags(additional, combine=TRUE, burnin=0, sample=moreupdates, adapt=adapt, jags = jags, silent.jags = silent.jags, summarise = FALSE, thin = thin, keep.jags.files = keep.jags.files, tempdir=tempdir, jags.refresh=jags.refresh, batch.jags=batch.jags)
-		
+
 		if(niter(extended$mcmc) < moreupdates){
 			repeat{
 				time.taken <- timestring(starttime, Sys.time(), units="secs", show.units=FALSE)
 				if(time.taken > max.time | crash.retry==0){
 					stop("The simulation exceeded the number of crashes allowed by crash.retry and so was aborted", call.=FALSE)
 				}
-				swcat("\nThe simulation crashed; retrying...",newlines,sep="")			
+				swcat("\nThe simulation crashed; retrying...",newlines,sep="")
 				crash.retry <- crash.retry - 1
-				
+
 				extended <- extend.jags(additional, combine=TRUE, burnin=0, sample=moreupdates, adapt=adapt, jags = jags, silent.jags = silent.jags, summarise = FALSE, thin = thin, keep.jags.files = keep.jags.files, tempdir=tempdir, jags.refresh=jags.refresh, batch.jags=batch.jags)
-								
+
 				if(niter(extended$mcmc) == moreupdates) break
 			}
 		}
-		
+
 		additional <- extended
 	}
 	if(doraftery)
 		swcat("Indicated sample length achieved\n")
-	
+
 	# Account for thin.sample:
 	if(niter(additional$mcmc)>thin.sample){
 		additional$mcmc <- combine.mcmc(additional$mcmc, collapse.chains=FALSE, return.samples=thin.sample)
 		if(!identical(additional$pd, NA)) additional$pd <- combine.mcmc(additional$pd, collapse.chains=FALSE, return.samples=thin.sample)
 	}
-	
+
 	timetaken <- (difftime(Sys.time(), starttime) + initialtimetaken)
 
 	combinedoutput <- makerunjagsobject(additional, summarise=summarise, summaryargs=summaryargs, burnin=additional$burnin, sample=niter(additional$mcmc), thin=thin, model=runjags.object$model, data=runjags.object$data, monitor=runjags.object$monitor, noread.monitor=runjags.object$noread.monitor, modules=runjags.object$modules, factories=runjags.object$factories, response=runjags.object$response, residual=runjags.object$residual, fitted=runjags.object$fitted, method=runjags.object$method, method.options=runjags.object$method.options, timetaken=timetaken)
 
 	swcat("Auto-run JAGS complete\n\n")
-	
+
 	return(combinedoutput)
-	
+
 }
 
 autorun.JAGS <- autorun.jags
