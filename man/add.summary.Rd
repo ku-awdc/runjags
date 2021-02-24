@@ -2,41 +2,75 @@
 % Please edit documentation in R/summary.R
 \name{add.summary}
 \alias{add.summary}
+\alias{summary.runjags}
 \alias{plot.runjags}
-\alias{plot.runjagsplots}
 \alias{print.runjags}
 \alias{print.runjagsplots}
-\alias{summary.runjags}
+\alias{plot.runjagsplots}
 \title{Summary statistics and plot methods for runjags class objects}
 \usage{
-add.summary(runjags.object, vars = NA, mutate = NA, psrf.target = 1.05,
-  normalise.mcmc = TRUE, modeest.opts = list(), confidence = c(0.95),
-  autocorr.lags = c(10), custom = NULL,
+add.summary(
+  runjags.object,
+  vars = NA,
+  mutate = NA,
+  psrf.target = 1.05,
+  normalise.mcmc = TRUE,
+  modeest.opts = list(),
+  confidence = c(0.95),
+  autocorr.lags = c(10),
+  custom = NULL,
   silent.jags = runjags.getOption("silent.jags"),
-  plots = runjags.getOption("predraw.plots"), plot.type = c("trace", "ecdf",
-  "histogram", "autocorr", "key", "crosscorr"), col = NA,
-  summary.iters = 20000, trace.iters = 1000, separate.chains = FALSE,
-  trace.options = list(), density.options = list(),
-  histogram.options = list(), ecdfplot.options = list(),
-  acplot.options = list())
+  plots = runjags.getOption("predraw.plots"),
+  plot.type = c("trace", "ecdf", "histogram", "autocorr", "key", "crosscorr"),
+  col = NA,
+  summary.iters = 20000,
+  trace.iters = 1000,
+  separate.chains = FALSE,
+  trace.options = list(),
+  density.options = list(),
+  histogram.options = list(),
+  ecdfplot.options = list(),
+  acplot.options = list()
+)
 
 \method{summary}{runjags}(object, ...)
 
-\method{plot}{runjags}(x, plot.type = c("trace", "ecdf", "histogram",
-  "autocorr", "crosscorr"), vars = NA,
+\method{plot}{runjags}(
+  x,
+  plot.type = c("trace", "ecdf", "histogram", "autocorr", "crosscorr"),
+  vars = NA,
   layout = runjags.getOption("plot.layout"),
-  new.windows = runjags.getOption("new.windows"), file = "",
-  mutate = NULL, col = NA, trace.iters = NA, separate.chains = NA,
-  trace.options = NA, density.options = NA, histogram.options = NA,
-  ecdfplot.options = NA, acplot.options = NA, ...)
+  new.windows = runjags.getOption("new.windows"),
+  file = "",
+  mutate = NULL,
+  col = NA,
+  trace.iters = NA,
+  separate.chains = NA,
+  trace.options = NA,
+  density.options = NA,
+  histogram.options = NA,
+  ecdfplot.options = NA,
+  acplot.options = NA,
+  ...
+)
 
 \method{print}{runjags}(x, vars = NA, digits = 5, ...)
 
-\method{print}{runjagsplots}(x, layout = runjags.getOption("plot.layout"),
-  new.windows = runjags.getOption("new.windows"), file = "", ...)
+\method{print}{runjagsplots}(
+  x,
+  layout = runjags.getOption("plot.layout"),
+  new.windows = runjags.getOption("new.windows"),
+  file = "",
+  ...
+)
 
-\method{plot}{runjagsplots}(x, layout = runjags.getOption("plot.layout"),
-  new.windows = runjags.getOption("new.windows"), file = "", ...)
+\method{plot}{runjagsplots}(
+  x,
+  layout = runjags.getOption("plot.layout"),
+  new.windows = runjags.getOption("new.windows"),
+  file = "",
+  ...
+)
 }
 \arguments{
 \item{runjags.object}{an object of class \code{\link{runjags-class}}.}
@@ -98,15 +132,15 @@ add.summary(runjags.object, vars = NA, mutate = NA, psrf.target = 1.05,
 \value{
 The summary method returns a numeric matrix of summary statistics for each variable (invisibly for the print method), wheras the add.summary function returns an object of class \code{\link{runjags-class}} with the new sumamry statistics (and plots if selected) stored for future use.  Some summary statistics are only calculated for stochastic variables, but all monitored variables are shown in the output. The information returned as part of the summary is as follows:
 \describe{
-\item{LowerXX}{The lower confidence limit for the highest posterior density (HPD) credible interval, as calculated by \code{\link[coda]{HPDinterval}}. One or more confidence limits can be selected using the confidence argument - the default of 0.95 corresponds to 95\% credible intervals.}
+\item{LowerXX}{The lower confidence limit for the highest posterior density (HPD) credible interval, as calculated by \code{\link[coda]{HPDinterval}}. One or more confidence limits can be selected using the confidence argument - the default of 0.95 corresponds to 95\\% credible intervals.}
 \item{Median}{The median value, as calculated by \code{\link[stats]{median}}.}
-\item{UpperXX}{The upper confidence limit for the highest posterior density (HPD) credible interval, as calculated by \code{\link[coda]{HPDinterval}}. One or more confidence limits can be selected using the confidence argument - the default of 0.95 corresponds to 95\% credible intervals.}
+\item{UpperXX}{The upper confidence limit for the highest posterior density (HPD) credible interval, as calculated by \code{\link[coda]{HPDinterval}}. One or more confidence limits can be selected using the confidence argument - the default of 0.95 corresponds to 95\\% credible intervals.}
 \item{Mean}{The mean value, as calculated by \code{\link[base]{mean}}.}
 \item{SD}{The sample standard deviation, derived from \code{\link[stats]{var}}.}
 \item{Mode}{The mode of the variable. For discrete variables this is calculated using \code{\link[base]{table}}, and for continuous variables by \code{\link[modeest]{mlv}} if this package is installed - see the modeest.opts argument for more details.}
 \item{MCerr}{The Monte Carlo standard error associated with this variable, which is the standard error divided by the square root of the effective sample size as caulculated by \code{\link[coda]{effectiveSize}}.}
-\item{MC\%ofSD}{The Monte Carlo standard error expressed as a percentage of the standard deviation of the variable - a rule of thumb is that this should be less than approximately 5\%.}
-\item{SSeff}{The effective sample size as caulculated by \code{\link[coda]{effectiveSize}}.  An effective sample size of over 400 should correspond to an MCerr of less than 5\% of the sample standard deviation.}
+\item{MC\\%ofSD}{The Monte Carlo standard error expressed as a percentage of the standard deviation of the variable - a rule of thumb is that this should be less than approximately 5\\%.}
+\item{SSeff}{The effective sample size as caulculated by \code{\link[coda]{effectiveSize}}.  An effective sample size of over 400 should correspond to an MCerr of less than 5\\% of the sample standard deviation.}
 \item{AC.XX}{The autocorrelation of the sample, as calculated by \code{\link[coda]{autocorr.diag}}.  One or more lag values can be specified using the autocorr.lags argument - the default is 10 iterations.}
 \item{psrf}{The potential scale reduction factor of the Gelman-Rubin statistic autocorrelation of the sample, as calculated by \code{\link[coda]{autocorr.diag}}.  This is sometimes referred to as Rhat (or R-hat).  Note that any variables marked with a $ sign were stochastic in some chains but not in others - this usually indicates a problem with the model or sampler.}
 }
@@ -126,4 +160,3 @@ Matthew J. Denwood (2016). runjags: An R Package Providing Interface Utilities, 
 \code{\link{runjags-class}} for details on other methods available for runjags class objects
 }
 \keyword{methods}
-

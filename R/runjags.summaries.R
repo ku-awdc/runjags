@@ -1,59 +1,60 @@
 
 
 runjags.dic <- function(deviance.table, deviance.sum, mcmclist){
-	
+
 	# If deviance in mcmclist use it for chains
-	
+
 	if(runjags.getOption('debug')>=10){
 		cat('Deviance table and deviance sum vector:\n')
 		print(deviance.table)
 		print(deviance.sum)
 	}
-	
+
 	if(all(is.na(deviance.table)) && all(is.na(deviance.sum))){
-		dic <- "DIC statistics not available"		
+		dic <- "DIC statistics not available"
 	}else{
-		
+
 		if('deviance' %in% varnames(mcmclist)){
-			meandeviance.chain <- sapply(mcmclist, function(x) return(mean(x[,'deviance'])))			
+			meandeviance.chain <- sapply(mcmclist, function(x) return(mean(x[,'deviance'])))
 		}else{
-			meandeviance.chain <- rep(NA, nchain(mcmclist))	
+			meandeviance.chain <- rep(NA, nchain(mcmclist))
 		}
 
     	meandeviance <- deviance.sum['sum.mean.deviance']
 		meanpopt <- deviance.sum['sum.mean.pOpt']
 		meanpd <- deviance.sum['sum.mean.pD']
-		
+
 		dicstats <- list(dic=meandeviance+meanpd, dic.chains=meandeviance.chain+meanpd, ped=meandeviance+meanpopt, ped.chains=meandeviance.chain+meanpopt, meandeviance=meandeviance, meandeviance.chains=meandeviance.chain, meanpd=meanpd, meanpopt=meanpopt)
 
 		class(dicstats) <- 'dicstats'
 		dic <- dicstats
 	}
-	
+
 }
 
 
 
 runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normalise.mcmc, modeest.opts, confidence, autocorr.lags, custom, silent=FALSE){
-	
+
 	n.chains <- coda::nchain(thinnedmcmclist)
 	n.iter <- coda::niter(thinnedmcmclist)
 	n.var <- coda::nvar(thinnedmcmclist)
-	
+
 	# 1 iteration + 1 chain is handled by normalise.mcmcfun:
 	normalised <- normalise.mcmcfun(thinnedmcmclist, normalise = normalise.mcmc, warn=TRUE, remove.nonstochastic = TRUE)
-	
+
 	normalisedmcmc <- normalised$mcmc
 	truestochastic <- normalised$truestochastic
 	semistochastic <- normalised$semistochastic
-	nonstochastic <- normalised$nonstochastic			
-	
+	nonstochastic <- normalised$nonstochastic
+
 	collapsed <- combine.mcmc(thinnedmcmclist, collapse.chains=TRUE)
-	
+
 	options(show.error.messages = FALSE)
 	success <- try({
 	  suppressWarnings(tsummary <- summary(combine.mcmc(thinnedmcmclist, collapse.chains=FALSE)))
-	  if(is.numeric(tsummary$statistics)){
+	  # If we only have a numeric vector add some dimensions:
+	  if(is.null(dim(tsummary$statistics))){
 	    tsummary$statistics <- t(as.matrix(tsummary$statistics))
 	    dimnames(tsummary$statistics)[[1]] <- varnames(thinnedmcmclist)
 	    tsummary$quantiles <- t(as.matrix(tsummary$quantiles))
@@ -61,32 +62,32 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 	  }
 	})
 	if(inherits(success, 'try-error')) tsummary <- "An unexpected error occured while calculating summary statistics"
-	options(show.error.messages = TRUE)			
-	
+	options(show.error.messages = TRUE)
+
 	# First lot of summaries require at least one stochastic variable:
 	if(!all(nonstochastic)){
-	
+
 		autocorr.lags <- autocorr.lags[autocorr.lags < n.iter]
 		if(length(autocorr.lags)==0){
 			autocorr.lags <- 1
 		}
-	
+
 		autocorrelation <- safe.autocorr.diag(fullmcmclist[,!nonstochastic,drop=FALSE], lags=autocorr.lags)
 		suppressWarnings(crosscorrelation <- crosscorr(fullmcmclist[,!nonstochastic,drop=FALSE]))
-		class(crosscorrelation) <- "crosscorrstats"	
-	
+		class(crosscorrelation) <- "crosscorrstats"
+
 		success <- try({
-		
+
 			if(n.chains > 1 && n.iter > 1){
-				
+
 				if(!silent) swcat("Calculating the Gelman-Rubin statistic for ", nvar(thinnedmcmclist), " variables....\n", sep="")
 				convergence <- safe.gelman.diag(normalisedmcmc, transform=FALSE, autoburnin=FALSE)
-		
+
 				convergence <- c(convergence, psrf.target=psrf.target)
 				class(convergence) <- "gelmanwithtarget"
-		
+
 				#n.params <- nrow(convergence$psrf)
-				
+
 				if(nrow(convergence$psrf) != sum(!nonstochastic))
 					stop(paste(nrow(convergence$psrf), ' statistics were returned by gelman.diag but ', sum(!nonstochastic), ' were expected', sep=''))
 
@@ -94,16 +95,16 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 				if(n.iter==1){
 					if(runjags.getOption('summary.warning'))
 						warning("Convergence cannot be assessed with only 1 iteration", call.=FALSE)
-					
+
 					convergence <- "Convergence cannot be assessed using only 1 iteration"
 				}
 				if(n.chains==1){
 					if(runjags.getOption('summary.warning'))
 						warning("Convergence cannot be assessed with only 1 chain", call.=FALSE)
-					
+
 					convergence <- "Convergence cannot be assessed using only 1 chain"
 				}
-				
+
 				#param.conv <- 1
 				#n.params <- 1
 			}
@@ -113,14 +114,14 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 				if(inherits(mpsrfstring,'try-error'))
 					mpsrfstring <- " (Unable to calculate the multi-variate psrf)"
 			}
-		
+
 			##########################################################
 			#### REMOVED CODE
-			##########################################################		
+			##########################################################
 	#		autocorrelated <- 0
 	#		unconverged <- 0
 	#		crosscorrelated <- 0
-	#		
+	#
 	#		for(j in 1:n.params){
 	#			if(n.chains > 1){
 	#				param.conv <- convergence$psrf[j, 1]
@@ -168,10 +169,10 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 	#		}
 		##########################################################
 		##########################################################
-	
-	
+
+
 		}, silent=FALSE)
-	
+
 		if(inherits(success, 'try-error')){
 			if(runjags.getOption('debug'))
 				stop("An unexpected error occured when assessing convergence")
@@ -179,13 +180,13 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 				swcat("An unexpected error occured when assessing convergence\n")
 			convergence <- "An unexpected error occured when assessing convergence"
 		}
-	
+
 
 		s <- try(sseff <- effectiveSize(thinnedmcmclist), silent=TRUE)
 		if(class(s)=='try-error'){
 			if(runjags.getOption('summary.warning'))
 				warning('There was an error calculating the effective sample size [using coda::effectiveSize()] for one or more parameters', call.=FALSE)
-			
+
 			sseff <- apply(collapsed,2,function(x){
 				ess <- try(size <- effectiveSize(x))
 				if(class(ess)=='try-error')
@@ -194,7 +195,7 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 					return(size)
 			})
 		}
-	
+
 		if(any(confidence>1 | confidence<0)){
 			runjags.getOption('summary.warning')
 				warning('Invalid value for confidence was ignored (this must be in the range 0-1)')
@@ -203,7 +204,7 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 		}
 		confidence <- sort(confidence, decreasing=TRUE)
 		nc <- length(confidence)
-	
+
 		options(show.error.messages = FALSE)
 		success <- try({
 			thpd <- matrix(0, ncol=1+(length(confidence)*2), nrow=n.var)
@@ -215,7 +216,7 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 		})
 
 		if(inherits(success, 'try-error')) thpd <- "An unexpected error occured while calculating summary statistics"
-		options(show.error.messages = TRUE)			
+		options(show.error.messages = TRUE)
 
 		options(show.error.messages = FALSE)
 
@@ -228,15 +229,15 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 			mcse <- mcse[!nonstochastic]
 			se <- se[!nonstochastic]
 			thmcse <- list(sseff=sseff, ssd=se, mcse=mcse)
-			})	
+			})
 		if(inherits(success, 'try-error')) thmcse <- "An unexpected error occured while calculating Monte Carlo error"
-		options(show.error.messages = TRUE)			
-	
+		options(show.error.messages = TRUE)
+
 		class(thmcse) <- 'mcsestats'
-		
-		
+
+
 	}else{
-		
+
 		autocorrelation <- matrix(NA, ncol=n.var, nrow=1, dimnames=list('Lag.10', NULL))
 		crosscorrelation <- NA
 		convergence <- list()
@@ -244,7 +245,7 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 		confidence <- NA
 		thpd <- matrix(rep(tsummary$statistics[,1], 2), ncol=2, nrow=n.var, dimnames=list(NULL, c('Lower95','Upper95')))
 		thmcse <- list(sseff=NA, ssd=NA, mcse=NA)
-		
+
 	}
 
 
@@ -258,9 +259,9 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 	    return(NA)
 	  }
 	})
-	
+
 	discrete <- !is.na(modestats)
-	
+
 	if(any(is.na(modestats)) && runjags.getOption('mode.continuous')){
 		if(!suppressPackageStartupMessages(requireNamespace('modeest', quietly=TRUE)))
 			stop('The "modeest" package is required to calculate the mode of continuous variables', call.=FALSE)
@@ -285,14 +286,14 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 				return(modeest::mlv(x, ...)$M[1])
 			}
 		}
-		
+
 		modeest.opts$X <- collapsed[,is.na(modestats)&!nonstochastic,drop=FALSE]
 		modestats[is.na(modestats)&!nonstochastic] <- do.call('apply', args=modeest.opts)
 	}
 	})
 	if(inherits(success, 'try-error')) warning('An unexpected error occured while calculating the mode')
-	
-	
+
+
 	# Possible custom function:
 	customstats <- matrix(NA, ncol=1, nrow=n.var)
 	if(is.function(custom)){
@@ -308,10 +309,10 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 			if(is.null(dimnames(customstats)[[1]])) dimnames(customstats) <- list(paste('Custom.',1:nrow(customstats),sep=''), dimnames(customstats)[[2]])
 			customstats <- t(customstats)
 		})
-		
+
 		if(inherits(success, 'try-error')) warning('An unexpected error occured while calculating the custom summary function')
-	}	
-	
+	}
+
 	# Pre-create summary table:
 	tsummaries <- cbind(thpd, tsummary$statistics[,1:2,drop=FALSE], modestats)
   	sumnames <- c(dimnames(thpd)[[2]], "Mean","SD","Mode")
@@ -319,21 +320,21 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 	if(is.function(custom)){
 	tsummaries <- cbind(tsummaries, customstats)
 	sumnames <- c(sumnames, dimnames(customstats)[[2]])
-	}  
+	}
 
 	# Add 'NA' for non-stochastic variables:
 	mcse=pos=sse=psrfs=psrfs.upper <- replicate(length(nonstochastic),NA)
 	mcse[!nonstochastic] <- thmcse$mcse
 	sse[!nonstochastic] <- round(thmcse$sse)
 	pos[!nonstochastic] <- round((thmcse$mcse/tsummary$statistics[!nonstochastic,2])*100,1)
-	
+
 	autocorrs <- matrix(ncol=nrow(autocorrelation), nrow=length(!nonstochastic))
 	autocorrs[!nonstochastic,] <- t(autocorrelation)
-	
+
 	# Catch if only 1 chain | iteration
 	if(n.chains==1 || n.iter==1){
 	  psrfs <- replicate(length(nonstochastic), NA)
-	  psrfs.upper <- replicate(length(nonstochastic), NA)  
+	  psrfs.upper <- replicate(length(nonstochastic), NA)
 	} else {
 	  psrfs[!nonstochastic] <- convergence$psrf[,1]
 	  psrfs.upper[!nonstochastic] <- convergence$psrf[,2]
@@ -341,28 +342,28 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 
 	tsummaries <- cbind(tsummaries, mcse, pos, sse, autocorrs, psrfs)#, psrfs.upper)
 	sumnames <- c(sumnames, "MCerr","MC%ofSD","SSeff",gsub("Lag ", "AC.", dimnames(autocorrelation)[[1]]), "psrf")#, "psrf.UCI")
-	
+
 	dimnames(tsummaries) <- list(dimnames(tsummaries)[[1]], sumnames)
-	
-	return(list(summaries=tsummaries, summary=tsummary, HPD=thpd, hpd=thpd, mcse=thmcse, psrf=convergence, autocorr=autocorrelation, crosscorr=crosscorrelation, truestochastic=truestochastic, semistochastic=semistochastic, nonstochastic=!(truestochastic | semistochastic), discrete=discrete))	
-	
+
+	return(list(summaries=tsummaries, summary=tsummary, HPD=thpd, hpd=thpd, mcse=thmcse, psrf=convergence, autocorr=autocorrelation, crosscorr=crosscorrelation, truestochastic=truestochastic, semistochastic=semistochastic, nonstochastic=!(truestochastic | semistochastic), discrete=discrete))
+
 }
 
 
 runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, density=TRUE, histogram=TRUE, ecdf=TRUE, autocorr=TRUE, crosscorr=TRUE, key=TRUE, col=NA, trace.iters=1000, separate.chains=FALSE, trace.options=list(), density.options=list(), histogram.options=list(), ecdfplot.options=list(), acplot.options=list()){
-	
+
 	if(niter(mcmclist) < 2)
 		stop('Unable to produce plots from less than 2 iterations', call.=FALSE)
-	
+
 	# Implement separate.chains at some point.... as an element of trace/density/ecdf option lists
 	# separate.chains <- FALSE
-	
+
 	# Use default colours from lattice:
 	cols <- c("#0080ff", "#ff00ff", "darkgreen", "#ff0000", "orange", "#00ff00", "brown")
 	if(nchain(mcmclist)>length(cols)) cols <- rainbow(nchain(mcmclist)+1)
 	cols <- cols[1:nchain(mcmclist)]
 	cols <- c(cols, 'dark grey')
-	
+
 	if(!identical(col, NA)){
 		if(length(col)==nchain(mcmclist)){
 			col <- c(col, 'dark grey')
@@ -370,16 +371,16 @@ runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, de
 		cols <- numeric(nchain(mcmclist)+1)
 		cols[] <- col
 	}
-	
+
 	if(!length(discrete)==nvar(mcmclist))
 		stop('An error occured while creating plots: the length of the discrete identifier did not match the number of variables - please file a bug report to the package author')
-	
+
 	if(any(names(trace.options)=='col')) warning('The "col" argument in trace.options was ignored')
-	
+
 	success <- try({
 
 	if(trace || density || ecdf || histogram || autocorr){
-		
+
 		thinned.mcmc <- combine.mcmc(list(mcmclist), collapse.chains=FALSE, return.samples=min(trace.iters, niter(mcmclist)))
 		if(separate.chains){
 			nplots <- nchain(thinned.mcmc)
@@ -387,29 +388,29 @@ runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, de
 		}else{
 			nplots <- 1
 			chainnames <- 'chains_all'
-		} 
+		}
 		niters <- niter(thinned.mcmc)
-		
+
 		plot1 = plot2 = plot3 = plot4 = plot5 <- lapply(1:length(varnames(thinned.mcmc)), function(x){
 			newl <- vector('list', length=nplots)
 			names(newl) <- chainnames
 			return(newl)
-			}) 
+			})
 		names(plot1) = names(plot2) = names(plot3) = names(plot4) = names(plot5)  <- varnames(thinned.mcmc)
-		
+
 		# Was using this to manually over-write the x axis labels to start at burnin+1, but it's too complicated:
 #		iternames <- dimnames(thinned.mcmc[[1]])[[1]]
 #		iterrange <- as.numeric(c(iternames[1],iternames[length(iternames)]))
 #		ilabels <- signif(seq(iterrange[1], iterrange[2], length.out=5)+1,3)
 #		iat <- seq(0,niter(thinned.mcmc),length.out=5)
-		
+
 		for(i in 1:length(varnames(thinned.mcmc))){
 			# Too flowery:  paste("Value of '", dimnames(plotdata[[1]])[[2]], "'", sep="")
 			all.thinned <- as.mcmc.list(lapply(thinned.mcmc, function(x) return(x[,i,drop=FALSE]))) # xyplot throws an error if not a matrix
-			all.full <- as.mcmc.list(lapply(mcmclist, function(x) return(x[,i,drop=FALSE]))) # xyplot throws an error if not a matrix			
+			all.full <- as.mcmc.list(lapply(mcmclist, function(x) return(x[,i,drop=FALSE]))) # xyplot throws an error if not a matrix
 			varname <- dimnames(all.thinned[[1]])[[2]]
-			
-			for(p in 1:nplots){				
+
+			for(p in 1:nplots){
 				if(separate.chains){
 					thinplotdata <- all.thinned[[p]]
 					allplotdata <- all.full[[p]]
@@ -426,62 +427,62 @@ runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, de
 					usecols <- cols[1:nchains]
 				}
 				combcol <- cols[nchains+1]
-				
+
 				if(trace){
-				
+
 					plotopts <- trace.options
 					plotopts$col <- usecols
 					plotopts$varname <- varname
-				
+
 					if(!any(names(plotopts)=='ylab')) plotopts$ylab <- varlab
 					if(!any(names(plotopts)=='xlab')) plotopts$xlab <- "Iteration"
-				
+
 					plotopts$ylab <- eval(plotopts$ylab)
 					plotopts$xlab <- eval(plotopts$xlab)
-				
+
 					if(any(names(plotopts)=='main')) plotopts$main <- eval(plotopts$main)
 					if(any(names(plotopts)=='sub')) plotopts$sub <- eval(plotopts$sub)
-				
+
 					plotopts$x <- thinplotdata
 					plot1[[i]][[p]] <- do.call('xyplot', args=plotopts)
 					# plot1[[i]] <- xyplot(plotdata, ylab=dimnames(plotdata[[1]])[[2]], xlab="Iteration", col=cols)  #doesn't work: , scales=list(x=list(at=iat, labels=ilabels)))
-				
+
 				}
 				if(density){
 					plotopts <- density.options
 					plotopts$col <- usecols
 					plotopts$varname <- varname
-				
+
 					if(!any(names(plotopts)=='ylab')) plotopts$ylab <- "Density"
 					if(!any(names(plotopts)=='xlab')) plotopts$xlab <- varlab
 					if(!any(names(plotopts)=='aspect')) plotopts$aspect <- 'fill'
 					if(!any(names(plotopts)=='plot.points')) plotopts$plot.points <- FALSE
-				
+
 					plotopts$ylab <- eval(plotopts$ylab)
 					plotopts$xlab <- eval(plotopts$xlab)
-				
-					if(any(names(plotopts)=='main')) plotopts$main <- eval(plotopts$main)
-					if(any(names(plotopts)=='sub')) plotopts$sub <- eval(plotopts$sub)
-				
-					plotopts$x <- allplotdata
-					plot2[[i]][[p]] <- do.call('densityplot', args=plotopts)
-					# plot2[[i]] <- densityplot(plotdata, plot.points=FALSE, ylab="Density", xlab=dimnames(plotdata[[1]])[[2]], col=cols, aspect='fill')
-				} 
-				if(ecdf){		
-					plotopts <- ecdfplot.options
-					plotopts$col <- usecols
-					plotopts$varname <- varname
-				
-					if(!any(names(plotopts)=='ylab')) plotopts$ylab <- "ECDF"
-					if(!any(names(plotopts)=='xlab')) plotopts$xlab <- varlab
-				
-					plotopts$ylab <- eval(plotopts$ylab)
-					plotopts$xlab <- eval(plotopts$xlab)
-				
+
 					if(any(names(plotopts)=='main')) plotopts$main <- eval(plotopts$main)
 					if(any(names(plotopts)=='sub')) plotopts$sub <- eval(plotopts$sub)
 
-						
+					plotopts$x <- allplotdata
+					plot2[[i]][[p]] <- do.call('densityplot', args=plotopts)
+					# plot2[[i]] <- densityplot(plotdata, plot.points=FALSE, ylab="Density", xlab=dimnames(plotdata[[1]])[[2]], col=cols, aspect='fill')
+				}
+				if(ecdf){
+					plotopts <- ecdfplot.options
+					plotopts$col <- usecols
+					plotopts$varname <- varname
+
+					if(!any(names(plotopts)=='ylab')) plotopts$ylab <- "ECDF"
+					if(!any(names(plotopts)=='xlab')) plotopts$xlab <- varlab
+
+					plotopts$ylab <- eval(plotopts$ylab)
+					plotopts$xlab <- eval(plotopts$xlab)
+
+					if(any(names(plotopts)=='main')) plotopts$main <- eval(plotopts$main)
+					if(any(names(plotopts)=='sub')) plotopts$sub <- eval(plotopts$sub)
+
+
 					# niters is what to thin to:
 					tdat <- data.frame(cd=1:niters/niters, vx=numeric(niters * max(1, nchains*!separate.chains)))
 					if(separate.chains){
@@ -491,21 +492,21 @@ runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, de
 						for(c in 1:nchains) tdat$vx[chains==c] <- as.numeric(quantile(as.numeric(allplotdata[[c]]), probs=1:niters/niters))
 						plotopts$groups <- chains
 					}
-						
+
 					plotopts$data <- tdat
 					plotopts$x <- cd ~ vx
-					
+
 					if(!any(names(plotopts)=='type')) plotopts$type <- 's'
 					if(!any(names(plotopts)=='ylim')) plotopts$ylim <- c(-0.05,1.05)
 					if(!any(names(plotopts)=='panel')) plotopts$panel <- function(x,y,...){
-						panel.abline(h=0)	
+						panel.abline(h=0)
 						panel.abline(h=1)
 						panel.xyplot(x,y,...)
 					}
-					
+
 					plot3[[i]][[p]] <- do.call('xyplot', args=plotopts)
-				} 
-				
+				}
+
 				# Either way the rest are all the full data (not thinned):
 				if(!separate.chains){
 					stopifnot(p==1)
@@ -514,7 +515,7 @@ runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, de
 					plotdata <- allplotdata
 				}
 
-				if(histogram){		
+				if(histogram){
 					plotopts <- histogram.options
 					plotopts$varname <- varname
 
@@ -524,19 +525,19 @@ runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, de
 					}
 					if(!any(names(plotopts)=='border')) plotopts$border <- combcol
 					if(!any(names(plotopts)=='col')) plotopts$col <- combcol
-				
+
 					if(!any(names(plotopts)=='xlab')) plotopts$xlab <- varlab
 					if(!any(names(plotopts)=='ylab')) plotopts$ylab <- "% of total"
-				
+
 					plotopts$ylab <- eval(plotopts$ylab)
 					plotopts$xlab <- eval(plotopts$xlab)
-				
+
 					if(any(names(plotopts)=='main')) plotopts$main <- eval(plotopts$main)
 					if(any(names(plotopts)=='sub')) plotopts$sub <- eval(plotopts$sub)
-					
+
 					if(!discrete[i] && !any(names(plotopts)=='breaks'))
 						plotopts$breaks <- 100
-					
+
 					# Maybe use a barchart if < 20 groups or something?
 					# Doesn't seem necessary - histogram looks OK for dichotomous at least
 #					if(discrete[i] && !is.null(plotopts$force.histogram) && plotopts$force.histogram <= length(unique(plotdata))){
@@ -549,11 +550,11 @@ runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, de
 						plotopts$x <-  ~ x
 						fcall <- 'histogram'
 #					}
-					
+
 					plot4[[i]][[p]] <- do.call(fcall, args=plotopts)
 				}
-				
-				if(autocorr){		
+
+				if(autocorr){
 					plotopts <- acplot.options
 					plotopts$varname <- varname
 
@@ -563,40 +564,40 @@ runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, de
 					}
 					if(!any(names(plotopts)=='border')) plotopts$border <- combcol
 					if(!any(names(plotopts)=='col')) plotopts$col <- combcol
-				
+
 					if(!any(names(plotopts)=='ylab')) plotopts$ylab <- paste('Autocorrelation of ', varlab, sep='')
 					if(!any(names(plotopts)=='xlab')) plotopts$xlab <- 'Lag'
-				
+
 					plotopts$ylab <- eval(plotopts$ylab)
 					plotopts$xlab <- eval(plotopts$xlab)
-				
+
 					if(any(names(plotopts)=='main')) plotopts$main <- eval(plotopts$main)
 					if(any(names(plotopts)=='sub')) plotopts$sub <- eval(plotopts$sub)
-					
+
 					plotopts$horizontal <- FALSE
 					if(!any(names(plotopts)=='origin')) plotopts$origin <- 0
 					if(!any(names(plotopts)=='ylim.ratio')) plotopts$ylim <- c(-1.05,1.05)
 					if(!any(names(plotopts)=='box.ratio')) plotopts$box.ratio <- 0.5
-					
+
 					acfs <- acf(plotdata, plot=FALSE)
 					labels <- (0:floor(length(acfs$lag)/5))*5
 					if(!any(names(plotopts)=='box.scales')) plotopts$scales <- list(x=list(labels=labels, at=labels+1, tck=1))
-					
+
 					plotopts$data <- data.frame(acfs=as.numeric(acfs$acf), lags=as.numeric(acfs$lag))
 					plotopts$x <-  acfs ~ lags
-					
+
 					plot5[[i]][[p]] <- do.call('barchart', args=plotopts)
 
 				}
 			}
 		}
-		
+
 		class(plot1) <- 'runjagsplots'
 		class(plot2) <- 'runjagsplots'
 		class(plot3) <- 'runjagsplots'
 		class(plot4) <- 'runjagsplots'
 		class(plot5) <- 'runjagsplots'
-		
+
 		#if(!is.null(startdev)){
 		#	for(i in dev.list()){
 		#		if(!any(startdev==i)) dev.off(i)
@@ -604,9 +605,9 @@ runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, de
 		#}else{
 		#	try(a <- dev.off(), silent=TRUE)
 		#}
-		
+
 	}
-	
+
 	if(key){
 		nchains <- nchain(mcmclist)
 		ys <- -(1:(nchains+(!separate.chains && (autocorr || histogram))) -0.5)
@@ -625,18 +626,18 @@ runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, de
 		keyplot <- list(key=kp)
 		class(keyplot) <- 'runjagsplots'
 	}
-	
+
 	if(crosscorr){
 		ccplot <- list(crosscorr=crosscorr.plot.lattice(mcmclist))
 		class(ccplot) <- 'runjagsplots'
-	}		
+	}
 
 	})
 	if(inherits(success, 'try-error')){
 		trace=density=autocorr=crosscorr=key=histogram=ecdf <- FALSE
 		warning("An unexpected error occured while attempting to plot graphs")
 	}
-	
+
 	if(!trace) plot1 <- 'No pre-drawn trace plots available'
 	if(!density) plot2 <- 'No pre-drawn density plots available'
 	if(!key) keyplot <- 'No pre-drawn density plots available'
@@ -654,14 +655,14 @@ runjagsplots <- function(mcmclist, psrfs, discrete, silent=FALSE, trace=TRUE, de
 # crosscorr.plot function modified from coda version 0.16-1, to switch to lattice based graphics
 # Original functions are GPL>=2, copyright of the authors:  Martyn Plummer [aut, cre, trl], Nicky Best [aut], Kate Cowles [aut], Karen Vines [aut], Deepayan Sarkar [aut], Russell Almond [ctb]
 
-crosscorr.plot.lattice <- function (x, col = topo.colors(10)) 
+crosscorr.plot.lattice <- function (x, col = topo.colors(10))
 {
     Nvar <- nvar(x)
     pcorr <- crosscorr(x)
     dens <- ((pcorr + 1) * length(col))%/%2 + (pcorr < 1) + (pcorr < -1)
     cutoffs <- format(seq(from = 1, to = -1, length = length(col) + 1), digits = 2)
     leg <- paste("(", cutoffs[-1], ",", cutoffs[-length(cutoffs)], "]", sep = "")
-	
+
     yval <- seq(from = Nvar/2, to = Nvar, length = length(col) + 1)
     ydelta <- Nvar/(2 * (length(col) + 1))
 
@@ -669,7 +670,7 @@ crosscorr.plot.lattice <- function (x, col = topo.colors(10))
 	ax <- list(labels=abbreviate(varnames(x, allow.null=FALSE), minlength=7), at=(Nvar:1)-0.5)
 	lims <- c(-0.1, Nvar+0.1)
 	replot <- xyplot(0 ~ 0, xlim=lims, ylim=lims, xlab = "", ylab = "", scales=list(x=ay, y=ax), panel=function(){
-		
+
 		for(i in 1:Nvar){
 			ypoints <- c(i-1,i-1,i,i)
 			for(j in 1:(Nvar-i+1)){
@@ -677,15 +678,15 @@ crosscorr.plot.lattice <- function (x, col = topo.colors(10))
 			}
 		}
 		for(i in 1:length(col)){
-			panel.polygon(y = c(yval[i], yval[i + 1], yval[i + 1], yval[i], 
-            yval[i]), col = col[i], x = c(Nvar - ydelta, Nvar - 
+			panel.polygon(y = c(yval[i], yval[i + 1], yval[i + 1], yval[i],
+            yval[i]), col = col[i], x = c(Nvar - ydelta, Nvar -
             ydelta, Nvar, Nvar, Nvar - ydelta))
 		}
 	    panel.text(Nvar - (ydelta+0.07), Nvar, "1", adj = c(1, 1))
 	    panel.text(Nvar - (ydelta+0.07), 0.5 * Nvar, "-1", adj = c(1, 0))
 	    panel.text(Nvar - (ydelta+0.07), 0.75 * Nvar, "0", adj = c(1, 0.5))
-		
+
 	})
-	
+
 	return(replot)
 }

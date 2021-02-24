@@ -15,7 +15,18 @@ true.y[i] <- (m * X[i]) + c; #data# X
 m ~ dunif(-1000,1000); #inits# m
 c ~ dunif(-1000,1000);
 precision ~ dexp(1);
-#monitor# m, c, precision, dic, full.pd, popt, pd
+#monitor# m, c, precision, dic, popt, pd
+}"
+
+model_parallel <- "model {
+for(i in 1 : N){ #data# N
+Y[i] ~ dnorm(true.y[i], precision); #data# Y
+true.y[i] <- (m * X[i]) + c; #data# X
+}
+m ~ dunif(-1000,1000); #inits# m
+c ~ dunif(-1000,1000);
+precision ~ dexp(1);
+#monitor# m, c, precision
 }"
 
 # Simulate the data
@@ -32,7 +43,7 @@ jagspath <- findjags()
 
 # Only run the JAGS methods tests if we have found JAGS and have permission to run it:
 if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
-	
+
 	testnum <- 1
 	cat('Testing the simple method\n')
 	# Try the simple method and if it doesn't work give a warning but don't fail (likely to be permissions problems)
@@ -51,13 +62,13 @@ if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
 		stopifnot(niter(as.mcmc.list(results))==1000)
 
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
-		results <- run.jags(model, n.chains=2, sample=1000, burnin=1000, inits=initfunction, method='parallel')
+		results <- run.jags(model_parallel, n.chains=2, sample=1000, burnin=1000, inits=initfunction, method='parallel')
 		stopifnot(niter(as.mcmc.list(results))==1000)
 
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
 		results <- run.jags(model, n.chains=2, sample=1000, burnin=1000, inits=initfunction, method='interruptible')
 		stopifnot(niter(as.mcmc.list(results))==1000)
-  
+
 		# Same as in checkinputs but it's for rjags there:
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
 		results2 <- extend.jags(results, sample=1000, add.monitor="true.y", summarise=FALSE)
@@ -73,7 +84,7 @@ if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
 		results2 <- extend.jags(results, sample=1000, add.monitor=c("true.y", "deviance"), summarise=FALSE)
 		stopifnot(nvar(as.mcmc.list(results2))==(4+N))
 		stopifnot(varnames(as.mcmc.list(results2))[1]=='m' && varnames(as.mcmc.list(results2))[104]=='deviance')
-		
+
 		# Same as in checkinputs but it's for rjags there:
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
 		results2 <- extend.jags(results, sample=1000, add.monitor="true.y", summarise=FALSE, method='simple')
@@ -89,7 +100,7 @@ if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
 		results2 <- extend.jags(results, sample=1000, add.monitor=c("true.y", "deviance"), summarise=FALSE)
 		stopifnot(nvar(as.mcmc.list(results2))==(4+N))
 		stopifnot(varnames(as.mcmc.list(results2))[1]=='m' && varnames(as.mcmc.list(results2))[104]=='deviance')
-		
+
 		# Snow gives problems here ... but it does work!
 		#results <- run.jags(model, n.chains=2, sample=1000, burnin=1000, inits=initfunction, method='snow')
 		#stopifnot(niter(as.mcmc.list(results))==1000)
@@ -108,10 +119,10 @@ if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
 		stopifnot(niter(as.mcmc.list(results))==100)
 		stopifnot(nvar(as.mcmc.list(results))==1)
 		stopifnot(nchain(as.mcmc.list(results))==1)
-	
-	
+
+
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
-		info <- run.jags(model, n.chains=2, sample=1000, burnin=1000, inits=initfunction, method='bgparallel')
+		info <- run.jags(model_parallel, n.chains=2, sample=1000, burnin=1000, inits=initfunction, method='bgparallel')
 		t <- 0
 		repeat{
 			s <- try(results <- results.jags(info))
@@ -120,8 +131,8 @@ if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
 			Sys.sleep(1)
 			t <- t+1
 		}
-		stopifnot(niter(as.mcmc.list(results))==1000)	
-				
+		stopifnot(niter(as.mcmc.list(results))==1000)
+
 		# Check combine.mcmc does what it says on the tin:
 		stopifnot(niter(combine.mcmc(results, return.samples=1000, collapse.chains=TRUE))==1000)
 		stopifnot(niter(combine.mcmc(results, return.samples=11, collapse.chains=TRUE))==11)
@@ -130,46 +141,46 @@ if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
 		stopifnot(niter(combine.mcmc(results, thin=10, collapse.chains=TRUE))==200)
 		stopifnot((niter(combine.mcmc(results, thin=15, collapse.chains=TRUE))*15)>=2000)
 		stopifnot(niter(combine.mcmc(results, thin=10, collapse.chains=FALSE))==100)
-		
+
 		# Check we can use the extend wrapper:
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
 		newres <- extend.jags(results, sample=0)
 		stopifnot(newres$burnin==results$burnin)
 		stopifnot(niter(as.mcmc.list(newres))==niter(as.mcmc.list(results)))
-		
+
 		# Check a single iteration works:
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
 		results <- run.jags(model, n.chains=2, sample=1, burnin=1000, inits=initfunction, method='interruptible', summarise=FALSE)
 		stopifnot(niter(as.mcmc.list(results))==1)
-		
+
 		# And that precision can be ignored:
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
 		results <- run.jags(model, monitor=c('m','c'), n.chains=2, sample=10, burnin=100, inits=initfunction, method='interruptible', summarise=FALSE, noread.monitor='precision')
 		stopifnot(nvar(as.mcmc.list(results))==2)
-		
+
 		# Check the version number is correct:
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
 		stopifnot(newres$runjags.version[1]==runjags:::runjagsprivate$runjagsversion)
-		
+
 	}
 }else{
 	cat("JAGS could not be called externally at the path: ", jagspath, "\n")
-	cat("All test methods except possibly rjags and rjagsparallel were skipped\n")	
+	cat("All test methods except possibly rjags and rjagsparallel were skipped\n")
 }
 
 testnum <- 1
 if(require("rjags")){
-	cat('Running rjags method test number', testnum, '\n'); testnum <- testnum+1	
+	cat('Running rjags method test number', testnum, '\n'); testnum <- testnum+1
 	results <- run.jags(model, n.chains=2, sample=1000, burnin=1000, inits=initfunction, method='rjags')
 	stopifnot(niter(as.mcmc.list(results))==1000)
-	
+
 	cat('Running rjags method test number', testnum, '\n'); testnum <- testnum+1
 	results <- run.jags(model, n.chains=2, sample=1, burnin=1000, inits=initfunction, method='rjags', summarise=FALSE)
 	stopifnot(niter(as.mcmc.list(results))==1)
-	
+
 	cat('Running rjags method test number', testnum, '\n'); testnum <- testnum+1
 	runjags.options(silent.jags=TRUE, silent.runjags=TRUE, debug=FALSE)
-	output <- capture.output(results <- run.jags(model, n.chains=2, sample=1000, burnin=1000, inits=initfunction, method='rjparallel'))
+	output <- capture.output(results <- run.jags(model_parallel, n.chains=2, sample=1000, burnin=1000, inits=initfunction, method='rjparallel'))
 	stopifnot(length(output)==0)
 	stopifnot(niter(as.mcmc.list(results))==1000)
 }else{

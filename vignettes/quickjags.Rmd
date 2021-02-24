@@ -83,7 +83,7 @@ Note that this model is run from an embedded character vector here for convinien
 
 ```{r}
 results
-````
+```
 
 This method displays relevant summary statistics - the effective sample size (SSeff) and convergence diagnostic (psrf) is shown for each stochastic variable.  It is also advisable to plot the results using the default plot method to assess convergence graphically:
 

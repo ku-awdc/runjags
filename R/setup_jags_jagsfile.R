@@ -1,4 +1,4 @@
-setup.jags <- function(model, monitor = stop("No monitored variables supplied"), data=NA,  n.chains=2, inits = replicate(n.chains, NA), modules=c(""), factories=c(""), response=NA, fitted =NA, residual=NA, jags = runjags.getOption('jagspath'), method="simple", mutate=NA){
+setup_jags <- function(model, monitor = stop("No monitored variables supplied"), data=NA,  n.chains=2, inits = replicate(n.chains, NA), modules=c(""), factories=c(""), response=NA, fitted =NA, residual=NA, jags = runjags.getOption('jagspath'), method="simple", mutate=NA){
 	
 	# Reset failedjags stuff:
 	failedjags$model <- NA
@@ -150,10 +150,10 @@ setup.jags <- function(model, monitor = stop("No monitored variables supplied"),
 	}
 	
 	##  Get the data
-	data <- checkdataformat(arg=data, block=character(0), auto=character(0), n.chains=NA, data.type=TRUE, evalscope=NULL)$combined
+	data <- check_data_format(arg=data, block=character(0), auto=character(0), n.chains=NA, data.type=TRUE, evalscope=NULL)$combined
   
 	##  Get the inits - evalscope is passed as a list with the character, so that it only a small reference is passed - it is only list.formatted if needed:
-	inits <- checkdataformat(arg=inits, block=character(0), auto=character(0), n.chains=n.chains, data.type=FALSE, evalscope=list(data))
+	inits <- check_data_format(arg=inits, block=character(0), auto=character(0), n.chains=n.chains, data.type=FALSE, evalscope=list(data))
 	n.chains <- inits$n.chains
 	inits <- inits$combined
 		
@@ -306,7 +306,7 @@ setup.jags <- function(model, monitor = stop("No monitored variables supplied"),
 }
 
 
-setup.jagsfile <- function(model, n.chains=NA, data=NA, inits=NA, monitor=NA, modules=c(""), factories=c(""), mutate=NA, jags=runjags.getOption('jagspath'), method="simple", call.setup=TRUE, failincomplete=TRUE){
+setup_jagsfile <- function(model, n.chains=NA, data=NA, inits=NA, monitor=NA, modules=c(""), factories=c(""), mutate=NA, jags=runjags.getOption('jagspath'), method="simple", call.setup=TRUE, failincomplete=TRUE){
 	
 	# We may be passed some unevaluated function arguments so evaluate everything here:
 	argnames <- names(formals(setup.jagsfile))
@@ -470,7 +470,7 @@ setup.jagsfile <- function(model, n.chains=NA, data=NA, inits=NA, monitor=NA, mo
 }
 
 
-checkdataformat <- function(arg, block, auto, n.chains=NA, data.type=TRUE, evalscope=NULL){
+check_data_format <- function(arg, block, auto, n.chains=NA, data.type=TRUE, evalscope=NULL){
 	
 	# This function will either return a character (if given a single character), or a list (if other combinations)
 	# This all works with inits too - need to specify evalscope (data) and n.chains though	
@@ -778,6 +778,3 @@ checkdataformat <- function(arg, block, auto, n.chains=NA, data.type=TRUE, evals
 		
 	return(list(combined=toreturn, n.chains=n.chains))	
 }
-
-
-setup.JAGS <- setup.jags
