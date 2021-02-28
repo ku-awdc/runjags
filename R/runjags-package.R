@@ -1,7 +1,7 @@
 #' @keywords internal
 "_PACKAGE"
 
-#' @name runjags
+#' @name runjags-package
 #' @aliases runjags runjags-package runjagspackage
 #' @title Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS
 #' @description

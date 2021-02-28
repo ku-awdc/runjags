@@ -44,7 +44,7 @@ NULL
 
 #' @rdname combine.mcmc
 #' @export
-combine.mcmc <- function(mcmc.objects=list(), thin=1, return.samples=NA, collapse.chains=NA, vars=NA, add.mutate=TRUE){
+combine.mcmc <- function(mcmc.objects=list(), thin=1, return.samples=NA, collapse.chains=if(length(mcmc.objects)==1) TRUE else FALSE, vars=NA, add.mutate=TRUE){
 
 	if(inherits(mcmc.objects,c("mcmc.list", "mcmc", "runjags"))){
 		mcmc.objects <- list(mcmc.objects)
@@ -53,10 +53,17 @@ combine.mcmc <- function(mcmc.objects=list(), thin=1, return.samples=NA, collaps
 		stop("Data must be provided as a list of or single mcmc object(s), or a list of or single mcmc.list(s) (for multiple chains)")
 	}
 
+  if(FALSE){
 	stopifnot(length(collapse.chains)==1)
 	if(is.na(collapse.chains)){
-		collapse.chains <- length(mcmc.objects)==1 && nchain(mcmc.objects[[1]])>1
+	  if(inherits(mcmc.objects[[1]], "runjags")){
+	    ncn <- nchain(as.mcmc.list(mcmc.objects[[1]]))
+	  }else{
+	    ncn <- nchain(mcmc.objects[[1]])
+	  }
+		collapse.chains <- length(mcmc.objects)==1 && ncn>1
 	}
+  }
 	stopifnot(!is.na(collapse.chains))
 
 	if(!is.numeric(thin)) stop('Invalid value provided for "thin"')

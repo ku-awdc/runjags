@@ -13,7 +13,7 @@ combine.mcmc(
   mcmc.objects = list(),
   thin = 1,
   return.samples = NA,
-  collapse.chains = NA,
+  collapse.chains = if (length(mcmc.objects) == 1) TRUE else FALSE,
   vars = NA,
   add.mutate = TRUE
 )

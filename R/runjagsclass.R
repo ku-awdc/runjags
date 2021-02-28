@@ -107,6 +107,9 @@ as.mcmc.list.runjags <- function(x, vars=NA, add.mutate=TRUE, ...){
 
 }
 
+
+## TODO: varnames and nchain methods, BUT these are functions not methods in coda
+
 # # A possible solution to the S3 method issues with as.mcmc.list:
 # as.mcmclist.runjags <- function(x, vars=NA, add.mutate=TRUE, ...){
 #

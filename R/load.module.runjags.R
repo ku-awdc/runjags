@@ -266,7 +266,7 @@ dynunloadmodule <- function(){
 	swcat("Unloading shared library from:  ", slibpath, "\n", sep="")
 	success <- try(dyn.unload(slibpath))
 	if(inherits(success, 'try-error'))
-		stop("The internal dynlib could not be unloaded - if you installed this package from CRAN, please file a bug report to the package author")
+		warning("The internal dynlib could not be unloaded")
 
 	runjagsprivate$dynlibname <- NULL
 	invisible(TRUE)

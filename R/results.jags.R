@@ -105,8 +105,7 @@ results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jag
 		}
 	}
 	if(background.runjags.object$method=="xgrid"){
-		warning("Re-routing function call to xgrid.results.jags to retrieve xgrid job")
-		return(xgrid.results.jags(background.runjags.object))
+		stop("xgrid is no longer supported")
 	}
 	background.runjags.object <- checkvalidrunjagsobject(background.runjags.object)
 	

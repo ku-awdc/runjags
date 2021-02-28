@@ -626,7 +626,7 @@ runjags_interruptible <- function(jags, silent.jags, jags.refresh, batch.jags, o
 	
 		}
 		
-		output <- tailf('sim.1/jagsoutput.txt', refresh=jags.refresh, start=1, min.static=2, stop.text=getstoptexts(), print=!silent.jags, return=TRUE)
+		output <- tailf('sim.1/jagsoutput.txt', refresh=jags.refresh, start=1, min.static=2, stop.text=getstoptexts(), print=!silent.jags, returntext=TRUE)
 	
 		if(output$interrupt){
 			
@@ -735,7 +735,7 @@ runjags_parallel <- function(jags, silent.jags, jags.refresh, batch.jags, os, li
 		s <- 1
 		repeat{
 			if(!silent.jags) swcat("Following the progress of chain ", s, " (the program will wait for all chains to finish before continuing):\n", sep="")			
-			output <- tailf(paste('sim.', s, '/jagsoutput.txt', sep=''), refresh=jags.refresh, start=1, min.static=2, stop.text=getstoptexts(), print=!silent.jags, return=TRUE)
+			output <- tailf(paste('sim.', s, '/jagsoutput.txt', sep=''), refresh=jags.refresh, start=1, min.static=2, stop.text=getstoptexts(), print=!silent.jags, returntext=TRUE)
 			if(!silent.jags) swcat("\n")
 			if(output$interrupt) break
 
@@ -836,9 +836,9 @@ runjags_rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 		if(any(sm)){
 			vname <- getmonitortype(monitor[sm])[,'monitor']
 			checkok <- sapply(paste0('density_',vname), function(x){
-				if(!grepl(x, model)){
-					stop(paste0('You need to add a "', x, '" monitor to your model to monitor WAIC with JAGS 4.x'), call.=FALSE)
-				}
+#				if(!grepl(x, model)){
+#					stop(paste0('You need to add a "', x, '" monitor to your model to monitor WAIC with JAGS 4.x'), call.=FALSE)
+#				}
 			})
 			todenspm <- rbind(todenspm, cbind(vname, paste0('density_',vname)))
 			monitor[sm] <- paste0('mean(density_',vname,')')
@@ -847,9 +847,9 @@ runjags_rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 		if(any(sm)){
 			vname <- getmonitortype(monitor[sm])[,'monitor']
 			checkok <- sapply(paste0('logdens_',vname), function(x){
-				if(!grepl(x, model)){
-					stop(paste0('You need to add a "', x, '" monitor to your model to monitor WAIC with JAGS 4.x'), call.=FALSE)
-				}
+#				if(!grepl(x, model)){
+#					stop(paste0('You need to add a "', x, '" monitor to your model to monitor WAIC with JAGS 4.x'), call.=FALSE)
+#				}
 			})
 			todenspv <- rbind(todenspv, cbind(vname, paste0('logdens_',vname)))
 			monitor[sm] <- paste0('variance(logdens_',vname,')')
@@ -1054,16 +1054,14 @@ runjags_start <- function(model, monitor, data, inits, modules, factories, burni
 	# Some methods don't require writing files:
 	writefiles <- TRUE
 	
-	# Checking of DIC and JAGS availability etc will already have been done, but we need to check vailability of methods (and xgrid options)
+	# Checking of DIC and JAGS availability etc will already have been done, but we need to check vailability of methods
 	if(class(method)!="function"){
 		
 		method <- getrunjagsmethod(method)
 		
 		##### Internal.options is ONLY used by Xgrid - get rid of it once Xgrid is gone
 		if(method=="xgrid"){			
-			xgrid.options <- method.options
-			method.options <- internal.options
-			cl = inputsims = remote.jags = rjags = by = progress.bar <- NA			
+			stop("xgrid is no longer supported")
 		}else{
 			requirednames <- c("n.sims","cl","remote.jags","by","progress.bar","jags","silent.jags","jags.refresh","batch.jags")
 			# The method.options are now being checked and handled by extend.jags - this should always be true (note rjags is not required as we remove it occasionally)
@@ -1188,7 +1186,7 @@ runjags_start <- function(model, monitor, data, inits, modules, factories, burni
 		}else{
 			# Change jobname to match folder name:
 			if(method=='xgrid'){
-				jobname <- new_unique(xgrid.options$jobname, touch=TRUE, type='folder')
+				stop("xgrid is no longer supported")				
 			}else{
 				if(is.na(dirname)){
 					dirname <- "runjagsfiles"
@@ -1273,10 +1271,7 @@ runjags_start <- function(model, monitor, data, inits, modules, factories, burni
 			method <- runjags_background
 		}
 		if(strmethod=='xgrid'){
-			# Leave here as a failsafe in case extend.jags is used on an xgrid method object:
-			test <- setup.xgrid(mgridpath=xgrid.options$mgridpath, hostname=xgrid.options$hostname, password=xgrid.options$password, testonly=TRUE)
-			n.sims <- min(n.chains, xgrid.options$max.threads)
-			method <- runjags_xgrid
+			stop("xgrid is no longer supported")
 		}
 		if(strmethod=='rjags'){
 			n.sims <- 1
@@ -1290,8 +1285,7 @@ runjags_start <- function(model, monitor, data, inits, modules, factories, burni
 		method.options$jags <- jags.status$JAGS.path
 		
 		if(strmethod=='xgrid'){
-			method.options <- c(method.options, xgrid.options[names(xgrid.options)!="jobname"])
-			if(!identical(names(method.options), c("jags", "silent.jags", "jags.refresh", "batch.jags", "os", "libpaths", "n.sims", "jobname", "cl", "remote.jags", "rjags", "command", "customart", "jagspath", "submitandstop", "max.threads", "mgridpath", "hostname", "password"))) stop("Invalid method.options list provided - ensure xgrid jags jobs are started with the correct xgrid.xx.jags functions", call.=FALSE)
+			stop("xgrid is no longer supported")
 		}else{
 			stopifnot(all(c("jags", "silent.jags", "jags.refresh", "batch.jags", "os", "libpaths", "n.sims", "jobname", "cl", "remote.jags", "rjags") %in% names(method.options)))	
 		}

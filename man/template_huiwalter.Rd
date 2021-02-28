@@ -2,7 +2,7 @@
 % Please edit documentation in R/template_huiwalter.R
 \name{template_huiwalter}
 \alias{template_huiwalter}
-\title{Title}
+\title{Create a Hui-Walter model based on paired test data for an arbitrary number of tests and populations}
 \usage{
 template_huiwalter(
   testdata,
@@ -13,8 +13,16 @@ template_huiwalter(
 )
 }
 \arguments{
-\item{sp_priors}{}
+\item{testdata}{the input paired test data, where each column name corresponds to a test result - except possibly "ID" which is ignored, and "Population" indicating a population identifier for that row. Each row must represent test results from the same individual either as logical or a factor with two levels (and where the first level indicates a negative test result). Data may be missing at random (except for Population).}
+
+\item{outfile}{the name of the text file to save the model representation}
+
+\item{covon}{should covariance terms be activated or omitted?}
+
+\item{se_priors}{the priors to use for sensitivity parameters (can be adjusted in the model once it is generated)}
+
+\item{sp_priors}{the priors to use for specificity parameters (can be adjusted in the model once it is generated)}
 }
 \description{
-Title
+Create a Hui-Walter model based on paired test data for an arbitrary number of tests and populations
 }

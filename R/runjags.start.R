@@ -626,7 +626,7 @@ runjags.interruptible <- function(jags, silent.jags, jags.refresh, batch.jags, o
 	
 		}
 		
-		output <- tailf('sim.1/jagsoutput.txt', refresh=jags.refresh, start=1, min.static=2, stop.text=getstoptexts(), print=!silent.jags, return=TRUE)
+		output <- tailf('sim.1/jagsoutput.txt', refresh=jags.refresh, start=1, min.static=2, stop.text=getstoptexts(), print=!silent.jags, returntext=TRUE)
 	
 		if(output$interrupt){
 			
@@ -735,7 +735,7 @@ runjags.parallel <- function(jags, silent.jags, jags.refresh, batch.jags, os, li
 		s <- 1
 		repeat{
 			if(!silent.jags) swcat("Following the progress of chain ", s, " (the program will wait for all chains to finish before continuing):\n", sep="")			
-			output <- tailf(paste('sim.', s, '/jagsoutput.txt', sep=''), refresh=jags.refresh, start=1, min.static=2, stop.text=getstoptexts(), print=!silent.jags, return=TRUE)
+			output <- tailf(paste('sim.', s, '/jagsoutput.txt', sep=''), refresh=jags.refresh, start=1, min.static=2, stop.text=getstoptexts(), print=!silent.jags, returntext=TRUE)
 			if(!silent.jags) swcat("\n")
 			if(output$interrupt) break
 
@@ -1044,123 +1044,6 @@ runjags.rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 
 }
 
-runjags.xgrid <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpaths, n.sims, jobname, cl, remote.jags, command, customart, jagspath, submitandstop, max.threads, mgridpath, hostname, password){
-	
-	swcat("Submitting the simulation to Xgrid... (this may take some time)\n")
-		
-	retval <- 'An unknown error occured while calling JAGS using the xgrid method'
-	
-	# max.threads is only passed through for consistency, and should be redundant by n.sims:
-	stopifnot(n.sims<=max.threads)
-			
-	#filecon <- file('scriptlauncher.sh', 'w')
-	cat('#!/bin/sh
-	i=$1
-	', shQuote(jags), if(!batch.jags) ' <', ' sim.$i/script.cmd > sim.$i/jagsoutput.txt 2>&1 &
-
-	echo $! > sim.$i/jagspid.txt
-	', sep='', file='scriptlauncher.sh')
-	#close(filecon)
-
-	Sys.chmod('scriptlauncher.sh')
-	
-	thed <- getwd()
-	
-	tryCatch({
-
-
-		cat(customart, file="customart.sh")
-
-	# cd doesn't work on some nodes, so the working directory is left where it is now and paths adjusted accordingly in the script
-	#	', if(method.options$separate.tasks) 'cd sim.$1', '
-		cat('#!/bin/sh
-
-
-		pid=$$
-
-		', if(!silent.jags) 'echo "" > sim.$1/jagsout.txt', ' 
-		', if(!silent.jags) 'echo "" > sim.$1/jagsout.txt', ' 
-		', if(n.sims>1) '( ( echo "Chain "$1":" 2>&1 1>&3 | tee -a sim.$1/jagserror.txt) 3>&1 1>&2) 2>&1 | tee -a sim.$1/jagsout.txt', if(n.sims>1 && silent.jags) '', '', '
-
-		( ( (', jagspath, ' < sim.$1/script.cmd; echo $! > sim.$1/.retstat.$pid) 2>&1 1>&3 | tee -a sim.$1/jagserror.txt) 3>&1 1>&2) 2>&1 | tee -a sim.$1/jagsout.txt', if(silent.jags) '', '
-
-		', if(n.sims>1) '( ( echo "" 2>&1 1>&3 | tee -a sim.$1/jagserror.txt) 3>&1 1>&2) 2>&1 | tee -a sim.$1/jagsout.txt', if(n.sims>1 & silent.jags) '', '', '
-
-		# This makes sure the process has finished before continuing:
-		wait
-	
-		returnstat=`cat < sim.$1/.retstat.$$`
-		rm sim.$1/.retstat.$$
-	
-		', if(!silent.jags) 'echo ""', '
-	
-		exit $returnstat
-			', sep='', file=jobname)
-			#close(filecon)
-	
-		Sys.chmod(jobname)
-
-		
-		cat('#!/bin/sh		
-	cmd="', jobname, '" 
-	ntasks=', n.sims, '
-	job=1
-	indir="', thed, '"
-	# Start the process in the background so we can get the pid:
-	', command, ' &
-	# Echo the pid to a file - we might need to kill it if interrupted:
-	echo $! > mgridpid.txt
-	# And wait for mgrid to finish:
-	wait
-	rm mgridpid.txt
-	exit 0
-		', sep='', file='starter.sh')
-	#}
-
-		Sys.chmod('starter.sh')
-		
-		# For some reason wrapping the actual system call inside a shell script fixes the display issues in Aqua, so no need to use tailf workaroud here:
-		success <- system('( ./starter.sh 2>&3 | tee .starterout.txt) 3>&2 | tee starteroutput.txt', intern=FALSE, wait=TRUE)
-
-		# This should be remvoed by the shell script, if it's still there the shell script didn't finish:
-		if(file.exists("mgridpid.txt")){
-			interrupt <- TRUE
-			pid <- as.numeric(readLines('mgridpid.txt', warn=FALSE))
-			success <- system(paste("kill ", pid, sep=""))
-			return("The process was terminated while submitting or waiting for the results of the xgrid job")
-		}else{
-				
-			if(success!=0){
-				return("An unknown error occured while starting the xgrid command")
-			}
-	
-			if(file.exists('jobid.txt')) joboutput <- paste(readLines('jobid.txt', warn=FALSE), collapse='\n') else joboutput <- paste(readLines('starteroutput.txt', warn=FALSE), collapse='\n')
-				
-			results <- list()
-			
-			if(submitandstop){
-				jobnum <- gsub('[^[:digit:]]', '', paste(joboutput, collapse=''))
-				if(jobnum=='' | as.numeric(jobnum)>10^6){
-			#				cat(readLines("starteroutput.txt", warn=FALSE))
-					return("There was an error submitting your job to Xgrid - no Job ID was returned")			
-				}
-				swcat('Your job (name: "', jobname, '";  ID: "', jobnum, '") has been succesfully uploaded to xgrid\n', sep='')
-				results$complete <- FALSE
-				results$jobid <- jobnum
-			}else{
-				results$complete <- TRUE
-				results$jobid <- NA
-			}
-			
-			retval <- results
-	
-		}
-	
-	})
-	
-	return(retval)
-	
-}
 
 runjags.start <- function(model, monitor, data, inits, modules, factories, burnin, sample, adapt, thin, tempdir, dirname, method, method.options, internal.options=list()){
 	
@@ -1190,16 +1073,14 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 	# Some methods don't require writing files:
 	writefiles <- TRUE
 	
-	# Checking of DIC and JAGS availability etc will already have been done, but we need to check vailability of methods (and xgrid options)
+	# Checking of DIC and JAGS availability etc will already have been done, but we need to check vailability of methods
 	if(class(method)!="function"){
 		
 		method <- getrunjagsmethod(method)
 		
 		##### Internal.options is ONLY used by Xgrid - get rid of it once Xgrid is gone
 		if(method=="xgrid"){			
-			xgrid.options <- method.options
-			method.options <- internal.options
-			cl = inputsims = remote.jags = rjags = by = progress.bar <- NA			
+			stop("xgrid is no longer supported")
 		}else{
 			requirednames <- c("n.sims","cl","remote.jags","by","progress.bar","jags","silent.jags","jags.refresh","batch.jags")
 			# The method.options are now being checked and handled by extend.jags - this should always be true (note rjags is not required as we remove it occasionally)
@@ -1324,7 +1205,7 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 		}else{
 			# Change jobname to match folder name:
 			if(method=='xgrid'){
-				jobname <- new_unique(xgrid.options$jobname, touch=TRUE, type='folder')
+				stop("xgrid support is no longer available")
 			}else{
 				if(is.na(dirname)){
 					dirname <- "runjagsfiles"
@@ -1409,10 +1290,7 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 			method <- runjags.background
 		}
 		if(strmethod=='xgrid'){
-			# Leave here as a failsafe in case extend.jags is used on an xgrid method object:
-			test <- setup.xgrid(mgridpath=xgrid.options$mgridpath, hostname=xgrid.options$hostname, password=xgrid.options$password, testonly=TRUE)
-			n.sims <- min(n.chains, xgrid.options$max.threads)
-			method <- runjags.xgrid
+			stop("xgrid is no longer supported")
 		}
 		if(strmethod=='rjags'){
 			n.sims <- 1
@@ -1426,8 +1304,7 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 		method.options$jags <- jags.status$JAGS.path
 		
 		if(strmethod=='xgrid'){
-			method.options <- c(method.options, xgrid.options[names(xgrid.options)!="jobname"])
-			if(!identical(names(method.options), c("jags", "silent.jags", "jags.refresh", "batch.jags", "os", "libpaths", "n.sims", "jobname", "cl", "remote.jags", "rjags", "command", "customart", "jagspath", "submitandstop", "max.threads", "mgridpath", "hostname", "password"))) stop("Invalid method.options list provided - ensure xgrid jags jobs are started with the correct xgrid.xx.jags functions", call.=FALSE)
+			stop("xgrid is no longer supported")
 		}else{
 			stopifnot(all(c("jags", "silent.jags", "jags.refresh", "batch.jags", "os", "libpaths", "n.sims", "jobname", "cl", "remote.jags", "rjags") %in% names(method.options)))	
 		}

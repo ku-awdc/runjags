@@ -14,9 +14,6 @@
 #' @return
 #' An object of class \code{\link{runjagsstudy-class}}, containing a summary of the performance of the model with regards to the target variables specified.  If record.chains=TRUE, an element named 'runjags' containing a list of all the runjags objects returned will also be present.  Any error messages given by individual simulations will be contained in the \$errors element of the returned list.
 
-#' @references
-#' M. J. Denwood, "runjags: An R Package Providing Interface Utilities, Distributed Computing Methods and Additional Distributions For MCMC Models in JAGS," Journal of Statistical Software, [Under review].
-
 #' @seealso
 #' \code{\link{autorun.jags}} for the underlying methods used to run simulations to convergence, and \code{\link{runjagsstudy-class}} for details of the returned object
 
@@ -28,7 +25,7 @@
 
 #' @param runjags.object an object of class \code{\link{runjagsstudy-class}} on which to perform the drop-k analysis
 
-#' @param dropvars the variable(s) to be eliminated from the data so that the ability of the model to predict these datapoints can be assessed.  The variable can be specified as a vector, or as a single character for which partial matching will be done.  Array indices can be used, but must be specified as a complete range e.g. variable[2:5,2] is permitted, but variable[,2] is not because the first index is empty
+#' @param dropvars the variable(s) to be eliminated from the data so that the ability of the model to predict these datapoints can be assessed.  The variable can be specified as a vector, or as a single character for which partial matching will be done.  Array indices can be used, but must be specified as a complete range e.g. variable\[2:5,2\] is permitted, but variable\[,2\] is not because the first index is empty
 
 #' @param k the number of datapoints to be dropped from each individual simulation.  The default of 1 is a drop-1 study (also called a leave-one-out cross validation study).
 
