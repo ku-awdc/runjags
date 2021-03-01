@@ -1,6 +1,6 @@
 ## Make sure required packages are installed and updated:
 
-install.packages(c("coda","rjags","modeest","testthat","knitr","rmarkdown","spelling"), ask=FALSE)
+install.packages(c("coda","rjags","modeest","testthat","knitr","rmarkdown","spelling"))
 
 library("runjags")
 
