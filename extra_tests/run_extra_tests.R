@@ -1,6 +1,6 @@
 ## Make sure required packages are installed and updated:
 
-install.packages(c("coda","rjags","modeest","testthat","knitr","rmarkdown","spelling"))
+# install.packages(c("coda","rjags","modeest","testthat","knitr","rmarkdown","spelling"))
 
 library("runjags")
 
@@ -42,17 +42,18 @@ check_reverse_dependencies <- function(package='runjags', dir=paste0('checkrevde
 
   dir.create(dir)
   setwd(dir)
-  dir.create('sources')
+  if(!dir.exists("_sources")) dir.create('_sources')
 
   pkgs <- reverse_dependencies_with_maintainers(package, which=which, recursive=FALSE)
 
   # Install packages with dependencies:
-  install.packages(pkgs[,'Package'], dependencies=TRUE)
+  #install.packages(pkgs[,'Package'], dependencies=TRUE)
+  #BiocManager::install("Icens")
 
   # Download the packages to check:
   download.packages(pkgs[,'Package'], destdir='_sources')
   # And check each in a separate shell:
-  for(f in list.files('sources')){
+  for(f in list.files('_sources', pattern=".tar.gz")){
     system(paste0('R CMD check -o _sources ', file.path('_sources',f), ' > ', f, '.txt 2>&1 &'))
   }
 
@@ -61,11 +62,16 @@ check_reverse_dependencies <- function(package='runjags', dir=paste0('checkrevde
 
 
 ## Check reverse dependencies in separate shells:
-check_reverse_dependencies()
-warning("Check reverse dependencies manually")
+#check_reverse_dependencies()
+#warning("Check reverse dependencies manually")
 ## TODO: print a message to say which did not pass check cleanly
 
 
+## Make sure we have:
+# export PATH="/usr/local/clang8/bin:/usr/local/gfortan/bin:/usr/local/opt/unzip/bin:$PATH"
+# Plus latest MacTex installed
+
+
 ## Run extended tests:
-source("/Documents/GitHub/runjags/extra_tests/ExtendedTests.R")
+source("~/Documents/GitHub/runjags/extra_tests/ExtendedTests.R")
 
