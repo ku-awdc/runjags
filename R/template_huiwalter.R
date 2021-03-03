@@ -2,14 +2,15 @@
 #'
 #' @param testdata the input paired test data, where each column name corresponds to a test result - except possibly "ID" which is ignored, and "Population" indicating a population identifier for that row. Each row must represent test results from the same individual either as logical or a factor with two levels (and where the first level indicates a negative test result). Data may be missing at random (except for Population).
 #' @param outfile the name of the text file to save the model representation
-#' @param covon should covariance terms be activated or omitted?
+#' @param covariance should covariance terms be activated or omitted?
 #' @param se_priors the priors to use for sensitivity parameters (can be adjusted in the model once it is generated)
 #' @param sp_priors the priors to use for specificity parameters (can be adjusted in the model once it is generated)
 #'
 #' @export
-template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covon=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)'){
+template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)'){
 
 	stopifnot(is.data.frame(testdata))
+	covon <- covariance
 
 	## R code to generate a Hui-Walter model for N tests and P populations, with potential missing data
 
@@ -36,7 +37,7 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covon=FA
 	npop <- length(levels(testdata$Population))
 
 	## Initialise the file:
-	cat('## Auto-generated Hui-Walter model created by script version ', version, ' on ', as.character(Sys.Date()), '\n\nmodel{\n\n\t## Observation layer:', sep='', file=outfile, append=FALSE)
+	cat('## Auto-generated Hui-Walter model created by runjags version ', runjagsprivate$runjagsversion, ' on ', as.character(Sys.Date()), '\n\nmodel{\n\n\t## Observation layer:', sep='', file=outfile, append=FALSE)
 
 	## Some variables that are needed in a few places:
 	testcols <- names(testdata)[!names(testdata) %in% c('ID','Population')]

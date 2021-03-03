@@ -1,0 +1,107 @@
+######################################################################################################
+###
+###  Installation instructions for the runjags package
+###  Matthew Denwood, 27th February 2021
+###
+###  The instructions below are modified from the rjags package
+###  Original file is Copyright (C) Martyn Plummer, licensed under GPL-2
+###
+######################################################################################################
+
+
+The runjags package itself is entirely written in R, but it does contain
+a JAGS module that provides additional distributions that must be
+compiled for your system against a functional JAGS installation.  See
+the platform specific instructions below for how to do this.
+
+If you are unable to compile the C++ code and don't require the distributions
+provided in the JAGS extension module, see the 'Compile-free' instructions 
+at the end of this document.
+
+
+
+Installation on Windows
+-----------------------
+
+At compile time, there is no way for Windows to guess where the JAGS
+library is installed, so you must supply the location yourself using
+the make variable JAGS_ROOT, defining it in the file HOME/.R/Makevars.win
+like so:
+
+JAGS_ROOT=c:/Progra~1/JAGS/JAGS-4.0.0
+
+where HOME is the default starting directory for an R session launched
+from the start menu (typically your Documents folder).
+
+The configure script also needs to know the version of JAGS being used,
+and will attempt to guess this from the JAGS_ROOT path.  If a non-
+standard install path has been used you will need to provide the correct
+JAGS major-version number like so:
+
+JAGS_MAJOR_VERSION=4
+
+The header files for the module itself should be able to detect the
+version of JAGS installed on your system, but if you encounter compiler
+errors it may help to specify JAGS_MAJOR_VERSION even if JAGS is 
+installed in a standard directory.
+
+
+
+Unix/Linux: pkg-config
+------------------------
+
+If you have pkg-config installed then the configure script will use it
+to detect the JAGS library and set the compiler and linker flags for
+runjags. You can test this capability in a unix shell by typing
+
+pkg-config --modversion jags
+
+If this does not detect your JAGS installation then it means that the
+file 'jags.pc' is not on the search path of pkg-config. In this case
+you should add it by setting the environment variable PKG_CONFIG_PATH.
+For example if the full path to 'jags.pc' is
+'/usr/local/lib64/pkgconfig/jags.pc', then set
+
+export PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
+
+before installing runjags.
+
+Recall that most Linux distributions divide software into `user' and
+`developer' versions, so if you are using a pre-built JAGS binary
+package for your Linux distribution then remember to install the
+developer version before attempting to install the runjags package.
+
+The header files for the module itself should be able to detect the
+version of JAGS installed on your system, but a JAGS_MAJOR_VERSION
+environmental variable can be set in case of problems which may be
+encountered with some versions of JAGS - e.g. JAGS 4-beta requires:
+
+export JAGS_MAJOR_VERSION=4
+R CMD install runjags
+
+
+
+Unix/Linux: legacy configuration
+----------------------------------
+
+Legacy configuration is used whenever pkg-config is not installed or
+otherwise fails to detect the JAGS library. Legacy configuration is
+deprecated and will be removed in a future version. If you experience
+problems with installing runjags then it is strongly recommended that
+you try to get pkg-config working. Otherwise, you can refer to the
+legacy installation instructions given within the rjags package.
+
+
+
+Compile-free
+------------
+
+The standard version of the runjags package includes a JAGS
+extension module providing additional distributions in the Pareto
+family (amongst others).  
+
+If you want to install runjags without the additional JAGS module,
+then you can simply remove the configure(.ac) files and entire src
+directory before running R CMD install runjags.  This does not
+require any C++ compilers, or even for JAGS to be installed on
+your system.

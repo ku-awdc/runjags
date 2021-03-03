@@ -36,7 +36,7 @@ Suggests:
     modeest,
     testthat (>= 3.0.0),
     knitr,
-    rmarkdown,
+    markdown,
     spelling
 Config/testthat/edition: 3
 VignetteBuilder: knitr

@@ -63,6 +63,7 @@ write.jagsfile,
 write.JAGSfile,
 template.jags,
 template.JAGS,
+template_huiwalter,
 
 extract.runjags,
 extract,

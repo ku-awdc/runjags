@@ -7,7 +7,7 @@
 template_huiwalter(
   testdata,
   outfile = "huiwalter_model.txt",
-  covon = FALSE,
+  covariance = FALSE,
   se_priors = "dbeta(1,1)",
   sp_priors = "dbeta(1,1)"
 )
@@ -17,7 +17,7 @@ template_huiwalter(
 
 \item{outfile}{the name of the text file to save the model representation}
 
-\item{covon}{should covariance terms be activated or omitted?}
+\item{covariance}{should covariance terms be activated or omitted?}
 
 \item{se_priors}{the priors to use for sensitivity parameters (can be adjusted in the model once it is generated)}
 
