@@ -41,7 +41,7 @@
 // Will be defined on both platforms - if >0 (windows only) need to make sure that the version of ljags- passed matches what version.h says:
 #if JAGS_MAJOR_ASSUMED > 0
 #if JAGS_MAJOR_USED != JAGS_MAJOR_ASSUMED
-#error "Error detecting the JAGS version - you need to set the 'JAGS_MAJOR_FORCED' environmental variable to the major version of JAGS you have installed"
+#error "Error detecting the JAGS version - you need to set the 'JAGS_MAJOR_VERSION' environmental variable to the major version of JAGS you have installed - see the INSTALL instruction file"
 #endif // JAGS_MAJOR_USED != JAGS_MAJOR_ASSUMED
 #else
 #define JAGS_MAJOR_ASSUMED 0
