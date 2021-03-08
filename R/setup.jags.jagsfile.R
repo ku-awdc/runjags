@@ -636,7 +636,7 @@ checkdataformat <- function(arg, block, auto, n.chains=NA, data.type=TRUE, evals
 					}
 				}
 				
-				if(class(temp)=="function"){
+				if(inherits(temp, "function")){
 					success <- suppressWarnings(try(temp <- temp(c), silent=TRUE))
 					if(inherits(success, 'try-error') && !data.type){
 					  success <- suppressWarnings(try(temp <- temp(), silent=TRUE))
@@ -647,19 +647,19 @@ checkdataformat <- function(arg, block, auto, n.chains=NA, data.type=TRUE, evals
 					if(inherits(temp, c('data.frame','environment')))
 						temp <- as.list(temp)
 					
-					if(data.type && class(temp)=='list')
+					if(data.type && is.list(temp))
 						stop(paste('A function matching the variable name "', auto[i], '" was found in the ', feedtxt, ' but returns a list which is not allowed for data - it should return either a factor, numeric, integer or logical', sep=''), call.=FALSE)											
 					
 					if(is.null(temp))
 						stop(paste('A function matching the variable name "', auto[i], '" was found in the ', feedtxt, ' but returns NULL', sep=''), call.=FALSE)
 					
-					if(!class(temp) %in% c(permitted.formats, 'list') || (class(temp)=='list' && !all(sapply(temp,class)%in%permitted.formats)))
-            			stop(paste('A function matching the variable name "', auto[i], '" was found in the ', feedtxt, ' but returns an object of class ', class(temp), ' when executed (this should be a factor, numeric, integer, logical, or a list of one of these types)', sep=''), call.=FALSE)
+					if(!inherits(temp, c(permitted.formats, 'list')) || (is.list(temp) && !all(sapply(temp,inherits, what=permitted.formats))))
+            			stop(paste('A function matching the variable name "', auto[i], '" was found in the ', feedtxt, ' but returns an object of class ', class(temp)[1], ' when executed (this should be a factor, numeric, integer, logical, or a list of one of these types)', sep=''), call.=FALSE)
 				}
 				
-				if(class(temp)=="list"){
+				if(is.list(temp)){
 					if(data.type)
-						stop(paste('The variable name "', auto[i], '" was found in the ', feedtxt, ' but it is a list which is not allowed for data - it should be a factor, numeric, integer or logical', sep=''), call.=FALSE)					
+						stop(paste('The variable name "', auto[i], '" was found in the ', feedtxt, ' but it is a list (or data frame) which is not allowed for data - it should be a factor, numeric, integer or logical', sep=''), call.=FALSE)					
 					
 					# Allow recycling values if the list is of length 1 (this is equivalent to a non-list anyway):
 					if(length(temp) < c){
@@ -670,19 +670,19 @@ checkdataformat <- function(arg, block, auto, n.chains=NA, data.type=TRUE, evals
 					}else{
 						temp <- temp[[c]]
 					}
-					if(!class(temp) %in% permitted.formats)
-	        			stop(paste('A list matching the variable name "', auto[i], '" was found in the ', feedtxt, ' but the element corresponding to chain ', c, ' is of class ', class(temp), ' - it should be a factor, numeric, integer or logical', sep=''), call.=FALSE)
+					if(!inherits(temp, permitted.formats))
+	        			stop(paste('A list matching the variable name "', auto[i], '" was found in the ', feedtxt, ' but the element corresponding to chain ', c, ' is of class ', class(temp)[1], ' - it should be a factor, numeric, integer or logical', sep=''), call.=FALSE)
 					
 					if(is.null(temp))
 						stop(paste('A list matching the variable name "', auto[i], '" was found in the ', feedtxt, ' but the element corresponding to chain ', c, ' is NULL', sep=''), call.=FALSE)
 				}
 				
 				# necessary to remove compound listing somehow introduced by initlist function or something:
-				while(class(temp)=="list")
+				while(is.list(temp))
 					temp <- temp[[1]]
 				
-				if(!class(temp) %in% permitted.formats)
-        			stop(paste('An object matching the variable name "', auto[i], '" was found in the ', feedtxt, chaintxt, ' but is of class ', class(temp), ' - it should be a factor, numeric, integer or logical', sep=''), call.=FALSE)
+				if(!inherits(temp, permitted.formats))
+        			stop(paste('An object matching the variable name "', auto[i], '" was found in the ', feedtxt, chaintxt, ' but is of class ', class(temp)[1], ' - it should be a factor, numeric, integer or logical', sep=''), call.=FALSE)
 				
 				geninits[[i]] <- temp
 

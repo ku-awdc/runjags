@@ -670,6 +670,7 @@ check_data_format <- function(arg, block, auto, n.chains=NA, data.type=TRUE, eva
 					}
 				}
 				
+				warning("CHANGE CLASS TO INHERITS IN SETUP_JAGS_JAGSFILE")
 				if(class(temp)=="function"){
 					success <- suppressWarnings(try(temp <- temp(c), silent=TRUE))
 					if(inherits(success, 'try-error') && !data.type){
