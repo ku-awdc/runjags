@@ -263,7 +263,7 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 	discrete <- !is.na(modestats)
 
 	if(any(is.na(modestats)) && runjags.getOption('mode.continuous')){
-		## Note: modeest is the cause of the warning message "multiple methods tables found for ‘plot’"
+		## Note: attaching the timeSeries package (recursive dependency of modeest) is the cause of the warning message "multiple methods tables found for ‘plot’"
 		if(!suppressPackageStartupMessages(requireNamespace('modeest', quietly=TRUE)))
 			stop('The "modeest" package is required to calculate the mode of continuous variables', call.=FALSE)
 		if(is.null(modeest.opts)) modeest.opts <- list()
