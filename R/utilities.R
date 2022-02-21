@@ -123,7 +123,7 @@ findjags <- function(ostype = .Platform$OS.type, look_in = NA, ...){
 
 		# Test standard 'jags' as well as variable passed and some common install locations:
 		suppressWarnings({
-			paths <- c(from.variable, "jags", "/opt/local/bin/jags", "/opt/local/sbin/jags", "/usr/texbin/jags", "/usr/bin/jags", "/bin/jags", "/usr/sbin/jags", "/sbin/jags", "/usr/local/bin/jags", "/usr/X11/bin/jags")
+			paths <- c(from.variable, "jags", "/opt/local/bin/jags", "/opt/local/sbin/jags", "/usr/texbin/jags", "/usr/bin/jags", "/bin/jags", "/usr/sbin/jags", "/sbin/jags", "/usr/local/bin/jags", "/opt/R/arm64/bin/jags", "/usr/X11/bin/jags")
 			for(i in 1:length(paths)){
 				jagspath <- system(paste('which ', paths[i], ' 2>&1', sep=""), intern=TRUE)
 				if(length(jagspath)!=0) return(jagspath)
@@ -503,6 +503,9 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 	}
 
 	if(success){
+
+	  ### TODO: look for macOS (>= Big Sur) and then use lipo on binary and compare with R version
+
     	rightstring <- which(grepl("Welcome",returnval))[1]
     	if(is.na(rightstring)){  # Will be NA if which is length 0 as selected first element above
     		version <- 'unknown'
