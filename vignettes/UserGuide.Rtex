@@ -128,7 +128,7 @@ specified by the user to be run in \pkg{JAGS}, using the
 overview of the core functionality of the \pkg{runjags} package and
 provides links to other relevant functions.  All functions require
 installation of \pkg{JAGS}, which is an open source software package
-available from \url{http://mcmc-jags.sourceforge.net/}.
+available from \url{https://mcmc-jags.sourceforge.io/}.
 
 Before running a model for the first time, it is advisable to check the installation of \pkg{JAGS} and set any desired global settings such as installation locations and warning message preferences using the \code{runjags.options} function.  For example, the following will first test the \pkg{JAGS} installation, and then set function feedback from \pkg{runjags} and simulation updates from \pkg{JAGS} to be suppressed for future model runs in this \proglang{R} session:
 %

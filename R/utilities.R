@@ -504,8 +504,6 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 
 	if(success){
 
-	  ### TODO: look for macOS (>= Big Sur) and then use lipo on binary and compare with R version
-
     	rightstring <- which(grepl("Welcome",returnval))[1]
     	if(is.na(rightstring)){  # Will be NA if which is length 0 as selected first element above
     		version <- 'unknown'
@@ -576,7 +574,7 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 		  }
 		}
 		if(!is.na(num.version) & num.version<1){
-			warning(paste("The version of JAGS currently installed on your system is no longer supported.  Please update JAGS from http://mcmc-jags.sourceforge.net\n"))
+			warning(paste("The version of JAGS currently installed on your system is no longer supported.  Please update JAGS from https://mcmc-jags.sourceforge.io/\n"))
 			jags.avail <- FALSE
 		}else{
 			jags.avail <- TRUE
@@ -585,7 +583,7 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 		jags.major <- floor(num.version)
 	}else{
 		if(rjags.avail){
-			if(!silent) suppressWarnings(swcat("JAGS was not found on your system using the command '", jags, "'.  Please ensure that the command is correct and that the latest version of JAGS is installed from http://mcmc-jags.sourceforge.net\n", sep=""))
+			if(!silent) suppressWarnings(swcat("JAGS was not found on your system using the command '", jags, "'.  Please ensure that the command is correct and that the latest version of JAGS is installed from https://mcmc-jags.sourceforge.io/\n", sep=""))
 			jags.avail <- TRUE
 			# If it's just rjags assume the version number is high enough:
 			num.version <- Inf

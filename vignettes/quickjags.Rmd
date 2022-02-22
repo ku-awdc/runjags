@@ -17,7 +17,7 @@ This document is intended as a short introduction to fitting MCMC models using J
 
 ## Preparation
 
-The runjags packages requires a working installation of [JAGS](http://mcmc-jags.sourceforge.net/).  To test the installation, it is recommended to use the testjags() function:
+The runjags packages requires a working installation of [JAGS](https://mcmc-jags.sourceforge.io/).  To test the installation, it is recommended to use the testjags() function:
 
 ```{r}
 testjags()
