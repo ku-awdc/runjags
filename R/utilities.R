@@ -533,9 +533,17 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 		rjags.version <- ""
 	}
 
-	if(!silent)
-		swcat("You are using ", rversion, " on a ", os, " machine, with the ", gui, " GUI\n", sep="")
-
+	if(!silent){
+	  ## Specific output for macOS:
+	  pkt <- .Platform$pkgType
+	  if(grepl("mac", pkt)){
+	    r_type <- ifelse(grepl("arm64",pkt), "arm64", "x86_64")
+	    c_type <- ifelse(grepl("arm64",Sys.info()["machine"]), "arm64", "x86_64")
+	    swcat("You are using ", gsub(")", paste0("; macOS ", r_type, ")"), rversion), " on a unix (macOS ", c_type, ") machine, with the ", gui, " GUI\n", sep="")
+	  }else{
+	    swcat("You are using ", rversion, " on a ", os, " machine, with the ", gui, " GUI\n", sep="")
+	  }
+	}
 
 	if(jags=="JAGS not found") jags <- "findjags()"
 
@@ -544,7 +552,28 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 		if(success==-1){
 			if(!silent) suppressWarnings(swcat("JAGS version ", version, " found successfully using the command '", jags, "', but returned the status code '", attributes(returnval)$status, "' - this may indicate a compatibility issue, procede with caution\n", sep=""))
 		}else{
-			if(!silent) suppressWarnings(swcat("JAGS version ", version, " found successfully using the command '", jags, "'\n", sep=""))
+		  ## Specific output for macOS:
+		  pkt <- .Platform$pkgType
+		  if(grepl("mac", pkt)){
+		    r_type <- ifelse(grepl("arm64",pkt), "arm64", "x86_64")
+		    c_type <- ifelse(grepl("arm64",Sys.info()["machine"]), "arm64", "x86_64")
+		    j_type <- system(paste0("lipo -archs ", gsub("/bin/jags","/libexec/jags-terminal", jags)), intern=TRUE)
+		    if(j_type=="x86_64 arm64") j_type <- "universal"
+		    if(grepl("build",returnval[rightstring])){
+		      bld <- paste0("macOS ", j_type, " build")
+		    }else{
+		      bld <- paste0(j_type, " binary")
+		    }
+		    if(!silent) suppressWarnings(swcat("JAGS version ", version, " (", bld, ") found successfully using the command '", jags, "'\n", sep=""))
+		    if(!j_type=="universal" && (j_type!=r_type)){
+		      warning(paste0("Your R build (", r_type, ") does not match your JAGS build (", j_type, "): you should re-install JAGS and/or R so they match"))
+		    }
+		    if(!silent && !j_type=="universal" && (j_type!=c_type)){
+		      swcat("Your JAGS build (", j_type, ") does not match your CPU architecture (", c_type, "): JAGS will run under Rosetta2 emulation, which will decrease performance")
+		    }
+		  }else{
+		    if(!silent) suppressWarnings(swcat("JAGS version ", version, " found successfully using the command '", jags, "'\n", sep=""))
+		  }
 		}
 		if(!is.na(num.version) & num.version<1){
 			warning(paste("The version of JAGS currently installed on your system is no longer supported.  Please update JAGS from http://mcmc-jags.sourceforge.net\n"))
