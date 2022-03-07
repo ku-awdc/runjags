@@ -127,7 +127,7 @@ if(require('rjags')){
 data(LINE)
 jags.model <- LINE
 runjags.model <- as.runjags(jags.model, monitor=c('alpha','beta'))
-runjags.model <- extend.jags(runjags.model, sample=1000, method='interruptible')
+runjags.model <- extend.jags(runjags.model, method='rjags')
 jags.model <- as.jags(runjags.model)
 # Coercion to MCMC (requires loading the coda package):
 library('coda')

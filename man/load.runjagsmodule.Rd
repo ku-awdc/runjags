@@ -127,7 +127,9 @@ if(available){
 m <- "model{
  L ~ dlomax(1,1)
 		}"
-results <- run.jags(m, monitor="L", sample=1000, method="rjags", modules="runjags")
+\dontrun{
+results <- run.jags(m, monitor="L", method="rjags", modules="runjags")
+}
 }
 }
 \references{
