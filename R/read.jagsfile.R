@@ -109,7 +109,10 @@
 #' "
 #'
 #' model <- read.winbugs(string)
+#' \dontrun{
 #' results <- run.jags(string, monitor='mean')
+#' }
+#'
 #'
 #' # The same model but specified in JAGS format.  This syntax also defines
 #' # monitors in the model, and uses data retrieved from the R environment:
@@ -136,7 +139,9 @@
 #' model <- read.jagsfile(string)
 #' Count <- 1:10
 #' N <- length(Count)
+#' \dontrun{
 #' results <- run.jags(string)
+#' }
 #'
 #'
 #' # The same model using autoinits and a mixture of manual and autodata:
@@ -161,7 +166,9 @@
 #' model <- read.jagsfile(string)
 #' Count <- 1:10
 #' mean <- list(1, 100)
+#' \dontrun{
 #' results <- run.jags(string, n.chains=2)
+#' }
 #'
 NULL
 

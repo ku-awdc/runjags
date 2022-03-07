@@ -4,8 +4,7 @@
 #' @name runjags-package
 #' @aliases runjags runjags-package runjagspackage
 #' @title Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS
-#' @description
-#' User-friendly interface utilities for MCMC models via Just Another Gibbs Sampler, facilitating the use of parallel (or distributed) processors for multiple chains, automated control of convergence and sample length diagnostics, and evaluation of the performance of a model using drop-k validation or against simulated data. Template model specifications can be generated using a standard lme4-style formula interface to assist users less familiar with the BUGS syntax.  A JAGS extension module provides additional distributions including the Pareto family of distributions, the DuMouchel prior and the half-Cauchy prior.
+#'
 #' @details
 #' Just Another Gibbs Sampler (JAGS) is a program which allows analysis of Bayesian models using Markov chain Monte Carlo (MCMC) simulation, and was developed by Martyn Plummer to be an alternative to BUGS that ran on UNIX systems as well as Windows systems. This package is intended to provide additional functions to help automate the process of running models, including convergence diagnostics, collation and plotting of results, and convinience wrappers for running models (either individually or for multiple data sets) over parallel processors and distributed computing clusters.
 #'
