@@ -428,7 +428,7 @@ print.runjags <- function(x, vars=NA, digits = 5, ...){
 				if(any(x$semistochastic) && niter(x$mcmc)>1)
 					cat("Note: parameters marked with '$' were non-stochastic in some chains - these parameters can not be assumed to have converged!\n")
 
-				if(class(x$dic)!="character"){
+				if(!is.character(x$dic)){
           if(is.na(x$dic$dic)){
 					  cat("[DIC not available from the stored object]\n", sep="")
 	        }else{
@@ -475,7 +475,7 @@ print.runjagsplots <- function(x,layout=runjags.getOption('plot.layout'),new.win
 		newwindows <- FALSE
 	}
 
-	if(class(x)=="runjags"){
+	if(inherits(x, "runjags")){
 
 		x <- checkvalidrunjagsobject(x)
 
@@ -489,7 +489,7 @@ print.runjagsplots <- function(x,layout=runjags.getOption('plot.layout'),new.win
 		# vars=NA and type= here combined with return if all character above should ensure they are never re-plotted
 	}
 
-	if(class(x)=='runjagsplots' && !all(sapply(x,class)=='trellis')){
+	if(inherits(x, 'runjagsplots') && !all(sapply(x,inherits, what='trellis'))){
 		# If we are directly invoking the print method for $trace we may to sort out the possible list of separate chains
 		# If called from plot(rjo) then we are passed a list, and the separating of separate chains has already been done
 		x <- lapply(x, function(todo){
@@ -500,7 +500,7 @@ print.runjagsplots <- function(x,layout=runjags.getOption('plot.layout'),new.win
 			})
 	}
 
-	if(class(x)=="character"){
+	if(inherits(x, "character")){
 		cat(x)
 		invisible(x)
 	}

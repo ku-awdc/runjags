@@ -183,13 +183,13 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 
 
 		s <- try(sseff <- effectiveSize(thinnedmcmclist), silent=TRUE)
-		if(class(s)=='try-error'){
+		if(inherits(s, 'try-error')){
 			if(runjags.getOption('summary.warning'))
 				warning('There was an error calculating the effective sample size [using coda::effectiveSize()] for one or more parameters', call.=FALSE)
 
 			sseff <- apply(collapsed,2,function(x){
 				ess <- try(size <- effectiveSize(x))
-				if(class(ess)=='try-error')
+				if(inherits(ess, 'try-error'))
 					return(NA)
 				else
 					return(size)

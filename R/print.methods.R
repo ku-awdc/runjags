@@ -36,7 +36,7 @@ print.failedjags <- function(x, linenumbers=runjags.getOption('linenumbers'), ..
 	if(all(sapply(x,identical,NA))){
 		cat('No failed JAGS model available!\n')
 	}else{
-	
+
 		if('model' %in% type && !identical(x$model, NA)){
 			print.runjagsmodel(x$model, linenumbers=linenumbers)
 		}
@@ -93,12 +93,12 @@ print.runjagsinits <- function(x, linenumbers=runjags.getOption('linenumbers'), 
 			lines <- length(split)
 			if(lines>0) x[i] <- paste(paste(format(as.character(1:lines), justify='left'),"  |  ", split, sep=""),collapse="\n")
 			cat(c("\nChain ", i, ":\n\n", "", x[i],if(linenumbers) "\n"),sep="")
-		}	
+		}
 	}else{
 		for(i in 1:length(x)){
 			cat(c("\nChain ", i, ":\n", "", x[i],""),sep="")
 		}
-	
+
 	}
 	cat("\n")
 	invisible(x)
@@ -112,7 +112,7 @@ print.runjagsoutput <- function(x, linenumbers=runjags.getOption('linenumbers'),
 		cat("\nCrashed JAGS model output(s):\n")
 		simnos <- as.numeric(gsub("[[:alpha:][:punct:]]","",names(x)))
 		printsimno <- TRUE
-		linenumbers <- FALSE		
+		linenumbers <- FALSE
 	}else{
 		cat("\nJAGS model output(s):\n")
 		simnos <- 1:length(x)
@@ -124,12 +124,12 @@ print.runjagsoutput <- function(x, linenumbers=runjags.getOption('linenumbers'),
 			lines <- length(split)
 			if(lines>0) x[i] <- paste(paste(format(as.character(1:lines), justify='left'),"  |  ", split, sep=""),collapse="\n")
 			if(printsimno) cat(c("\nSimulation ", simnos[i], ":\n\n", "", x[i],if(linenumbers) "\n"),sep="") else cat(c("\n\n", "", x[i],if(linenumbers) "\n"),sep="")
-		}	
+		}
 	}else{
 		for(i in 1:length(x)){
 			if(printsimno) cat(c("\nSimulation ", simnos[i], ":\n", "", x[i],""),sep="") else cat(c("\n", "", x[i],""),sep="")
 		}
-	
+
 	}
 	cat("\n")
 	invisible(x)
@@ -142,7 +142,7 @@ print.rjagsoutput <- function(x, ...){
 		cat("\nCrashed rjags model output(s):\n")
 		simnos <- as.numeric(gsub("[[:alpha:][:punct:]]","",names(x)))
 		printsimno <- TRUE
-		linenumbers <- FALSE		
+		linenumbers <- FALSE
 	}else{
 		cat("\nrjags model output(s):\n")
 		simnos <- 1:length(x)
@@ -155,12 +155,12 @@ print.rjagsoutput <- function(x, ...){
 			lines <- length(split)
 			if(lines>0) x[i] <- paste(paste(format(as.character(1:lines), justify='left'),"  |  ", split, sep=""),collapse="\n")
 			if(printsimno) cat(c("\nSimulation ", simnos[i], ":\n\n", "", x[i],if(linenumbers) "\n"),sep="") else cat(c("\n\n", "", x[i],if(linenumbers) "\n"),sep="")
-		}	
+		}
 	}else{
 		for(i in 1:length(x)){
 			if(printsimno) cat(c("\nSimulation ", simnos[i], ":\n", "", x[i],""),sep="") else cat(c("\n", "", x[i],""),sep="")
 		}
-	
+
 	}
 	cat("\n")
 	invisible(x)
@@ -172,17 +172,17 @@ print.crosscorrstats <- function(x, vars=NA, digits=5, ...){
 
 	selected <- matchvars(checkvalidmonitorname(vars),  dimnames(x)[[1]])
 	x <- x[selected,selected,drop=FALSE]
-		
+
 	m <- prettifytable(x, digits=digits, colsequal=FALSE, nastring="")
-	
+
 	print.noquote(m)
-	
+
 	invisible(x)
 }
 #' @rdname runjags.printmethods
 #' @method print mcsestats
 print.mcsestats <- function(x, vars=NA, digits = 5, ...){
-	
+
 	x <- unlist(x)
 	varnames <- names(x)
 	varnames <- varnames[grepl("sseff.",varnames)]
@@ -191,18 +191,18 @@ print.mcsestats <- function(x, vars=NA, digits = 5, ...){
 	selected <- matchvars(checkvalidmonitorname(vars),  varnames)
 	x <- x[c(selected, selected+length(varnames), selected+(2*length(varnames)))]
 	varnames <- varnames[selected]
-	
+
     cat("Monte Carlo standard error:\n")
-	numbers <- matrix(nrow=length(varnames),ncol=4,dimnames=list(varnames,c("SSeff", "SD", "MCerr", "% of SD")))	
+	numbers <- matrix(nrow=length(varnames),ncol=4,dimnames=list(varnames,c("SSeff", "SD", "MCerr", "% of SD")))
 	numbers[,1] <- as.integer(x[1:(length(x)/3)])
 	numbers[,2] <- x[((length(x)/3)+1):(length(x)*2/3)]
 	numbers[,3] <- x[((length(x)*2/3)+1):length(x)]
 	numbers[,4] <- round(numbers[,3]/numbers[,2]*100,1)
 
 	m <- prettifytable(numbers, digits=digits, colsequal=FALSE, nastring="")
-		
+
 	print.noquote(m)
-	
+
     cat("\n[A rule of thumb is that the Monte Carlo error should be less than 5% of the standard deviation of the sample]\n")
 
 	invisible(numbers)
@@ -211,16 +211,16 @@ print.mcsestats <- function(x, vars=NA, digits = 5, ...){
 #' @rdname runjags.printmethods
 #' @method print gelmanwithtarget
 print.gelmanwithtarget <- function(x, vars=NA, digits = 3, ...){
-	
+
 	  selected <- matchvars(checkvalidmonitorname(vars),  dimnames(x$psrf)[[1]])
-	
+
     cat("Potential scale reduction factors:\n\n")
     print.default(x$psrf[selected,,drop=FALSE], digits = digits, ...)
     if (!is.null(x$mpsrf)) {
         cat("\nMultivariate psrf (for all monitored variables):\n\n")
         cat(format(x$mpsrf, digits = digits))
     }
-    
+
     cat("\n\nTarget psrf\n\n")
     cat(format(x$psrf.target, digits = digits))
     cat("\n")
@@ -230,12 +230,12 @@ print.gelmanwithtarget <- function(x, vars=NA, digits = 3, ...){
 #' @rdname runjags.printmethods
 #' @method print dicstats
 print.dicstats <- function(x, digits=3, ...){
-	if(class(x)=="character"){
+	if(inherits(x, "character")){
 		cat(x)
 	}else{
 		string <- paste("Deviance information criterion [mean(deviance)+mean(pd)]:  ", round(x$dic, digits=digits), "\n", sep="")
 		string <- paste(string, "Penalized Expected Deviance [mean(deviance)+mean(popt)]):  ", round(x$ped, digits=digits), "\n", sep="")
-			
+
 		swcat(string)
 	}
 	invisible(x)
@@ -247,28 +247,28 @@ print.runjagsbginfo <- function(x, ...){
 
 	cat("\nJAGS model summary:  Model currently running in the background ... use 'results.jags(\"", x$jobname, "\")' to retrieve the results.\nStarted on ", as.character(x$startedon), " in the following directory: '", x$directory, "'\n\n", sep="")
 	invisible(x)
-		
+
 }
 
 #' @rdname runjags.printmethods
 #' @method print runjagsstudy
 print.runjagsstudy <- function(x,...){
-	
+
 	if(! any(c('means','singles') %in% names(x)))
 		stop('Summary statistics are not available; please email the package maintainer for help!', call.=FALSE)
-	
+
 	if(identical(x$means, NA) && identical(x$singles, NA))
 		stop('Summary statistics are all missing; please email the package maintainer for help!', call.=FALSE)
-	
+
 	passed <- list(...)
 	if(!identical(passed, list()))
 		warning('Options to the print and summary class for the runjagsstudy class are ignored', call.=FALSE)
-	
+
 	n.sims <- x$simulations-sum(x$crashed)
 	dropk <- x$dropk
 	if(is.null(dropk))
 		dropk <- FALSE
-	
+
 	if(!identical(x$means, NA)){
 		cat("\nAverage values obtained from a ", if(dropk) "drop-k" else "JAGS", " study with a ", if(n.sims==1) "single simulation" else paste("total of ", n.sims, " simulations", sep=""), if(sum(x$crashed)>0) paste(" (excluding ", sum(x$crashed), " crashed simulation", if(sum(x$crashed)>1) "s", ")", sep=""), ":\n", sep="")
 		toprint <- prettifytable(x$means, colsequal=FALSE, nastring="--")
@@ -278,13 +278,13 @@ print.runjagsstudy <- function(x,...){
 			cat("\nValues obtained for variables that were stochastic for only 1 simulation:\n", sep="")
 			print.noquote(prettifytable(x$singles, colsequal=FALSE),...)
 			rettab <- rbind(rettab, cbind(x$singles,1))
-		}		
+		}
 	}else{
 		if(!identical(x$singles, NA)){
 			cat("\nValues obtained from a ", if(dropk) "drop-k" else "JAGS", " study with a ", if(n.sims==1) "single simulation" else paste("total of ", n.sims, " simulations", sep=""), if(sum(x$crashed)>0) paste(" (excluding ", sum(x$crashed), " crashed simulation", if(sum(x$crashed)>1) "s", ")", sep=""), ":\n", sep="")
 			print.noquote(prettifytable(x$singles, colsequal=FALSE),...)
 			rettab <- cbind(x$singles, Simualtions=1)
-		}			
+		}
 	}
 	cat("\n")
 	if(sum(x$crashed)>0){
@@ -300,18 +300,18 @@ print.runjagsstudy <- function(x,...){
 #' @rdname runjags.printmethods
 #' @method summary runjagsstudy
 summary.runjagsstudy <- function(object,...){
-	
+
 	x <- object
 	if(! any(c('means','singles') %in% names(x)))
 		stop('Summary statistics are not available; please email the package maintainer for help!', call.=FALSE)
-	
+
 	if(identical(x$means, NA) && identical(x$singles, NA))
 		stop('Summary statistics are all missing; please email the package maintainer for help!', call.=FALSE)
-	
+
 	passed <- list(...)
 	if(!identical(passed, list()))
 		warning('Options to the print and summary class for the runjagsstudy class are ignored', call.=FALSE)
-	
+
 	toret <- x$means
 	if(identical(NA, toret)){
 		toret <- cbind(x$singles, Simulations=1)
@@ -321,7 +321,7 @@ summary.runjagsstudy <- function(object,...){
 		}
 	}
 	return(toret)
-	
+
 }
 
 #' @rdname runjags.printmethods

@@ -176,7 +176,7 @@ NULL
 #' @export
 read.jagsfile <- function(file){
 
-#	if(!is.character(file) || any(class(zz)=='connection'))
+#	if(!is.character(file) || inherits(zz, 'connection'))
 	if(is.runjags(file))
     	stop('Invalid model file - this argument must be specified as a character string or a character string giving a path to a file', call.=FALSE)
 
@@ -191,7 +191,7 @@ read.jagsfile <- function(file){
 			exists[i] <- FALSE
 			for(end in c('','.txt','.bug', '.R')){
 				exists[i] <- suppressWarnings(try(file.exists(paste(file[i], end, sep='')), silent=TRUE))
-				if(class(exists[i])=="try-error") exists[i] <- FALSE
+				if(inherits(exists[i], "try-error")) exists[i] <- FALSE
 				if(exists[i]){
 					file[i] <- paste(file[i], end, sep='')
 					break

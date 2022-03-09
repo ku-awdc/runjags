@@ -260,7 +260,7 @@ run.jags.study <- function(simulations, model, datafunction, targets=list(), con
 		passthrough$data <- parent.frame()
 
 	# The inits should not be an environment as the environment may well not be available on the nodes - can't just make it a list as that would copy everything
-	if(!identical(inits, list()) && (class(inits)=='environment' || (class(inits)=='list' && all(sapply(inits,class)=='environment'))))
+	if(!identical(inits, list()) && (inherits(inits, 'environment') || (inherits(inits, 'list') && all(sapply(inits, inherits, what='environment')))))
 		stop('The inits argument is not allowed to be an environment for JAGS studies - please use a list or function for inits instead')
 
 	# Expected to be in this list:
@@ -272,7 +272,7 @@ run.jags.study <- function(simulations, model, datafunction, targets=list(), con
 
 		cln <- export.cluster
         s <- try(objects(name=export.cluster, all.names=TRUE, envir=parent.frame()), silent=FALSE)
-		if(class(s)=='try-error')
+		if(inherits(s, 'try-error'))
 			stop('One or more variables specified by export.cluster were not found', call.=FALSE)
 		export.cluster <- lapply(export.cluster, get, envir=parent.frame())
         names(export.cluster) <- cln
@@ -287,7 +287,7 @@ run.jags.study <- function(simulations, model, datafunction, targets=list(), con
 	if(modelsetup$model=="model{\n\n}\n")
 		stop("No valid model was specified or found in the model block")
 	##  Get the data
-	if(class(passthrough$data)%in%c('runjagsdata','character')){
+	if(inherits(passthrough$data, c('runjagsdata','character'))){
 		if(!fromdropk && (!identical(maindata, NA) || !identical(autodata, NA)) && runjags.getOption('blockignore.warning'))
 			warning('Data specified in the model file or using #data# are ignored when a character string is given as the argument to data', call.=FALSE)
 		maindata <- NA
@@ -367,8 +367,8 @@ run.jags.study <- function(simulations, model, datafunction, targets=list(), con
 		alreadywarned <- FALSE
 		for(i in 1:simulations){
 			if(length(formals(datafunction))==0) thedata <- datafunction() else thedata <- datafunction(i)
-			if(class(thedata)=="character") thedata <- list.format(thedata)
-			if(class(thedata)!="list") stop("The data function must return either a named list or a character string representing the data for that iteration")
+			if(inherits(thedata, "character")) thedata <- list.format(thedata)
+			if(!inherits(thedata, "list")) stop("The data function must return either a named list or a character string representing the data for that iteration")
 
 			tdata <- modeldata
 			# Check all names are unique and if not over-write tdata (specified in the model) with thedata (specified in the function) with a warning:
@@ -403,12 +403,12 @@ run.jags.study <- function(simulations, model, datafunction, targets=list(), con
 	}
 
 	# Turn list targets into a vector so they can be added to monitored variables:
-	if(class(targets)=='list'){
+	if(inherits(targets, 'list')){
 		if(identical(targets,list()))
 			stop("A named list or numeric vector of variables and their values must be provided to the 'target' option")
 		targets <- getjagsnames(targets)
 	}
-	if(!class(targets)%in%c("numeric","integer") || length(targets)==0 || any(names(targets)==""))
+	if(!inherits(targets, c("numeric","integer")) || length(targets)==0 || any(names(targets)==""))
 		stop("The targets variable must be a named list or numeric vector of variable(s) on which to assess the model's performance")
 
 	# Now get the full argument list for autorun.jags with these modifications above:
@@ -457,7 +457,7 @@ run.jags.study <- function(simulations, model, datafunction, targets=list(), con
 		testoptions$sample <- 1000
 		testoptions$combine <- FALSE
 		suppressWarnings(testr <- try(do.call("extend.jags", args=testoptions)))   # suppress warnings about invalid monitors
-		if(class(testr)=="try-error") stop("The test model returned an error - the simulation study was aborted")
+		if(inherits(testr, "try-error")) stop("The test model returned an error - the simulation study was aborted")
 		swcat("The model runs OK\n")
 	}else{
 		swcat("The model compiles OK\n")

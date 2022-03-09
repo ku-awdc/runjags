@@ -5,9 +5,24 @@
 #' @param covariance should covariance terms be activated or omitted?
 #' @param se_priors the priors to use for sensitivity parameters (can be adjusted in the model once it is generated)
 #' @param sp_priors the priors to use for specificity parameters (can be adjusted in the model once it is generated)
+#' @param cov_as_cor option for the prior for covariance terms to be put on the correlation rather than covariance directly
+#'
+#' @examples
+#' N <- 600
+#' status <- rbinom(N, 1, rep(c(0.25,0.5,0.75), each=N/3))
+#' testdata <- data.frame(Population = rep(1:3, each=N/3),
+#'     Test1 = rbinom(N, 1, status*0.75 + (1-status)*0.05),
+#'     Test2 = rbinom(N, 1, status*0.75 + (1-status)*0.05),
+#'     Test3=rbinom(N, 1, status*0.75 + (1-status)*0.05)
+#' )
+#' template_huiwalter(testdata, outfile="huiwalter_model.txt", covariance=TRUE)
+#' \dontrun{
+#' results <- run.jags("huiwalter_model.txt")
+#' }
+#' unlink("huiwalter_model.txt")
 #'
 #' @export
-template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)'){
+template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)', cov_as_cor = FALSE){
 
 	stopifnot(is.data.frame(testdata))
 	covon <- covariance
@@ -177,29 +192,46 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	cat('\n',file=outfile, append=TRUE)
 
 	for(t in 1:nrow(testcombos)){
-		i1 <- testcombos[t,1]
-		i2 <- testcombos[t,2]
-		cat('\n\t# Covariance in sensitivity between ', testcols[i1], ' and ', testcols[i2], ' tests:\n\t', if(!covon) '# ', 'covse', paste(c(i1,i2), collapse=''), ' ~ dunif( (se[',i1,']-1)*(1-se[',i2,']) , min(se[',i1,'],se[',i2,']) - se[',i1,']*se[',i2,'] )  ## if the sensitivity of these tests may be correlated\n\t', if(covon) '# ', ' covse', paste(c(i1,i2), collapse=''), ' <- 0  ## if the sensitivity of these tests can be assumed to be independent\n', sep='', file=outfile, append=TRUE)
-		cat('\t# Covariance in specificity between ', testcols[i1], ' and ', testcols[i2], ' tests:\n\t', if(!covon) '# ', 'covsp', paste(c(i1,i2), collapse=''), ' ~ dunif( (sp[',i1,']-1)*(1-sp[',i2,']) , min(sp[',i1,'],sp[',i2,']) - sp[',i1,']*sp[',i2,'] )  ## if the specificity of these tests may be correlated\n\t', if(covon) '# ', ' covsp', paste(c(i1,i2), collapse=''), ' <- 0  ## if the specificity of these tests can be assumed to be independent\n', sep='', file=outfile, append=TRUE)
+	  if(cov_as_cor){
+	    i1 <- testcombos[t,1]
+	    i2 <- testcombos[t,2]
+	    cat('\n\t# Correlation in sensitivity between ', testcols[i1], ' and ', testcols[i2], ' tests:\n\t', if(!covon) '# ', 'corse', paste(c(i1,i2), collapse=''), ' ~ dunif(-1, 1)  ## if the sensitivity of these tests may be correlated\n\t', if(covon) '# ', 'corse', paste(c(i1,i2), collapse=''), ' <- 0 ## if the sensitivity of these tests can be assumed to be independent\n\t', '# Corresponding covariance calculation:\n\t', 'covse', paste(c(i1,i2), collapse=''), ' <- ifelse(corse', paste(c(i1,i2), collapse=''), ' < 0, -corse', paste(c(i1,i2), collapse=''), ' * ((se[',i1,']-1)*(1-se[',i2,'])), corse', paste(c(i1,i2), collapse=''), ' * (min(se[',i1,'],se[',i2,']) - se[',i1,']*se[',i2,']))\n\t', sep='', file=outfile, append=TRUE)
+	    cat('\n\t# Correlation in specificity between ', testcols[i1], ' and ', testcols[i2], ' tests:\n\t', if(!covon) '# ', 'corsp', paste(c(i1,i2), collapse=''), ' ~ dunif(-1, 1)  ## if the specificity of these tests may be correlated\n\t', if(covon) '# ', 'corsp', paste(c(i1,i2), collapse=''), ' <- 0  ## if the specificity of these tests can be assumed to be independent\n\t', '# Corresponding covariance calculation:\n\t', 'covsp', paste(c(i1,i2), collapse=''), ' <- ifelse(corsp', paste(c(i1,i2), collapse=''), ' < 0, -corsp', paste(c(i1,i2), collapse=''), ' * ((sp[',i1,']-1)*(1-sp[',i2,'])), corsp', paste(c(i1,i2), collapse=''), ' * (min(sp[',i1,'],sp[',i2,']) - sp[',i1,']*sp[',i2,']))\n\t', sep='', file=outfile, append=TRUE)
+	  }else{
+	    i1 <- testcombos[t,1]
+	    i2 <- testcombos[t,2]
+
+	    cat('\n\t# Covariance in sensitivity between ', testcols[i1], ' and ', testcols[i2], ' tests:\n\t', if(!covon) '# ', 'covse', paste(c(i1,i2), collapse=''), ' ~ dunif( (se[',i1,']-1)*(1-se[',i2,']) , min(se[',i1,'],se[',i2,']) - se[',i1,']*se[',i2,'] )  ## if the sensitivity of these tests may be correlated\n\t', if(covon) '# ', 'covse', paste(c(i1,i2), collapse=''), ' <- 0  ## if the sensitivity of these tests can be assumed to be independent\n', sep='', file=outfile, append=TRUE)
+	    cat('\t# Calculated relative to the min/max for ease of interpretation:\n\t', 'corse', paste(c(i1,i2), collapse=''), ' <- ifelse(covse', paste(c(i1,i2), collapse=''), ' < 0, -covse', paste(c(i1,i2), collapse=''), ' / ((se[',i1,']-1)*(1-se[',i2,'])), covse', paste(c(i1,i2), collapse=''), ' / (min(se[',i1,'],se[',i2,']) - se[',i1,']*se[',i2,']))\n', sep='', file=outfile, append=TRUE)
+
+	    cat('\n\t# Covariance in specificity between ', testcols[i1], ' and ', testcols[i2], ' tests:\n\t', if(!covon) '# ', 'covsp', paste(c(i1,i2), collapse=''), ' ~ dunif( (sp[',i1,']-1)*(1-sp[',i2,']) , min(sp[',i1,'],sp[',i2,']) - sp[',i1,']*sp[',i2,'] )  ## if the specificity of these tests may be correlated\n\t', if(covon) '# ', 'covsp', paste(c(i1,i2), collapse=''), ' <- 0  ## if the specificity of these tests can be assumed to be independent\n', sep='', file=outfile, append=TRUE)
+	    cat('\t# Calculated relative to the min/max for ease of interpretation:\n\t', 'corsp', paste(c(i1,i2), collapse=''), ' <- ifelse(covsp', paste(c(i1,i2), collapse=''), ' < 0, -covsp', paste(c(i1,i2), collapse=''), ' / ((sp[',i1,']-1)*(1-sp[',i2,'])), covsp', paste(c(i1,i2), collapse=''), ' / (min(sp[',i1,'],sp[',i2,']) - sp[',i1,']*sp[',i2,']))\n', sep='', file=outfile, append=TRUE)
+
+	  }
 	}
 
 	cat('\n}\n', sep='', file=outfile, append=TRUE)
 
 	## Monitors:
-	cat('\n#monitor# se, sp, prev', apply(expand.grid(c('covse','covsp'), apply(testcombos,1,paste,collapse='')),1,paste,collapse=''), sep=', ', file=outfile, append=TRUE)
+	cat('\n#monitor# se, sp, prev', apply(expand.grid(c('covse','corse','covsp','corsp'), apply(testcombos,1,paste,collapse='')),1,paste,collapse=''), sep=', ', file=outfile, append=TRUE)
 
 	## Initial values:
 	alternate <- function(x,len){
 		x <- rep(x,times=ceiling(len/length(x)))
 		return(x[1:len])
 	}
-	cvn <- apply(expand.grid(apply(testcombos,1,paste,collapse=''), c('covse','covsp'))[,2:1],1,paste,collapse='')
+	if(cov_as_cor){
+	  cvn <- apply(expand.grid(apply(testcombos,1,paste,collapse=''), c('corse','corsp'))[,2:1],1,paste,collapse='')
+	}else{
+	  cvn <- apply(expand.grid(apply(testcombos,1,paste,collapse=''), c('covse','covsp'))[,2:1],1,paste,collapse='')
+	}
 	# Fails to initialise with anything other than 0:
 	covinitvals <- as.list(alternate(c(0,0), length(cvn)))
 	names(covinitvals) <- cvn
 	covinits <- c(dump.format(covinitvals), dump.format(lapply(covinitvals, function(x) -x)))
 	if(!covon){
-		covinits <- gsub('\"cov', '# \"cov', covinits, fixed=TRUE)
+	  covinits <- gsub('\"cov', '# \"cov', covinits, fixed=TRUE)
+	  covinits <- gsub('\"cor', '# \"cor', covinits, fixed=TRUE)
 	}
 
 	initblock <- c(dump.format(list(se=alternate(c(0.5,0.99), length(testcols)), sp=alternate(c(0.99,0.75), length(testcols)), prev=alternate(c(0.05,0.95), length(levels(testdata$Population))))), covinits[1])

@@ -19,7 +19,7 @@
 #' runjags.options(new.windows=FALSE)
 #' }
 #' # Run a model using parallel background JAGS calls:
-#' 
+#'
 #' # Simulate the data:
 #' N <- 100
 #' X <- 1:N
@@ -30,21 +30,21 @@
 #' precision <- list(0.01, 10)
 #'
 #' # Model in the JAGS format
-#' model <- "model { 
-#' for(i in 1 : N){ 
+#' model <- "model {
+#' for(i in 1 : N){
 #' 	Y[i] ~ dnorm(true.y[i], precision);
 #' 	true.y[i] <- (m * X[i]) + c
-#' } 
+#' }
 #' m ~ dunif(-1000,1000)
-#' c ~ dunif(-1000,1000) 
+#' c ~ dunif(-1000,1000)
 #' precision ~ dexp(1)
 #' #data# X, Y, N
 #' #monitor# m, c, precision
 #' #inits# m, c, precision
 #' }"
-#' 
+#'
 #' \dontrun{
-#' # Run the model and produce plots 
+#' # Run the model and produce plots
 #' fileinfo <- run.jags(model=model, n.chains=2, method="bgparallel")
 #' # Wait for the simulations to complete:
 #' Sys.sleep(10)
@@ -77,14 +77,14 @@ NULL
 #' @rdname results.jags
 #' @export
 results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jags.files=NA, read.monitor=NA, return.samples=NA, recover.chains=NA, ...){
-	
+
 	starttime <- Sys.time()
-	
+
 	# I switched the argument names:
 	sub.chains <- recover.chains    # either FALSE (stop if any crashed), TRUE (try to recover), NA (use runjags.getOption), or a numeric vector of which chains to read in
 	sub.samples <- return.samples	# either NA (use sample size) or a number of iterations to thin to
 	if(is.na(sub.samples)) sub.samples <- FALSE
-		
+
 	background.runjags.object <- foldername
 	if(is.character(background.runjags.object) && file.exists(file.path(background.runjags.object, 'jagsinfo.Rsave'))){
 		# The folder may have been moved, so save the new path (make it an absolute path):
@@ -108,16 +108,16 @@ results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jag
 		stop("xgrid is no longer supported")
 	}
 	background.runjags.object <- checkvalidrunjagsobject(background.runjags.object)
-	
+
 	if(!file.exists(background.runjags.object$directory)){
 		stop(paste("The JAGS files for the model supplied were not found at the saved directory '", background.runjags.object$directory, "' - try calling results.jags with the path to the new location of the simulation folder", sep=""))
 	}
-	
+
 	if(!identical(summarise, NA)){
 		background.runjags.object$summarise <- summarise
 	}
-	
-	
+
+
 	if(!identical(combine, NA)){
 		if(combine && !background.runjags.object$combine) stop('Can only combine chains if the original function call was to extend.jags with combine=TRUE')
 		background.runjags.object$combine <- combine
@@ -125,23 +125,23 @@ results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jag
 	combine <- background.runjags.object$combine
 	# This was done in extend.jags before, but now we may override the original request for combine so do it here instead:
 	if(background.runjags.object$combine) background.runjags.object$burnin <- 0 else background.runjags.object$burnin <- background.runjags.object$burnin + background.runjags.object$adapt
-	
+
 	if(identical(sub.samples, TRUE) || identical(sub.samples, NA)) stop('Value for "sub.samples" must be either FALSE or the number of iterations to return')
-	
+
 	if(identical(sub.chains, NA)){
 		if(!background.runjags.object$combine && runjags.getOption("partial.import")) sub.chains <- TRUE else sub.chains <- FALSE
 	}
 
 	if(!identical(sub.chains, FALSE) && background.runjags.object$combine) stop('Cannot return partially completed jobs when combining MCMC objects - try again with combine=FALSE')
-	
-	
+
+
 	# Make name easier to type:
 	runjags.object <- background.runjags.object
-	
+
 	if(!background.runjags.object$summarise && !identical(list(...), list()) && runjags.getOption('summary.warning'))
 		warning('Options to add.summary ignored when summarise=FALSE')
-	summaryargs <- getsummaryargs(runjags.object$summary.pars, 'results.jags', ...)		
-	
+	summaryargs <- getsummaryargs(runjags.object$summary.pars, 'results.jags', ...)
+
 	if(!is.na(keep.jags.files)) runjags.object$keep.jags.files <- keep.jags.files
 	if(!identical(read.monitor, NA)){
 		read.monitor <- checkvalidmonitorname(read.monitor)
@@ -153,36 +153,36 @@ results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jag
 		runjags.object$noread.monitor <- c(runjags.object$noread.monitor, tomove)
 		# If read.monitor is a subset of an array, the whole array will be moved to noread and the subset kept in monitor (but with indices expanded)
 	}
-	
+
 	# Call runjags.readin and then deal with copying files etc:
-	
+
 	if(length(runjags.object$noread.monitor)>0){
 		read.monitor <- runjags.object$monitor[!runjags.object$monitor%in%c('pd','full.pd','popt','dic')]
 	}else{
 		read.monitor <- NA
-	} 
-	
+	}
+
 	allok <- FALSE
 	# Make sure nothing gets deleted if it crashes anywhere:
 	reallydelete <- runjags.object$keep.jags.files
 	runjags.object$keep.jags.files <- TRUE
-	
+
 	# This will be called if runjags.readin fails (allok=FALSE) or at the end of the function (allok=TRUE):
 	on.exit({
-		
+
 		new.directory <- runjags.object$directory
-		
+
 		if(runjags.object$keep.jags.files){
 			if(!allok)
 			  swcat('Note: Either one or more simulation(s) failed, or there was an error in processing the results.  You may be able to retrieve any successful simulations using:\nresults.jags("', new.directory, '", recover.chains=TRUE)\nSee the help file for that function for possible options.\n', sep='')
-			
+
 			# Don't add to the delete on exit list:
 #			if(!new.directory %in% runjagsprivate$simfolders)
 #				runjagsprivate$simfolders <- c(runjagsprivate$simfolders, new.directory)
 		}else{
 			if(!allok && runjags.getOption('keep.crashed.files') && new.directory!="Directory not writable"){
 			  swcat('Note: Either one or more simulation(s) failed, or there was an error in processing the results.  You may be able to retrieve any successful simulations using:\nresults.jags("', new.directory, '", recover.chains=TRUE)\nSee the help file for that function for possible options.\n', sep='')
-			  			  
+
 				swcat('To remove failed simulation folders use cleanup.jags() - this will be run automatically when the runjags package is unloaded\n')
 				runjags.object$keep.jags.files <- TRUE
 			}
@@ -190,22 +190,22 @@ results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jag
 		if(!allok){
 			runjagsprivate$failedsimfolders <- c(runjagsprivate$failedsimfolders, new.directory)
 			# Remove the failed simulation from the list of sims:
-			runjagsprivate$simfolders <- runjagsprivate$simfolders[runjagsprivate$simfolders!=new.directory]			
+			runjagsprivate$simfolders <- runjagsprivate$simfolders[runjagsprivate$simfolders!=new.directory]
 		}
 
 		# If we either want to delete files or we have copied from the temp dir, delete the sim folder:
 		if(!runjags.object$keep.jags.files) unlink(runjags.object$directory, recursive = TRUE)
-					
+
 	})
-	
+
 	newoutput <- runjags.readin(directory=runjags.object$directory, silent.jags=runjags.object$silent.jags, target.adapt=runjags.object$adapt, target.burnin=(runjags.object$burnin-runjags.object$adapt), target.iters=runjags.object$sample, n.chains=length(runjags.object$inits), monitor=runjags.object$monitor, method=runjags.object$method, method.options=runjags.object$method.options, suspended=TRUE, showoutput=echo, read.monitor=read.monitor, sub.samples=sub.samples, sub.chains=sub.chains, force.read=length(runjags.object$noread.monitor)>0)
 	allok <- TRUE
-	
+
 	if('errormessage'%in%names(newoutput))
-		stop(newoutput$errormessage,call.=FALSE)	
-	
+		stop(newoutput$errormessage,call.=FALSE)
+
 	# unfinished will be NULL or TRUE:
-	if(identical(newoutput$unfinished,TRUE)){		
+	if(identical(newoutput$unfinished,TRUE)){
 		if(length(newoutput$finished.chains==1)){
 			errmsg <- paste('The simulation has not finished', sep='')
 		}else{
@@ -215,12 +215,12 @@ results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jag
 		if(identical(echo, FALSE)) errmsg <- paste(errmsg, ' - call the same function again with echo=TRUE to see the current progress', sep='')
 		stop(errmsg)
 	}
-	
+
 	simtimetaken <- difftime(newoutput$end.time, runjags.object$startedon)
-	
+
 	end.state <- newoutput$end.state
 	class(end.state) <- 'runjagsinits'
-	
+
 	# Just for iteration names:
 	burnin <- runjags.object$oldburnin+(runjags.object$oldthin*runjags.object$oldsample)+runjags.object$burnin
 	if(identical(sub.samples, FALSE)){
@@ -229,15 +229,15 @@ results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jag
 		thin <- runjags.object$thin
 	}else{
 		sample <- min(sub.samples, runjags.object$sample)
-		
+
 		# This means that if we extend, the new thin is used - not ideal:
 		# thin <- max(1,floor(runjags.object$sample/sub.samples))*runjags.object$thin
-		
+
 		# So thin will be wrong for this sample - documented
 		thin <- runjags.object$thin
 		runjags.object$sample <- sample
 	}
-	
+
 	currentdn <- dimnames(newoutput$mcmc[[1]])
 	iternames <- seq((burnin+1), (burnin+(sample*thin))-(thin-1), length.out=sample)
 
@@ -249,21 +249,21 @@ results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jag
 		}
 		dimnames(newoutput$mcmc[[i]]) <- list(iternames, currentdn[[2]])
 	}
-	if(class(newoutput$pd)=="mcmc" && !is.na(newoutput$pd)){
-		dimnames(newoutput$pd) <- list(iternames, dimnames(newoutput$pd)[[2]])			
-	}	
+	if(inherits(newoutput$pd, "mcmc") && !is.na(newoutput$pd)){
+		dimnames(newoutput$pd) <- list(iternames, dimnames(newoutput$pd)[[2]])
+	}
 
 	# Combine runjags objects if necessary:
 	if(runjags.object$combine && runjags.object$sample>0){
 		burnin <- runjags.object$oldburnin
-		
+
 		s <- try(combpd <- if('full.pd'%in%runjags.object$monitor) combine.mcmc(list(runjags.object$pd, newoutput$pd), collapse.chains=FALSE) else NA)
-		if(class(s)=='try-error'){
+		if(inherits(s, 'try-error')){
 			warning('An unexpected error occured while trying to combine the full.pD from the old and new simulations - it has been removed', call.=FALSE)
 			runjags.object$monitor <- runjags.object$monitor[runjags.object$monitor!='full.pd']
 			combpd <- NA
 		}
-		
+
 		combinedoutput <- list(mcmc=combine.mcmc(list(runjags.object$mcmc, newoutput$mcmc), collapse.chains=FALSE), deviance.table=weightedaverage(runjags.object$deviance.table, newoutput$deviance.table, niter(runjags.object$mcmc), niter(newoutput$mcmc)), deviance.sum=weightedaverage(runjags.object$deviance.sum, newoutput$deviance.sum, niter(runjags.object$mcmc), niter(newoutput$mcmc)), pd=combpd, end.state=newoutput$end.state, samplers=newoutput$samplers)
 
 	}else{
@@ -276,28 +276,28 @@ results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jag
 	# Save some RAM:
 	rm(newoutput)
 	gcinfo <- gc(FALSE)
-	
+
 	# Takes into account (1) the time taken to import, (2) the time taken for the previous sims if any, (3) the simulation run time NOT including any gap between finishing and importing
 	timetaken <- (difftime(Sys.time(), starttime) + runjags.object$timetaken + simtimetaken)
-	
+
 	expected <- sample
 	if(runjags.object$combine) expected <- expected + runjags.object$sample
 	if(expected != niter(combinedoutput$mcmc)) warning(paste('Unexpected discrepancy in sample size: expected ', expected, ' iterations but there are actually ', niter(combinedoutput$mcmc), sep=''))
-	
-	# Call function to calculate summary statistics and plots etc:	
+
+	# Call function to calculate summary statistics and plots etc:
 	combinedoutput <- makerunjagsobject(combinedoutput, summarise=runjags.object$summarise, summaryargs=summaryargs, burnin=burnin, sample=sample, thin=thin, model=runjags.object$model, data=runjags.object$data, monitor=runjags.object$monitor, noread.monitor=runjags.object$noread.monitor, modules=runjags.object$modules, factories=runjags.object$factories, response=runjags.object$response, residual=runjags.object$residual, fitted=runjags.object$fitted, method=runjags.object$method, method.options=runjags.object$method.options, timetaken=timetaken)
 
-	stopifnot(class(combinedoutput$end.state)=='runjagsinits')
-	
+	stopifnot(inherits(combinedoutput$end.state, 'runjagsinits'))
+
 	swcat("Finished running the simulation\n")
-	
+
 	# Reset deleting option to what it should be:
 	runjags.object$keep.jags.files <- reallydelete
-	
+
 #	if(identical(combinedoutput$samplers, NA) && runjags.getOption('nodata.warning'))
 #		warning('JAGS is reporting that no samplers were used - ensure that any data has been passed to JAGS correctly')
 #  This can happen when just forward sampling from the prior
-	
+
 	return(combinedoutput)
 
 }

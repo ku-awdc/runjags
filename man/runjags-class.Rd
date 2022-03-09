@@ -128,7 +128,7 @@ data(LINE)
 jags.model <- LINE
 runjags.model <- as.runjags(jags.model, monitor=c('alpha','beta'))
 \dontrun{
-runjags.model <- extend.jags(runjags.model, method='rjags')
+runjags.model <- extend.jags(runjags.model)
 jags.model <- as.jags(runjags.model)
 # Coercion to MCMC (requires loading the coda package):
 library('coda')

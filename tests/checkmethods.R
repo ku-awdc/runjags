@@ -111,7 +111,7 @@ if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
 		repeat{
 			# Change thin, chain and variables:
 			s <- try(results <- results.jags(info, read.monitor='m', return.samples=100, recover.chains=2, summarise=FALSE))
-			if(class(s)!='try-error') break
+			if(!inherits(s, 'try-error')) break
 			if(t==30) stop("Timed out waiting for the bgparallel method")
 			Sys.sleep(1)
 			t <- t+1
@@ -126,7 +126,7 @@ if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
 		t <- 0
 		repeat{
 			s <- try(results <- results.jags(info))
-			if(class(s)!='try-error') break
+			if(!inherits(s, 'try-error')) break
 			if(t==30) stop("Timed out waiting for the bgparallel method")
 			Sys.sleep(1)
 			t <- t+1

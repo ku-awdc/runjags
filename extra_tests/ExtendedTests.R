@@ -18,7 +18,7 @@ suppressWarnings(library('runjags'))
 
 windows <- .Platform$OS.type=='windows'
 
-if(windows){	
+if(windows){
   testarea <- "C:/Users/Administrator/Desktop/runjags-tests/testarea"
   testfolder <- "C:/Users/Administrator/Desktop/runjags-tests/runjags/tests"
   examplearea <- "C:/Users/Administrator/Desktop/runjags-tests/runjags"
@@ -59,26 +59,26 @@ fbb <- function(...){
 
 # these tests are done on the command line:
 if(FALSE){
-  options(warn=0)  # makes warnings non-fatal  
-  
+  options(warn=0)  # makes warnings non-fatal
+
   s <- try(devtools::install('/Users/matthewdenwood/Documents/Code/R/myrpackages/runjags'))
-  if(class(s)=='try-error')
+  if(inherits(s, 'try-error'))
     stop(paste('Install failed: ', s, sep='\n'))
-  
-  
+
+
   setwd(testarea)
   unloadNamespace('runjags')
-  
+
   print(warnings())
-  
+
   library('runjags')
-  
+
   # These won't run on Windows - it tries to reinstall:
 	fbb('Examples...\n')
 	s <- try({
 	devtools::run_examples(examplearea, show=FALSE, test=FALSE, run=FALSE, fresh=FALSE)
 	})
-	if(class(s)=='try-error')
+	if(inherits(s, 'try-error'))
 	stop(paste('Error in examples: ', s, sep='\n'))
 	graphics.off()
 
@@ -105,32 +105,32 @@ if(dostandardchecks){
 	  source('checkinputs.R')
 	})
 	.runjags.options <- rjo
-	if(class(s)=='try-error')
+	if(inherits(s, 'try-error'))
 	  stop(paste('Error in checkinputs: ', s, sep='\n'))
 
 	fbb('Check: module...\n')
 	s <- try({
 	  source('checkmodule.R')
 	})
-	if(class(s)=='try-error')
+	if(inherits(s, 'try-error'))
 	  stop(paste('Error in checkmodule: ', s, sep='\n'))
 
 	fbb('Check: methods...\n')
 	s <- try({
 	  source('checkmethods.R')
 	})
-	if(class(s)=='try-error')
+	if(inherits(s, 'try-error'))
 	  stop(paste('Error in checkmethods: ', s, sep='\n'))
 
 	fbb('Check: study...\n')
 	s <- try({
 	  source('checkstudy.R')
 	})
-	if(class(s)=='try-error')
+	if(inherits(s, 'try-error'))
 	  stop(paste('Error in checkmethods: ', s, sep='\n'))
-	
+
 	graphics.off()
-	
+
 }
 
 unloadNamespace('runjags')
@@ -141,49 +141,49 @@ s <- try({
   fbb('Extra: utilities...\n')
   source('../utilitiestests.R')
 })
-if(class(s)=='try-error')
+if(inherits(s, 'try-error'))
   stop(paste('Error in utilities tests: ', s, sep='\n'))
 
 s <- try({
   fbb('Extra: check summaries...\n')
   source('../checksummaries.R')
 })
-if(class(s)=='try-error')
+if(inherits(s, 'try-error'))
   stop(paste('Error in miscelanious tests: ', s, sep='\n'))
 
 s <- try({
   fbb('Extra: miscelanious...\n')
   source('../miscelanious.R')
 })
-if(class(s)=='try-error')
+if(inherits(s, 'try-error'))
   stop(paste('Error in miscelanious tests: ', s, sep='\n'))
 
 s <- try({
   fbb('Extra: run.jags...\n')
   source('../run.jagstests.R')
 })
-if(class(s)=='try-error')
+if(inherits(s, 'try-error'))
   stop(paste('Error in runjags tests: ', s, sep='\n'))
 
 s <- try({
   fbb('Extra: study...\n')
   source('../studytests.R')
 })
-if(class(s)=='try-error')
+if(inherits(s, 'try-error'))
   stop(paste('Error in run.jags.study tests: ', s, sep='\n'))
 
 s <- try({
   fbb('Extra: glm...\n')
   source('../glmtests.R')
 })
-if(class(s)=='try-error')
+if(inherits(s, 'try-error'))
   stop(paste('Error in glm tests: ', s, sep='\n'))
 
 s <- try({
   fbb('Extra: 8schools...\n')
   source('../8schools.R')
 })
-if(class(s)=='try-error')
+if(inherits(s, 'try-error'))
   stop(paste('Error in 8schools tests: ', s, sep='\n'))
 
 if(!windows){
@@ -191,7 +191,7 @@ s <- try({
   fbb('Paper replication...\n')
   source('../replicationcode.R')
 })
-if(class(s)=='try-error')
+if(inherits(s, 'try-error'))
   stop(paste('Error in replication code tests: ', s, sep='\n'))
 }
 # To get rid of new settings:
@@ -202,7 +202,7 @@ s <- try({
   fbb('Extra: time consuming...\n')
   source('../timeconsuming.R')
 })
-if(class(s)=='try-error')
+if(inherits(s, 'try-error'))
   stop(paste('Error in time consuming tests: ', s, sep='\n'))
 
 unlink(testarea, recursive=TRUE)

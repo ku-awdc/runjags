@@ -219,7 +219,7 @@ as.jags.runjags <- function(x, adapt=1000, quiet=FALSE, ...){
 		close(model)
 		flush.console()
 
-		if(class(s)=="try-error"){
+		if(inherits(s, "try-error")){
 			jagsout <- as.character(s)
 			class(jagsout) <- "rjagsoutput"
 			assign("model", runjags.object$model, envir=failedjags)
@@ -235,10 +235,10 @@ as.jags.runjags <- function(x, adapt=1000, quiet=FALSE, ...){
 
 	checkcompiled <- try(stats::coef(jags.object),silent=TRUE)
 
-	if(class(checkcompiled)=="try-error"){
+	if(inherits(checkcompiled, "try-error")){
 		if(!quiet) swcat("Re-compiling rjags model", if(adapt > 0) " and adapting", "...\n", sep="")
 		o <- capture.output(s <- try(jags.object$recompile(),silent=TRUE))
-		if(class(s)=="try-error"){
+		if(inherits(s,"try-error")){
 			jagsout <- as.character(s)
 			class(jagsout) <- "rjagsoutput"
 			assign("model", runjags.object$model, envir=failedjags)
@@ -255,7 +255,7 @@ as.jags.runjags <- function(x, adapt=1000, quiet=FALSE, ...){
 		}
 
 		checkcompiled <- try(stats::coef(jags.object),silent=TRUE)
-		if(class(checkcompiled)=="try-error") stop(paste("There was an unexpected error re-compiling this JAGS model:  ", as.character(checkcompiled), sep=""))
+		if(inherits(checkcompiled, "try-error")) stop(paste("There was an unexpected error re-compiling this JAGS model:  ", as.character(checkcompiled), sep=""))
 	}
 
 	flush.console()
@@ -300,7 +300,7 @@ as.runjags.jags <- function(jags.model, monitor = stop("No monitored variables s
 #' @rdname runjags-class
 #' @export
 is.runjags <- function(x){
-  return(class(x) %in% c("runjags","runjagsbginfo"))
+  return(inherits(x, c("runjags","runjagsbginfo")))
 }
 
 #' @rdname runjags-class
@@ -389,7 +389,7 @@ as.runjags.default <- function(jags.model, ...){
 #' @method residuals runjags
 residuals.runjags <- function(object, variable=object$residual, show.summary=FALSE, output='mean', ...){
 
-	if(length(output)!=1 || class(output)!='character')
+	if(length(output)!=1 || !inherits(output, 'character'))
 		stop('The output specification must be a single character string')
 	output <- tolower(output)
 	possibilities <- c('mean','mcmc','hpd','summary','runjags')
@@ -413,16 +413,16 @@ residuals.runjags <- function(object, variable=object$residual, show.summary=FAL
 	s <- try({
 	mcmcout <- extend.jags(object, add.monitor=tomonitor, drop.monitor=object$monitor, combine=FALSE, summarise=FALSE, ...)
 	})
-	if(class(s)=='try-error')
+	if(inherits(s, 'try-error'))
 		stop('An unexpected error occuring while obtaining the MCMC samples of the residuals - consult the error message above to diagnose the problem')
 
 	# Check a couple of things if we have calculated the residual:
 	if(length(tomonitor)==2){
 		  s <- try(respselected <- matchvars(object$response, dimnames(mcmcout$mcmc[[1]])[[2]]), silent=TRUE)
-		  if(class(s)=='try-error')
+		  if(inherits(s, 'try-error'))
 		 	 stop('The response variable specified could not be monitored')
 		  s <- try(fittedselected <- matchvars(object$fitted, dimnames(mcmcout$mcmc[[1]])[[2]]), silent=TRUE)
-		  	if(class(s)=='try-error')
+		  	if(inherits(s, 'try-error'))
 		  	  stop('The fitted variable specified could not be monitored')
   		  if(length(respselected)!=length(fittedselected))
   		    stop('The length of the response vector did not match the length of the fitted vector')
@@ -453,7 +453,7 @@ residuals.runjags <- function(object, variable=object$residual, show.summary=FAL
 	s <- try({
 		mcmcout <- add.summary(mcmcout, mutate=mutatefun, plots=FALSE, vars=variable, silent.jags=TRUE)
 		})
-	if(class(s)=='try-error')
+	if(inherits(s, 'try-error'))
 		stop('An unexpected error occuring while calculating summary statistics for the residuals - consult the error message above to diagnose the problem')
 
 	stochastic <- !normalise.mcmcfun(as.mcmc.list(mcmcout, add.mutate=TRUE, vars=variable), normalise = FALSE, warn=FALSE, remove.nonstochastic = FALSE)$nonstochastic
@@ -487,7 +487,7 @@ residuals.runjags <- function(object, variable=object$residual, show.summary=FAL
 #' @method fitted runjags
 fitted.runjags <- function(object, variable=object$fitted, show.summary=FALSE, output='mean', ...){
 
-	if(length(output)!=1 || class(output)!='character')
+	if(length(output)!=1 || !inherits(output, 'character'))
 		stop('The output specification must be a single character string')
 	output <- tolower(output)
 	possibilities <- c('mean','mcmc','hpd','summary','runjags')
@@ -506,7 +506,7 @@ fitted.runjags <- function(object, variable=object$fitted, show.summary=FALSE, o
 	s <- try({
 	mcmcout <- extend.jags(object, add.monitor=tomonitor, drop.monitor=object$monitor, combine=FALSE, summarise=FALSE, ...)
 	})
-	if(class(s)=='try-error')
+	if(inherits(s, 'try-error'))
 		stop('An unexpected error occuring while obtaining the MCMC samples of the fitted variable - consult the error message above to diagnose the problem')
 
 	swcat('Calculating summary statistics...\n')
@@ -514,7 +514,7 @@ fitted.runjags <- function(object, variable=object$fitted, show.summary=FALSE, o
 	s <- try({
 		mcmcout <- add.summary(mcmcout, mutate=NULL, plots=FALSE, vars=variable, silent.jags=TRUE)
 		})
-	if(class(s)=='try-error')
+	if(inherits(s, 'try-error'))
 		stop('An unexpected error occuring while calculating summary statistics for the fitted variable - consult the error message above to diagnose the problem')
 
 	stochastic <- !normalise.mcmcfun(as.mcmc.list(mcmcout, add.mutate=TRUE, vars=variable), normalise = FALSE, warn=FALSE, remove.nonstochastic = FALSE)$nonstochastic

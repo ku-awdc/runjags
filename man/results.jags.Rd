@@ -70,13 +70,13 @@ c <- list(-10, 10)
 precision <- list(0.01, 10)
 
 # Model in the JAGS format
-model <- "model { 
-for(i in 1 : N){ 
+model <- "model {
+for(i in 1 : N){
 	Y[i] ~ dnorm(true.y[i], precision);
 	true.y[i] <- (m * X[i]) + c
-} 
+}
 m ~ dunif(-1000,1000)
-c ~ dunif(-1000,1000) 
+c ~ dunif(-1000,1000)
 precision ~ dexp(1)
 #data# X, Y, N
 #monitor# m, c, precision
@@ -84,7 +84,7 @@ precision ~ dexp(1)
 }"
 
 \dontrun{
-# Run the model and produce plots 
+# Run the model and produce plots
 fileinfo <- run.jags(model=model, n.chains=2, method="bgparallel")
 # Wait for the simulations to complete:
 Sys.sleep(10)

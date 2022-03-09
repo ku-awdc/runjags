@@ -9,7 +9,8 @@ template_huiwalter(
   outfile = "huiwalter_model.txt",
   covariance = FALSE,
   se_priors = "dbeta(1,1)",
-  sp_priors = "dbeta(1,1)"
+  sp_priors = "dbeta(1,1)",
+  cov_as_cor = FALSE
 )
 }
 \arguments{
@@ -22,7 +23,24 @@ template_huiwalter(
 \item{se_priors}{the priors to use for sensitivity parameters (can be adjusted in the model once it is generated)}
 
 \item{sp_priors}{the priors to use for specificity parameters (can be adjusted in the model once it is generated)}
+
+\item{cov_as_cor}{option for the prior for covariance terms to be put on the correlation rather than covariance directly}
 }
 \description{
 Create a Hui-Walter model based on paired test data for an arbitrary number of tests and populations
+}
+\examples{
+N <- 600
+status <- rbinom(N, 1, rep(c(0.25,0.5,0.75), each=N/3))
+testdata <- data.frame(Population = rep(1:3, each=N/3),
+    Test1 = rbinom(N, 1, status*0.75 + (1-status)*0.05),
+    Test2 = rbinom(N, 1, status*0.75 + (1-status)*0.05),
+    Test3=rbinom(N, 1, status*0.75 + (1-status)*0.05)
+)
+template_huiwalter(testdata, outfile="huiwalter_model.txt", covariance=TRUE)
+\dontrun{
+results <- run.jags("huiwalter_model.txt")
+}
+unlink("huiwalter_model.txt")
+
 }

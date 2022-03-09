@@ -142,7 +142,7 @@ findjags <- function(ostype = .Platform$OS.type, look_in = NA, ...){
 			return(s)
 		}
 
-		if(class(look_in)!="character") stop("The look_in argument supplied to findjags must be a character vector of paths")
+		if(!is.character(look_in)) stop("The look_in argument supplied to findjags must be a character vector of paths")
 		look_in <- paste(look_in,"/",sep="")
 		look_in <- gsub("//","/",look_in,fixed=TRUE)
 		suppressWarnings(paths <- paste(unlist(lapply(look_in, function(x) return(paste(x,list.files(x),sep="")))),"/",sep=""))
@@ -483,7 +483,7 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 	suppressWarnings(returnval <- try(system2(jags, args=tempfile, stdout=TRUE, stderr=TRUE), silent=TRUE))
 	unlink(tempfile)
 
-	if(class(returnval)=="try-error"){
+	if(inherits(returnval, "try-error")){
 		success <- 0
 	}else{
 		if(is.null(attributes(returnval))){
