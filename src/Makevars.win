@@ -1,6 +1,6 @@
 ######################################################################################################
 ###
-###  This file is based on that in the rjags package (version 3-10)
+###  This file was originally based on the Makrvars.win file in the rjags package (version 3-10)
 ###  Original file is Copyright (C) Martyn Plummer, licensed under GPL-2
 ###
 ###  Note:  This windows makefile requires the JAGS_ROOT variable to be set

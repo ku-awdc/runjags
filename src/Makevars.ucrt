@@ -1,6 +1,6 @@
 ######################################################################################################
 ###
-###  This file is based on that in the rjags package (version 3-10)
+###  This file was originally based on the Makrvars.win file in the rjags package (version 3-10)
 ###  Original file is Copyright (C) Martyn Plummer, licensed under GPL-2
 ###
 ###  Note:  This windows makefile requires the JAGS_ROOT variable to be set
@@ -20,7 +20,7 @@
 JAGS_MAJOR_VERSION := 4
 
 ## Conditionally set the JAGS_ROOT variable (if it is not already set) to a location specified by the CRAN team:
-JAGS_ROOT ?= /c/progra~1/JAGS/JAGS-4.3.0
+JAGS_ROOT ?= /c/progra~1/JAGS/JAGS-4.3.1
 
 ###############
 ###  Flags
@@ -52,7 +52,7 @@ JAGS_MAJOR_ASSUMED = $(strip $(word 2,$(subst .,$(space),$(subst -,$(space),$(JA
 else
 # Otherwise make an assumption about JAGS_MAJOR and give a warning:
 JAGS_MAJOR_ASSUMED = $(strip 4)
-$(warning The major version of JAGS could not be determined from $(JAGS_ROOT) - assuming version $(JAGS_MAJOR_ASSUMED) (otherwise the Makevars.win file may need to be modified))
+$(warning The major version of JAGS could not be determined from $(JAGS_ROOT) - assuming version $(JAGS_MAJOR_ASSUMED) (otherwise the Makevars.ucrt file may need to be modified))
 endif
 
 JAGS_MAJOR = $(strip $(JAGS_MAJOR_ASSUMED))
