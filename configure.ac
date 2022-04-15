@@ -44,7 +44,7 @@ if test [ -n "${PKG_CONFIG}" ] ; then
          AC_MSG_ERROR([pkg-config found JAGS ${jags_installed_version} but rjags requires JAGS >= 3.x.y])
       fi
    else 
-      AC_MSG_WARN([pkg-config file for jags ${PACKAGE_VERSION} unavailable])
+      AC_MSG_WARN([pkg-config file for jags unavailable])
       AC_MSG_WARN([Consider adding the directory containing `jags.pc`])
       AC_MSG_WARN([to the PKG_CONFIG_PATH environment variable])
    fi
