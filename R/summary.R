@@ -165,7 +165,7 @@ add.summary <- function(runjags.object, vars=NA, mutate=NA, psrf.target = 1.05, 
 	runjags.object <- runjags.object[! names(runjags.object)%in%names(plotsout)]
 	runjags.object <- runjags.object[! names(runjags.object)%in%c("summary.pars","summary.available")]
 
-	newobj <- c(runjags.object, summariesout, plotsout, list(summary.available=TRUE, summary.pars=list(plots=plots, plot.type=plot.type, vars=vars, mutate=mutate, psrf.target=psrf.target, normalise.mcmc=normalise.mcmc, modeest.opts=modeest.opts, confidence=confidence, autocorr.lags=autocorr.lags, custom=custom, silent.jags=sj, col=col, trace.iters=trace.iters, separate.chains=separate.chains, trace.options=trace.options, density.options=density.options, histogram.options=histogram.options, ecdfplot.options=ecdfplot.options, acplot.options=acplot.options)))
+	newobj <- c(runjags.object, summariesout, plotsout, list(summary.available=TRUE, summary.pars=list(plots=plots, plot.type=plot.type, vars=vars, mutate=mutate, psrf.target=psrf.target, normalise.mcmc=normalise.mcmc, modeest.opts=modeest.opts, confidence=confidence, autocorr.lags=autocorr.lags, custom=custom, silent.jags=sj, col=col, summary.iters=summary.iters, trace.iters=trace.iters, separate.chains=separate.chains, trace.options=trace.options, density.options=density.options, histogram.options=histogram.options, ecdfplot.options=ecdfplot.options, acplot.options=acplot.options)))
 	class(newobj) <- 'runjags'
 
 	return(newobj)

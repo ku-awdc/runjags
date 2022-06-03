@@ -1263,6 +1263,11 @@ checkvalidrunjagsobject <- function(runjags.object){
 
 
 	}else{
+    ## summary.iters was not copied correctly until version 2.2.2:
+    if(!"summary.iters" %in% names(runjags.object$summary.pars)){
+      runjags.object$summary.pars$summary.iters <- 10000
+    }
+    
 		if(length(runjags.object$summary.pars)!=20 || !all(c('plots','vars','mutate','psrf.target','normalise.mcmc','modeest.opts','confidence','autocorr.lags','custom','silent.jags','plot.type','col','summary.iters','trace.iters','separate.chains','trace.options','density.options','histogram.options','ecdfplot.options','acplot.options') %in% names(runjags.object$summary.pars))){
 			stop('Invalid summary.pars - please submit a bug report\n')
 		}
