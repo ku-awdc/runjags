@@ -39,6 +39,8 @@ getjagsnames <- function(targets){
 	return(retval)
 }
 
+is_na_arg <- function(x) length(x)==1L && is.na(x)
+
 # Currently used only by glm.template - rjags and JAGS now respect initial ordering of variables:
 alphabeticalvars <- function(x, always.last=c('resid.sum.sq','deviance')){
 
@@ -1261,9 +1263,8 @@ checkvalidrunjagsobject <- function(runjags.object){
 
 
 	}else{
-		if(!all(c('plots','vars','mutate','psrf.target','normalise.mcmc','modeest.opts','confidence','autocorr.lags','custom','silent.jags','plots','plot.type','col','summary.iters','trace.iters','separate.chains','trace.options','density.options','histogram.options','ecdfplot.options','acplot.options')%in%names(runjags.object$summary.pars) || length(runjags.object$summary.pars)!=21)){
-			cat('Invalid summary.pars\n')
-			browser()
+		if(length(runjags.object$summary.pars)!=20 || !all(c('plots','vars','mutate','psrf.target','normalise.mcmc','modeest.opts','confidence','autocorr.lags','custom','silent.jags','plot.type','col','summary.iters','trace.iters','separate.chains','trace.options','density.options','histogram.options','ecdfplot.options','acplot.options') %in% names(runjags.object$summary.pars))){
+			stop('Invalid summary.pars - please submit a bug report\n')
 		}
 	}
 

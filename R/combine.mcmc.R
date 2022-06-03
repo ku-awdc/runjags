@@ -303,7 +303,7 @@ divide.jags <- function(runjags.object, which.chains=1:nchain(as.mcmc.list(runja
 
 	runjags.object <- checkvalidrunjagsobject(runjags.object)
 
-	if(is.na(which.chains) || any(which.chains > nchain(as.mcmc.list(runjags.object))))
+	if(is_na_arg(which.chains) || any(which.chains > nchain(as.mcmc.list(runjags.object))))
 		stop('Invalid value provided for the which.chain argument')
 
 	summaryargs <- list(...)

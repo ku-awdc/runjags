@@ -811,7 +811,7 @@ extend.jags <- function(runjags.object, add.monitor=character(0), drop.monitor=c
 			newoutput$mcmc[[i]] <- mcmc(newoutput$mcmc[[i]], start=burnin+1, thin=thin)
 			dimnames(newoutput$mcmc[[i]]) <- list(iternames, currentdn[[2]])
 		}
-		if(inherits(newoutput$pd, "mcmc") && !is.na(newoutput$pd)){
+		if(inherits(newoutput$pd, "mcmc") && !is_na_arg(newoutput$pd)){
 			dimnames(newoutput$pd) <- list(iternames, dimnames(newoutput$pd)[[2]])
 			newoutput$pd <- mcmc(newoutput$pd, start=burnin+1, thin=thin)
 		}
