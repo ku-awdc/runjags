@@ -829,7 +829,7 @@ normalise.mcmcfun <- function(mcmc.list, normalise = TRUE, warn = TRUE, remove.n
 			meansdiffer[] <- FALSE
 		}
 
-		nonstochastic <- apply(anyvariancezero,1,all) & !meansdiffer
+		nonstochastic <- apply(anyvariancezero,1,all) & !is.na(meansdiffer) & !meansdiffer
 		removed <- names(nonstochastic)[nonstochastic]
 		if(length(removed)>0 && niter(mcmc)>1){
 			warnmessage <- paste("Note: The monitored variable", if(sum(nonstochastic)>1) "s", " '", if(sum(nonstochastic)>1) paste(removed[1:(length(removed)-1)], collapse="', '"), if(sum(nonstochastic)>1) "' and '", removed[length(removed)], "' appear", if(sum(nonstochastic)==1) "s", " to be non-stochastic; ", if(sum(nonstochastic)>1) "they" else "it", " will not be included in the convergence diagnostic", sep="")
@@ -1267,7 +1267,7 @@ checkvalidrunjagsobject <- function(runjags.object){
     if(!"summary.iters" %in% names(runjags.object$summary.pars)){
       runjags.object$summary.pars$summary.iters <- 10000
     }
-    
+
 		if(length(runjags.object$summary.pars)!=20 || !all(c('plots','vars','mutate','psrf.target','normalise.mcmc','modeest.opts','confidence','autocorr.lags','custom','silent.jags','plot.type','col','summary.iters','trace.iters','separate.chains','trace.options','density.options','histogram.options','ecdfplot.options','acplot.options') %in% names(runjags.object$summary.pars))){
 			stop('Invalid summary.pars - please submit a bug report\n')
 		}

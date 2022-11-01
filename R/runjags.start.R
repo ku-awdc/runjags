@@ -871,10 +871,18 @@ runjags.rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 	suppressWarnings(varnames <- varnames(rjags::coda.samples(rjags,variable.names=monitor[monitor!="pD"],n.iter=2,progress.bar="none", thin=1)))
 	flush.console()
 	mcmcout <- lapply(samples[names(samples)!='pD'], as.mcmc.list)
+	## Remove any elements of arrays that are not monitored:
+	mcmcout <- lapply(mcmcout, function(x){
+	  nonmiss <- unique(unlist(lapply(x, function(y) which(apply(!is.na(y),2,any)))))
+	  as.mcmc.list(lapply(x, function(y) y[,nonmiss,drop=FALSE]))
+	})
 
 	nvar <- length(varnames)
+	if(nvar!=sum(sapply(mcmcout,coda::nvar))){
+	  stop("An unexpected error occured - number of variables does not match (try using method='interruptible'")
+	}
 
-  	niter <- sapply(mcmcout,niter)
+  niter <- sapply(mcmcout,niter)
 	if(!all(niter==niter[1])) stop("An error occured with the rjags method - variables returned with differing numbers of iterations")
 	niter <- niter[1]
 
