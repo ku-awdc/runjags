@@ -555,7 +555,7 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 		  if(grepl("mac", pkt)){
 		    r_type <- ifelse(grepl("arm64",pkt), "arm64", "x86_64")
 		    c_type <- ifelse(grepl("arm64",Sys.info()["machine"]), "arm64", "x86_64")
-		    j_type <- system(paste0("lipo -archs ", gsub("/bin/jags","/libexec/jags-terminal", jags)), intern=TRUE)
+		    j_type <- system(paste0("lipo -archs ", jags), intern=TRUE)
 		    if(j_type=="x86_64 arm64") j_type <- "universal"
 		    if(grepl("build",returnval[rightstring])){
 		      bld <- paste0("macOS ", j_type, " build")
