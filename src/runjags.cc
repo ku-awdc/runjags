@@ -54,6 +54,7 @@
 #include "distributions/DPar4.h"
 #include "distributions/DGenPar.h"
 #include "distributions/DHalfCauchy.h"
+#include "distributions/Constrain.h"
 
 using std::vector;
 
@@ -83,6 +84,7 @@ runjagsModule::runjagsModule() : Module("runjags")
   Rinsert(new DMouchel);
   Rinsert(new DGenPar);
   Rinsert(new DHalfCauchy);
+  Rinsert(new Constrain);
 
 }
 
