@@ -116,7 +116,7 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	## Partially missing observations (whatever combinations):
 	presencecombos <- unique(!is.na(testdata[,testcols]))
 	# Remove the complete set and completely missing (if present):
-	presencecombos <- presencecombos[! apply(presencecombos,1,sum) %in% c(0,ntests),]
+	presencecombos <- presencecombos[! apply(presencecombos,1,sum) %in% c(0,ntests), , drop=FALSE]
 
 	for(pc in seq_len(nrow(presencecombos))){
 		tcode <- paste0(c('M','R')[presencecombos[pc,]+1], collapse='')
