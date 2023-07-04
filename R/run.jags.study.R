@@ -12,7 +12,7 @@
 #' @keywords methods
 
 #' @return
-#' An object of class \code{\link{runjagsstudy-class}}, containing a summary of the performance of the model with regards to the target variables specified.  If record.chains=TRUE, an element named 'runjags' containing a list of all the runjags objects returned will also be present.  Any error messages given by individual simulations will be contained in the \$errors element of the returned list.
+#' An object of class \code{\link{runjagsstudy-class}}, containing a summary of the performance of the model with regards to the target variables specified.  If record.chains=TRUE, an element named 'runjags' containing a list of all the runjags objects returned will also be present.  Any error messages given by individual simulations will be contained in the 'errors' element of the returned list.
 
 #' @seealso
 #' \code{\link{autorun.jags}} for the underlying methods used to run simulations to convergence, and \code{\link{runjagsstudy-class}} for details of the returned object

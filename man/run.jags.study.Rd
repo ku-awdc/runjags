@@ -64,7 +64,7 @@ run.jags.study(
 \item{inits}{as for \code{\link{run.jags}}, except that it is not permitted to be an environment.  It is recommended to a function to return appropriate initial values (which may depend on the data visible when the function is evaluated).}
 }
 \value{
-An object of class \code{\link{runjagsstudy-class}}, containing a summary of the performance of the model with regards to the target variables specified.  If record.chains=TRUE, an element named 'runjags' containing a list of all the runjags objects returned will also be present.  Any error messages given by individual simulations will be contained in the \$errors element of the returned list.
+An object of class \code{\link{runjagsstudy-class}}, containing a summary of the performance of the model with regards to the target variables specified.  If record.chains=TRUE, an element named 'runjags' containing a list of all the runjags objects returned will also be present.  Any error messages given by individual simulations will be contained in the 'errors' element of the returned list.
 }
 \description{
 These functions can be used to fit a user specified JAGS model to multiple datasets with automatic control of run length and convergence, over a distributed computing cluster such as that provided by snow.  The results for monitored variables are compared to the target values provided and a summary of the model performance is returned.  This may be used to facilitate model validation using simulated data, or to assess model fit using a 'drop-k' type cross validation study where one or more data points are removed in turn and the model's ability to predict that datapoint is assessed.

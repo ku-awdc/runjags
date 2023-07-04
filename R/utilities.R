@@ -556,7 +556,15 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 		    r_type <- ifelse(grepl("arm64",pkt), "arm64", "x86_64")
 		    c_type <- ifelse(grepl("arm64",Sys.info()["machine"]), "arm64", "x86_64")
 		    j_type <- system(paste0("lipo -archs ", gsub("/bin/jags","/libexec/jags-terminal", jags)), intern=TRUE)
-		    if(j_type=="x86_64 arm64") j_type <- "universal"
+		    ss <- try({
+		      if(j_type=="x86_64 arm64") j_type <- "universal"
+		    }, silent=TRUE)
+		    if(inherits(ss,"try-error")){
+		      ## This may be due to invalid active developer path ... assume universal:
+		      j_type <- "universal"
+		      if(!runjagsprivate[["warned_macos_lipo"]]) warning("Reading the binary type of JAGS failed - do you need to update the Xcode Command Line Tools?")
+		      runjagsprivate[["warned_macos_lipo"]] <- TRUE
+		    }
 		    if(grepl("build",returnval[rightstring])){
 		      bld <- paste0("macOS ", j_type, " build")
 		    }else{
@@ -651,6 +659,7 @@ assign("defaultsummarypars", list(vars=NA, mutate=NULL, psrf.target = 1.05, norm
 assign("minjagsmajor", 3, envir=runjagsprivate)
 assign("maxjagsmajor", 4, envir=runjagsprivate)
 assign("warned_version_mismatch", FALSE, envir=runjagsprivate)
+assign("warned_macos_lipo", FALSE, envir=runjagsprivate)
 
 	# runjags.getOption is not available at compile time so has to be expression, but it's OK as it is eval()ed when getting defaultsumpars
 getdefaultsummarypars <- function(){
