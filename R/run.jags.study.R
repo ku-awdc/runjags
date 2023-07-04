@@ -478,7 +478,7 @@ run.jags.study <- function(simulations, model, datafunction, targets=list(), con
 		runjags.args$tempdir <- eval(runjags.args$tempdir)
 
 		# Detect common problems:
-		if(!require("runjags") || package_version(utils::packageDescription('runjags', fields='Version'))<1)
+		if(!require("runjags") || package_version(utils::packageDescription('runjags', fields='Version')) < "1.0.0")
 			stop(paste("The runjags package (version >=1.0.0) is not installed (or failed to load) on the cluster node '", Sys.info()['nodename'], "'", sep=""))
 		if(runjags.args$method%in%c('rjags','rjparallel') && !requireNamespace("rjags"))
 			stop(paste("The rjags package is not installed (or failed to load) on the cluster node '", Sys.info()['nodename'], "' - try specifying method='simple'", sep=""))

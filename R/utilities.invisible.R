@@ -1237,7 +1237,7 @@ checkvalidrunjagsobject <- function(runjags.object){
 			runjags.object$fitted <- NA
 
 		# Not the best way of doing it - add.summary doesn't update the version:
-	#	if(numeric_version(runjags.object$runjags.version[1]) < 2){
+	#	if(numeric_version(runjags.object$runjags.version[1]) < "2.0.0"){
 	#		runjags.object$summaries <- 'Summary statistics not available - see ?add.summary'
 	#	}
 
