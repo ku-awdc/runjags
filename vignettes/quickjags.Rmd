@@ -13,7 +13,7 @@ library(parallel)
 
 # A quick-start guide to using the runjags package
 
-This document is intended as a short introduction to fitting MCMC models using JAGS and runjags, focussing on learning by example.  The intention is to keep this document as brief as possible, but a slightly longer version with more examples is available from [here](http://runjags.sourceforge.net/quickjags.html).  Additional information and more details are available in the [user guide](http://runjags.sourceforge.net/userguide.pdf).  For detailed documentation of individual functions, see the runjags manual for that function.
+This document is intended as a short introduction to fitting MCMC models using JAGS and runjags, focussing on learning by example.  The intention is to keep this document as brief as possible, but a slightly longer version with more examples is available from [here](https://runjags.sourceforge.net/quickjags.html).  Additional information and more details are available in the [user guide](https://runjags.sourceforge.net/userguide.pdf).  For detailed documentation of individual functions, see the runjags manual for that function.
 
 ## Preparation
 
@@ -202,7 +202,7 @@ The Deviance Information Criterion (DIC) is typically used to compare models fit
 extract(JAGS.D9, what='samplers')
 ```
 
-Another possible method to assess the fit of Bayesian models is using leave-one-out cross-validation, or a drop-k study.  A utility function is included within runjags to facilitate this - for more details see the help file for the drop.k function or the [extended version of this vignette](http://runjags.sourceforge.net/quickjags.html).
+Another possible method to assess the fit of Bayesian models is using leave-one-out cross-validation, or a drop-k study.  A utility function is included within runjags to facilitate this - for more details see the help file for the drop.k function or the [extended version of this vignette](https://runjags.sourceforge.net/quickjags.html).
 
 
 ## Options
@@ -216,9 +216,9 @@ There are a large number of global options that can be controlled using the runj
 
 ## Further information
 
-There is a [sourceforge repository](http://runjags.sourceforge.net/) associated with the runjags package, which contains additional versions of the package and internal JAGS module.  This page also contains the [extended version of this vignette](http://runjags.sourceforge.net/quickjags.html) which contains additional material and examples not found in the [version hosted on CRAN](https://CRAN.R-project.org/package=runjags).  
+There is a [sourceforge repository](https://runjags.sourceforge.net/) associated with the runjags package, which contains additional versions of the package and internal JAGS module.  This page also contains the [extended version of this vignette](https://runjags.sourceforge.net/quickjags.html) which contains additional material and examples not found in the [version hosted on CRAN](https://CRAN.R-project.org/package=runjags).  
 
-This package is in constant development, so if you find any issues or the code does not behave as expected please either email the pacckage developer or visit the [bug-tracker page](https://sourceforge.net/p/runjags/tickets/) to report the problem.  General comments and suggestions on how you find using this package are also very welcome.
+This package is in constant development, so if you find any issues or the code does not behave as expected please either email the pacckage developer or visit the [bug-tracker page](https://github.com/ku-awdc/runjags/issues) to report the problem.  General comments and suggestions on how you find using this package are also very welcome.
 
 
 ## Citation
