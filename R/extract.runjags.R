@@ -106,7 +106,7 @@ extract.runjags <- function(x, what, force.resample=FALSE, ...){
 
 	# Some of the rest may be short-cutable from what we have saved:
 	if(what=='sum.deviance'){
-		if(!force.resample && !all(is.na(x$deviance.sum)) && !is.na(x$deviance.sum['sum.mean.deviance']))
+		if(!force.resample && any(!is.na(x$deviance.sum)) && !is.na(x$deviance.sum['sum.mean.deviance']))
 			return(x$deviance.sum['sum.mean.deviance'])
 
 		ds <- dic.runjags(x, type='pD', force.resample=force.resample, ...)
@@ -116,7 +116,7 @@ extract.runjags <- function(x, what, force.resample=FALSE, ...){
 	}
 
 	if(what=='sum.pd'){
-		if(!force.resample && !all(is.na(x$deviance.sum)) && !is.na(x$deviance.sum['sum.mean.pD']))
+		if(!force.resample && any(!is.na(x$deviance.sum)) && !is.na(x$deviance.sum['sum.mean.pD']))
 			return(x$deviance.sum['sum.mean.pD'])
 
 		ds <- dic.runjags(x, type='pD', force.resample=force.resample, ...)
@@ -126,7 +126,7 @@ extract.runjags <- function(x, what, force.resample=FALSE, ...){
 	}
 
 	if(what=='sum.popt'){
-		if(!force.resample && !all(is.na(x$deviance.sum)) && !is.na(x$deviance.sum['sum.mean.pOpt']))
+		if(!force.resample && any(!is.na(x$deviance.sum)) && !is.na(x$deviance.sum['sum.mean.pOpt']))
 			return(x$deviance.sum['sum.mean.pOpt'])
 
 		ds <- dic.runjags(x, type='pOpt', force.resample=force.resample, ...)
@@ -136,7 +136,7 @@ extract.runjags <- function(x, what, force.resample=FALSE, ...){
 	}
 
 	if(what=='mean.deviance'){
-		if(!force.resample && !is.na(x$deviance.table) && all(!is.na(x$deviance.table['mean.deviance'])))
+		if(!force.resample && any(!is.na(x$deviance.table)) && all(!is.na(x$deviance.table['mean.deviance'])))
 			return(x$deviance.table['mean.deviance'])
 
 		ds <- dic.runjags(x, type='pD', force.resample=force.resample, ...)
@@ -146,7 +146,7 @@ extract.runjags <- function(x, what, force.resample=FALSE, ...){
 	}
 
 	if(what=='mean.pd'){
-		if(!force.resample && !is.na(x$deviance.table) && all(!is.na(x$deviance.table['mean.pD'])))
+		if(!force.resample && any(!is.na(x$deviance.table)) && all(!is.na(x$deviance.table['mean.pD'])))
 			return(x$deviance.table['mean.pD'])
 
 		ds <- dic.runjags(x, type='pD', force.resample=force.resample, ...)
@@ -156,7 +156,7 @@ extract.runjags <- function(x, what, force.resample=FALSE, ...){
 	}
 
 	if(what=='mean.popt'){
-		if(!force.resample && !is.na(x$deviance.table) && all(!is.na(x$deviance.table['mean.pOpt'])))
+		if(!force.resample && any(!is.na(x$deviance.table)) && all(!is.na(x$deviance.table['mean.pOpt'])))
 			return(x$deviance.table['mean.pOpt'])
 
 		ds <- dic.runjags(x, type='pOpt', force.resample=force.resample, ...)
