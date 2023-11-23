@@ -278,7 +278,7 @@ runjags.summaries <- function(fullmcmclist, thinnedmcmclist, psrf.target, normal
 		modeest.opts$MARGIN <- 2
 
 		# Account for breaking change in modeest version 2.3.2:
-		if(packageVersion('modeest') >= 2.3){
+		if(packageVersion('modeest') >= "2.3"){
 			modeest.opts$FUN <- function(x, ...){
 				return(modeest::mlv(x, ...))
 			}

@@ -35,7 +35,7 @@ A recommended introductory text for individuals not familiar with the BUGS langu
 
 Lunn D, Jackson C, Best N, Thomas A, Spiegelhalter D (2012). The BUGS book: A practical introduction to Bayesian analysis. CRC press.
 
-To illustrate how to use run.jags we will look at the Salmonella example from [chapter 6.5.2](http://www.mrc-bsu.cam.ac.uk/software/bugs/the-bugs-project-the-bugs-book/bugs-book-examples/the-bugs-book-examples-chapter-6-6-5-2/) of this book, with thanks to Lunn, Jackson, Best, Thomas, and Spiegelhalter 2012, for kind permission to reproduce this code.  The model below was taken from the WinBUGS example, modified to include a mandatory pair of curly brackets to demarcate the Data and Inits blocks, and adding an optional second Inits block with different starting values for 2 chains:
+To illustrate how to use run.jags we will look at the Salmonella example from [chapter 6.5.2](https://www.mrc-bsu.cam.ac.uk:443/software/bugs/the-bugs-project-the-bugs-book/bugs-book-examples/the-bugs-book-examples-chapter-6-6-5-2/) of this book, with thanks to Lunn, Jackson, Best, Thomas, and Spiegelhalter 2012, for kind permission to reproduce this code.  The model below was taken from the WinBUGS example, modified to include a mandatory pair of curly brackets to demarcate the Data and Inits blocks, and adding an optional second Inits block with different starting values for 2 chains:
 
 ```{r}
 filestring <- "

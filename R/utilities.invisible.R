@@ -1730,7 +1730,7 @@ loadandcheckrjags <- function(stop=TRUE, silent=FALSE){
 			swcat("\nThe rjags package is installed, but could not be loaded - run the testjags() function for more detailed information\n", sep="")
 		fail <- TRUE
 	}
-	if(!fail && packageVersion('rjags') < 3.9){
+	if(!fail && packageVersion('rjags') < "3.9"){
 		if(!silent)
 			swcat("\nPlease update the rjags package to version 3-9 or later\n", call.=FALSE)
 		fail <- TRUE
