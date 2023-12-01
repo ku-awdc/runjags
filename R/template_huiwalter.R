@@ -22,7 +22,7 @@
 #' unlink("huiwalter_model.txt")
 #'
 #' @export
-template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)', cov_as_cor = FALSE){
+template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)', cov_as_cor=FALSE, populations_using=FALSE, agreement_check=FALSE, residual_check=FALSE){
 
 	stopifnot(is.data.frame(testdata))
 	covon <- covariance
@@ -53,6 +53,9 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 
 	## Initialise the file:
 	cat('## Auto-generated Hui-Walter model created by runjags version ', runjagsprivate$runjagsversion, ' on ', as.character(Sys.Date()), '\n\nmodel{\n\n\t## Observation layer:', sep='', file=outfile, append=FALSE)
+	catapp <- function(...){
+	  cat(..., sep='', file=outfile, append=TRUE)
+	}
 
 	## Some variables that are needed in a few places:
 	testcols <- names(testdata)[!names(testdata) %in% c('ID','Population')]
@@ -96,8 +99,13 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	dimnames(testagree) <- list(NULL, paste0('cc', covcombs))
 
 
-	datablock <- dump.format(list(Populations=npop))
+	datablock <- dump.format(list(Populations=npop, AcceptTest=rep(1,ntests), AcceptProb=matrix(1, nrow=ncomb, ncol=npop)))
 	nsum <- 0
+
+	## temporary
+	warning("REMOVEME")
+	datablock <- c(datablock, dump.format(list(PopulationsUsing = seq_len(npop))))
+	## /temporary
 
 	## Complete observations (if there are any):
 	if(nrow(na.omit(testdata[,testcols])) > 0){
@@ -110,7 +118,22 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 		datablock <- c(datablock, dump.format(dlist))
 		nsum <- nsum+sum(tabdata)
 
-		cat('\n\n\t# Complete observations (N=', sum(tabdata), '):\n\tfor(p in 1:Populations){\n\t\tTally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\n\t\tprob_', tcode, '[1:', ncomb, ',p] <- se_prob[1:', ncomb, ',p] + sp_prob[1:', ncomb, ',p]\n\t}', sep='', file=outfile, append=TRUE)
+		catapp('\n\n\t# Complete observations (N=', sum(tabdata), '):\n\t')
+		if(populations_using){
+		  catapp('for(p in PopulationsUsing){\n\t\tTally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
+		  if(residual_check){
+		    catapp('\tsim_tally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
+		    catapp('\tresidual_', tcode, '[1:', ncomb, ',p] <- Tally_', tcode, '[1:', ncomb, ',p] - sim_tally_', tcode, '[1:', ncomb, ',p]\n\t')
+		  }
+		  catapp('}\n\tfor(p in 1:Populations){\n\t\tprob_', tcode, '[1:', ncomb, ',p] <- (prev[p] * se_prob[1:', ncomb, ',p]) + ((1-prev[p]) * sp_prob[1:', ncomb, ',p])\n\t}')
+		}else{
+		  catapp('for(p in 1:Populations){\n\t\tTally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
+		  if(residual_check){
+		    catapp('\tsim_tally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
+		    catapp('\tresidual_', tcode, '[1:', ncomb, ',p] <- Tally_', tcode, '[1:', ncomb, ',p] - sim_tally_', tcode, '[1:', ncomb, ',p]\n\t')
+		  }
+		  catapp('\tprob_', tcode, '[1:', ncomb, ',p] <- (prev[p] * se_prob[1:', ncomb, ',p]) + ((1-prev[p]) * sp_prob[1:', ncomb, ',p])\n\t}')
+		}
 	}
 
 	## Partially missing observations (whatever combinations):
@@ -131,19 +154,20 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 		datablock <- c(datablock, dump.format(dlist))
 		nsum <- nsum+sum(tabdata)
 
-		cat('\n\n\t# Partial observations (', paste0(testcols, ': ', c('Missing','Recorded')[presencecombos[pc,]+1], collapse=', '), '; N=', sum(tabdata),'):\n\tfor(p in 1:Populations){\n\t\tTally_', tcode, '[1:', tcomb, ',p] ~ dmulti(prob_', tcode, '[1:', tcomb, ',p], N_', tcode, '[p])\n', sep='', file=outfile, append=TRUE)
-
 		ardims <- do.call(expand.grid, c(lapply(presencecombos[pc,], function(x) if(x) 0 else 1:2), list(stringsAsFactors=FALSE)))
-
 		indexes <- vapply(seq_len(nrow(ardims)), function(i){
-			do.call(`[`, c(list(testarr), lapply(ardims[i,], function(x) if(x==0) 1:2 else x)))
+		  do.call(`[`, c(list(testarr), lapply(ardims[i,], function(x) if(x==0) 1:2 else x)))
 		}, numeric(2^sum(presencecombos[pc,])))
 		stopifnot(length(indexes)==ncomb && all(testarr %in% indexes))
 		arrin <- paste0('[c(',apply(indexes,2,paste,collapse=','),'),p]')
 
-		cat('\n\t\tprob_', tcode, '[1:', tcomb, ',p] <-\t', paste0('se_prob', arrin, ' + sp_prob', arrin, collapse=' +\n\t\t\t\t\t\t\t'), sep='', file=outfile, append=TRUE)
-
-		cat('\n\t}', sep='', file=outfile, append=TRUE)
+		catapp('\n\n\t# Partial observations (', paste0(testcols, ': ', c('Missing','Recorded')[presencecombos[pc,]+1], collapse=', '), '; N=', sum(tabdata),'):\n\t')
+		if(populations_using){
+		  catapp('for(p in PopulationsUsing){\n\t\tTally_', tcode, '[1:', tcomb, ',p] ~ dmulti(prob_', tcode, '[1:', tcomb, ',p], N_', tcode, '[p])\n\t}\n\t')
+		  catapp('for(p in 1:Populations){\n\t\tprob_', tcode, '[1:', tcomb, ',p] <-\t', paste0('(prev[p] * se_prob', arrin, ') + ((1-prev[p]) * sp_prob', arrin, ')', collapse=' +\n\t\t\t\t\t\t\t'), '\n\t}')
+		}else{
+		  catapp('for(p in 1:Populations){\n\t\tTally_', tcode, '[1:', tcomb, ',p] ~ dmulti(prob_', tcode, '[1:', tcomb, ',p], N_', tcode, '[p])\n\n\t\tprob_', tcode, '[1:', tcomb, ',p] <-\t', paste0('(prev[p] * se_prob', arrin, ') + ((1-prev[p]) * sp_prob', arrin, ')', collapse=' +\n\t\t\t\t\t\t\t'), '\n\t}')
+		}
 	}
 
 	nsum <- nsum + sum(apply(is.na(testdata[,testcols]),1,all))
@@ -154,22 +178,28 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	cat('\n\n\n\t## Observation probabilities:\n\n\tfor(p in 1:Populations){\n\n', sep='', file=outfile, append=TRUE)
 
 	pasteargs <- c(list('\t\t# Probability of observing '), as.list(testcombs), 'from a true positive:')
-	pasteargs <- c(pasteargs, list(':\n\t\tse_prob[', 1:ncomb, ',p] <- prev[p] * ('))
+	pasteargs <- c(pasteargs, list('\n\t\tse_prob[', 1:ncomb, ',p] <- '))
 	pasteargs <- c(pasteargs, list(apply(outcomes, 1, function(x){
 		text <- ifelse(x==1, paste0('se[', 1:ncomb, ']'), paste0('(1-se[', 1:ncomb, '])'))
 		return(paste(text, collapse='*'))
 	})))
-	pasteargs <- c(pasteargs, lapply(covcombs, function(x) ifelse(testagree[,paste0('cc',x)], paste0(' +covse', x), paste0(' -covse', x))), list(')'))
+	pasteargs <- c(pasteargs, lapply(covcombs, function(x) ifelse(testagree[,paste0('cc',x)], paste0(' +covse', x), paste0(' -covse', x))))
 
 	pasteargs <- c(pasteargs, list('\n\t\t# Probability of observing '), as.list(testcombs), 'from a true negative:')
-	pasteargs <- c(pasteargs, list(':\n\t\tsp_prob[', 1:ncomb, ',p] <- (1-prev[p]) * ('))
+	pasteargs <- c(pasteargs, list('\n\t\tsp_prob[', 1:ncomb, ',p] <- '))
 	pasteargs <- c(pasteargs, list(apply(outcomes, 1, function(x){
 		text <- ifelse(x==1, paste0('(1-sp[', 1:ncomb, '])'), paste0('sp[', 1:ncomb, ']'))
 		return(paste(text, collapse='*'))
 	})))
-	pasteargs <- c(pasteargs, lapply(covcombs, function(x) ifelse(testagree[,paste0('cc',x)], paste0(' +covsp', x), paste0(' -covsp', x))), list(')'))
+	pasteargs <- c(pasteargs, lapply(covcombs, function(x) ifelse(testagree[,paste0('cc',x)], paste0(' +covsp', x), paste0(' -covsp', x))))
+
+	#pasteargs <- c(pasteargs, list('\n\t\tconstraint_ok[', 1:ncomb, ',p] <- ifelse(se_prob[', 1:ncomb, ',p] >= 0 && se_prob[', 1:ncomb, ',p] <= 1 && sp_prob[', 1:ncomb, ',p] >= 0 && sp_prob[', 1:ncomb, ',p], 1, 0)'))
+	#pasteargs <- c(pasteargs, list('\n\t\tAccept[', 1:ncomb, ',p] ~ dbern(constraint_ok[',1:ncomb,',p])'))
+	# pasteargs <- c(pasteargs, list('\n\n\t\t# Ensure that the covariance terms do not result in an invalid probability:\n\t\tAcceptProb[', 1:ncomb, ',p] ~ dbern(constraint_ok[ifelse(se_prob[', 1:ncomb, ',p] >= 0 && se_prob[', 1:ncomb, ',p] <= 1 && sp_prob[', 1:ncomb, ',p] >= 0 && sp_prob[', 1:ncomb, ',p], 1, 0))'))
 
 	cat(do.call('paste', c(pasteargs, list(sep=''))), sep='\n\n', file=outfile, append=TRUE)
+
+	catapp('\n\n\t\t# Ensure that the covariance terms do not result in an invalid probability:\n\t\tfor(c in 1:', ncomb, '){\n\t\t\tAcceptProb[c,p] ~ dbern(ifelse(se_prob[c,p] >= 0 && se_prob[c,p] <= 1 && sp_prob[c,p] >= 0 && sp_prob[c,p], 1, 0))\n\t\t}\n')
 
 	cat('\n\t}\n', sep='', file=outfile, append=TRUE)
 
@@ -185,9 +215,10 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	cat('\n',file=outfile, append=TRUE)
 
 	for(t in 1:length(testcols)){
-		cat('\n\t# Sensitivity of ', testcols[t], ' test:\n\tse[', t, '] ~ ', se_priors[t], 'T(1-sp[', t, '], )\n', sep='', file=outfile, append=TRUE)
+		cat('\n\t# Sensitivity of ', testcols[t], ' test:\n\tse[', t, '] ~ ', se_priors[t], '\n', sep='', file=outfile, append=TRUE)
 		cat('\t# Specificity of ', testcols[t], ' test:\n\tsp[', t, '] ~ ', sp_priors[t], '\n', sep='', file=outfile, append=TRUE)
 	}
+	catapp('\n\t# Ensure that label switching does not occur for any test:\n\tfor(t in 1:', length(testcols), '){\n\t\tAcceptTest[t] ~ dbern(ifelse((se[t]+sp[t]) >= 1.0, 1, 0))\n\t}')
 
 	cat('\n',file=outfile, append=TRUE)
 
@@ -243,7 +274,9 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 
 	cat('\n\n## Data:\ndata{\n', datablock, '}\n\n', sep='', file=outfile, append=TRUE)
 
-	cat('The model and data have been written to', outfile, 'in the current working directory\nYou should check and alter priors before running the model\n')
+	cat('The model and data have been written to', outfile, 'in the current working directory\n')
+	if(populations_using) cat('You will need to create a numeric vector of populations to include in the model within your R working environment, e.g.:\n\tPopulationsUsing <- seq_len(', length(testcols), ')\n')
+	cat('You should check and alter priors before running the model\n')
 
 }
 
