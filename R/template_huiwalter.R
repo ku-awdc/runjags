@@ -22,7 +22,7 @@
 #' unlink("huiwalter_model.txt")
 #'
 #' @export
-template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)', cov_as_cor=FALSE, populations_using=FALSE, agreement_check=FALSE, residual_check=FALSE){
+template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)', cov_as_cor=FALSE, populations_using=FALSE, agreement_check=FALSE, residual_check=FALSE, residual_min_obs=20L){
 
 	stopifnot(is.data.frame(testdata))
 	covon <- covariance
@@ -98,14 +98,43 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	testagree <- apply(testcombos,1,function(x) outcomes[[x[1]]] == outcomes[[x[2]]])
 	dimnames(testagree) <- list(NULL, paste0('cc', covcombs))
 
+  datalist <- list(Populations=npop, PopulationsUsing = seq_len(npop), AcceptTest=rep(1,ntests), AcceptProb=matrix(1, nrow=ncomb, ncol=npop))
+  if(populations_using) datalist[["PopulationsUsing"]] <- NULL
+	datablock <- dump.format(datalist)
 
-	datablock <- dump.format(list(Populations=npop, AcceptTest=rep(1,ntests), AcceptProb=matrix(1, nrow=ncomb, ncol=npop)))
 	nsum <- 0
 
 	## temporary
 	warning("REMOVEME")
 	datablock <- c(datablock, dump.format(list(PopulationsUsing = seq_len(npop))))
 	## /temporary
+
+	## Helper function:
+	writeobs <- function(tcode, ncomb, nobs=Inf){
+	  catapp('for(p in PopulationsUsing){\n\t\tTally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
+	  if(residual_check && nobs >= residual_min_obs){
+	    catapp('\n\tsim_tally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
+	    catapp('\tresidual_', tcode, '[1:', ncomb, ',p] <- Tally_', tcode, '[1:', ncomb, ',p] - sim_tally_', tcode, '[1:', ncomb, ',p]\n\t')
+	  }
+	  catapp('}\n\tfor(p in 1:Populations){\n\t\tprob_', tcode, '[1:', ncomb, ',p] <- (prev[p] * se_prob[1:', ncomb, ',p]) + ((1-prev[p]) * sp_prob[1:', ncomb, ',p])\n\t}')
+
+	  # if(populations_using){
+	  #   catapp('for(p in PopulationsUsing){\n\t\tTally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
+	  #   if(residual_check){
+	  #     catapp('\tsim_tally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
+	  #     catapp('\tresidual_', tcode, '[1:', ncomb, ',p] <- Tally_', tcode, '[1:', ncomb, ',p] - sim_tally_', tcode, '[1:', ncomb, ',p]\n\t')
+	  #   }
+	  #   catapp('}\n\tfor(p in 1:Populations){\n\t\tprob_', tcode, '[1:', ncomb, ',p] <- (prev[p] * se_prob[1:', ncomb, ',p]) + ((1-prev[p]) * sp_prob[1:', ncomb, ',p])\n\t}')
+	  # }else{
+	  #   catapp('for(p in 1:Populations){\n\t\tTally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
+	  #   if(residual_check){
+	  #     catapp('\tsim_tally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
+	  #     catapp('\tresidual_', tcode, '[1:', ncomb, ',p] <- Tally_', tcode, '[1:', ncomb, ',p] - sim_tally_', tcode, '[1:', ncomb, ',p]\n\t')
+	  #   }
+	  #   catapp('\tprob_', tcode, '[1:', ncomb, ',p] <- (prev[p] * se_prob[1:', ncomb, ',p]) + ((1-prev[p]) * sp_prob[1:', ncomb, ',p])\n\t}')
+	  # }
+
+	}
 
 	## Complete observations (if there are any):
 	if(nrow(na.omit(testdata[,testcols])) > 0){
@@ -118,22 +147,9 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 		datablock <- c(datablock, dump.format(dlist))
 		nsum <- nsum+sum(tabdata)
 
+
 		catapp('\n\n\t# Complete observations (N=', sum(tabdata), '):\n\t')
-		if(populations_using){
-		  catapp('for(p in PopulationsUsing){\n\t\tTally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
-		  if(residual_check){
-		    catapp('\tsim_tally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
-		    catapp('\tresidual_', tcode, '[1:', ncomb, ',p] <- Tally_', tcode, '[1:', ncomb, ',p] - sim_tally_', tcode, '[1:', ncomb, ',p]\n\t')
-		  }
-		  catapp('}\n\tfor(p in 1:Populations){\n\t\tprob_', tcode, '[1:', ncomb, ',p] <- (prev[p] * se_prob[1:', ncomb, ',p]) + ((1-prev[p]) * sp_prob[1:', ncomb, ',p])\n\t}')
-		}else{
-		  catapp('for(p in 1:Populations){\n\t\tTally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
-		  if(residual_check){
-		    catapp('\tsim_tally_', tcode, '[1:', ncomb, ',p] ~ dmulti(prob_', tcode, '[1:', ncomb, ',p], N_', tcode, '[p])\n\t')
-		    catapp('\tresidual_', tcode, '[1:', ncomb, ',p] <- Tally_', tcode, '[1:', ncomb, ',p] - sim_tally_', tcode, '[1:', ncomb, ',p]\n\t')
-		  }
-		  catapp('\tprob_', tcode, '[1:', ncomb, ',p] <- (prev[p] * se_prob[1:', ncomb, ',p]) + ((1-prev[p]) * sp_prob[1:', ncomb, ',p])\n\t}')
-		}
+		writeobs(tcode, ncomb)
 	}
 
 	## Partially missing observations (whatever combinations):
@@ -162,12 +178,7 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 		arrin <- paste0('[c(',apply(indexes,2,paste,collapse=','),'),p]')
 
 		catapp('\n\n\t# Partial observations (', paste0(testcols, ': ', c('Missing','Recorded')[presencecombos[pc,]+1], collapse=', '), '; N=', sum(tabdata),'):\n\t')
-		if(populations_using){
-		  catapp('for(p in PopulationsUsing){\n\t\tTally_', tcode, '[1:', tcomb, ',p] ~ dmulti(prob_', tcode, '[1:', tcomb, ',p], N_', tcode, '[p])\n\t}\n\t')
-		  catapp('for(p in 1:Populations){\n\t\tprob_', tcode, '[1:', tcomb, ',p] <-\t', paste0('(prev[p] * se_prob', arrin, ') + ((1-prev[p]) * sp_prob', arrin, ')', collapse=' +\n\t\t\t\t\t\t\t'), '\n\t}')
-		}else{
-		  catapp('for(p in 1:Populations){\n\t\tTally_', tcode, '[1:', tcomb, ',p] ~ dmulti(prob_', tcode, '[1:', tcomb, ',p], N_', tcode, '[p])\n\n\t\tprob_', tcode, '[1:', tcomb, ',p] <-\t', paste0('(prev[p] * se_prob', arrin, ') + ((1-prev[p]) * sp_prob', arrin, ')', collapse=' +\n\t\t\t\t\t\t\t'), '\n\t}')
-		}
+		writeobs(tcode, tcomb, sum(tabdata))
 	}
 
 	nsum <- nsum + sum(apply(is.na(testdata[,testcols]),1,all))
