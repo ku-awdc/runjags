@@ -10,7 +10,14 @@ template_huiwalter(
   covariance = FALSE,
   se_priors = "dbeta(1,1)",
   sp_priors = "dbeta(1,1)",
-  cov_as_cor = FALSE
+  prev_priors = "dbeta(1,1)",
+  cov_as_cor = FALSE,
+  ppp_values = FALSE,
+  specify_populations = FALSE,
+  single_check = FALSE,
+  agreement_check = FALSE,
+  outcome_check = FALSE,
+  outcome_check_min_obs = 20L
 )
 }
 \arguments{
@@ -33,9 +40,9 @@ Create a Hui-Walter model based on paired test data for an arbitrary number of t
 N <- 600
 status <- rbinom(N, 1, rep(c(0.25,0.5,0.75), each=N/3))
 testdata <- data.frame(Population = rep(1:3, each=N/3),
-    Test1 = rbinom(N, 1, status*0.75 + (1-status)*0.05),
-    Test2 = rbinom(N, 1, status*0.75 + (1-status)*0.05),
-    Test3=rbinom(N, 1, status*0.75 + (1-status)*0.05)
+    FirstTest = rbinom(N, 1, status*0.75 + (1-status)*0.05),
+    SecondTest = rbinom(N, 1, status*0.75 + (1-status)*0.05),
+    ThirdTest = rbinom(N, 1, status*0.75 + (1-status)*0.05)
 )
 template_huiwalter(testdata, outfile="huiwalter_model.txt", covariance=TRUE)
 \dontrun{
