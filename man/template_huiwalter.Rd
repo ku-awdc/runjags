@@ -17,7 +17,7 @@ template_huiwalter(
   single_check = FALSE,
   agreement_check = FALSE,
   outcome_check = FALSE,
-  outcome_check_min_obs = 20L
+  check_min_obs = 20L
 )
 }
 \arguments{

@@ -22,13 +22,13 @@
 #' unlink("huiwalter_model.txt")
 #'
 #' @export
-template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)', prev_priors='dbeta(1,1)', cov_as_cor=FALSE, ppp_values=FALSE, specify_populations=FALSE, single_check=FALSE, agreement_check=FALSE, outcome_check=FALSE, outcome_check_min_obs=20L){
+template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)', prev_priors='dbeta(1,1)', cov_as_cor=FALSE, ppp_values=FALSE, specify_populations=FALSE, single_check=FALSE, agreement_check=FALSE, outcome_check=FALSE, check_min_obs=20L){
 
 	stopifnot(is.data.frame(testdata))
 
 	populations_using <- specify_populations
 	residual_check <- outcome_check
-	residual_min_obs <- outcome_check_min_obs
+	residual_min_obs <- check_min_obs
 
 	## R code to generate a Hui-Walter model for N tests and P populations, with potential missing data
 
