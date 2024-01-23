@@ -501,7 +501,9 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	      by = "PPP_index",
 	      relationship = "many-to-many"
 	    ) |>
-	    group_by(Iteration, TestName, Population) |>
+      ## TODO: warn about how many removed here (due to population being dropped):
+      filter(!is.na(Iteration)) |>
+      group_by(Iteration, TestName, Population) |>
 	    reframe(
 	      Se = rbeta(beta_n, sum(PPP[Result=="Positive"])+1, sum(PPP[Result=="Negative"])+1),
 	      Sp = rbeta(beta_n, sum(1-PPP[Result=="Negative"])+1, sum(1-PPP[Result=="Positive"])+1),
@@ -526,7 +528,9 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	      by = "PPP_index",
 	      relationship = "many-to-many"
 	    ) |>
-	    group_by(Iteration, TestName) |>
+      ## TODO: warn about how many removed here (due to population being dropped):
+      filter(!is.na(Iteration)) |>
+      group_by(Iteration, TestName) |>
 	    reframe(
 	      Se = rbeta(beta_n, sum(PPP[Result=="Positive"])+1, sum(PPP[Result=="Negative"])+1),
 	      Sp = rbeta(beta_n, sum(1-PPP[Result=="Negative"])+1, sum(1-PPP[Result=="Positive"])+1),
