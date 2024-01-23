@@ -484,6 +484,9 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	  indexes <- rv
 	  if(!requireNamespace("tidyverse")) stop("The tidyverse is needed for this function")
 
+	  dn <- dimnames(summary(results))[[1]]
+	  if(!any(str_detect(dn, "^ppp"))) stop("Model must be created with ppp_values=TRUE")
+
     long_data |>
 	    left_join(
 	      indexes$test_data |> select(SampleID, PPP_index),
@@ -535,24 +538,51 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	    mutate(Type = "PostHoc", Population = "Combined") ->
 	    post_hoc_ci_comb
 
+    tibble(Population = indexes$populations) |>
+      mutate(Variable = str_c("prev[",1:n(),"]")) |>
+      left_join(
+        summary(results, vars="prev") |>
+          as_tibble(rownames="Variable"),
+        by="Variable"
+      ) |>
+      mutate(Type = "Prevalence", Parameter = str_c("Prevalence: ", Population), TestName = NA_character_) |>
+      select(TestName, Population, Type, Parameter, Mean, Median, Lower95, Upper95) ->
+      prevs
+
+    if(any(str_detect(dn, "^ds"))){
+      expand_grid(Test1 = seq_along(indexes$tests), Test2 = seq_along(indexes$tests), Parameter = c("Se","Sp")) |>
+        mutate(TestName = str_c(indexes$tests[Test1], " & ", indexes$tests[Test2])) |>
+        mutate(Variable = str_c("ds",str_sub(Parameter,2L,2L),"_",Test1,"_",Test2)) |>
+        right_join(
+          summary(results, vars="^ds") |>
+            as_tibble(rownames="Variable"),
+          by="Variable"
+        ) |>
+        mutate(Type = "Correlation", Population="Combined") |>
+        select(TestName, Population, Type, Parameter, Mean, Median, Lower95, Upper95) ->
+        cors
+    }else{
+      cors <- tibble()
+    }
+
 	  tibble(TestName = indexes$tests) |>
 	    mutate(TestIndex = 1:n()) |>
 	    expand_grid(Parameter = c("Se","Sp")) |>
 	    mutate(Variable = str_c(tolower(Parameter), "[", TestIndex, "]")) |>
 	    left_join(
-	      summary(res_nosvan, vars=c("se[1:5]","sp[1:5]")) |>
+	      summary(results, vars=c("se[1:5]","sp[1:5]")) |>
 	        as_tibble(rownames="Variable"),
 	      by="Variable"
 	    ) |>
 	    mutate(Population = "Combined", Type = "Model") |>
 	    select(TestName, Population, Type, Parameter, Mean, Median, Lower95, Upper95) |>
 	    bind_rows(
-	      post_hoc_ci_comb
+	      post_hoc_ci_comb,
+	      post_hoc_ci_ctr,
+	      prevs,
+	      cors
 	    ) |>
-	    bind_rows(
-	      post_hoc_ci_ctr
-	    ) |>
-	    arrange(TestName, Population, Parameter, Type) ->
+	    arrange(Type=="Correlation", TestName, Population, Parameter, Type) ->
 	    all_ci
 
 	  return(all_ci)

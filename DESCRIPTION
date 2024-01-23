@@ -1,6 +1,6 @@
 Package: runjags
 Title: Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS
-Version: 2.2.3-2
+Version: 2.2.3-3
 Date: 2024-01-23
 Authors@R: c(person("Matthew", "Denwood", role=c("aut","cre"), email="md@sund.ku.dk"),
              person("Martyn", "Plummer", role="cph", 
