@@ -477,8 +477,88 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	rownames(fulltestdata) <- NULL
 	fulltestdata[[".order"]] <- NULL
 
-	invisible(list(combinations=teststrings, pairs=testpairs, tests=testcols, populations=levels(testdata$Population), test_data=fulltestdata, model_data=datalist))
+	rv <- list(combinations=teststrings, pairs=testpairs, tests=testcols, populations=levels(testdata$Population), test_data=fulltestdata, model_data=datalist)
 
+	add_post_hoc <- function(results, long_data, beta_n=100L, mcmc_n=1000L){
+
+	  indexes <- rv
+	  if(!requireNamespace("tidyverse")) stop("The tidyverse is needed for this function")
+
+    long_data |>
+	    left_join(
+	      indexes$test_data |> select(SampleID, PPP_index),
+	      by="SampleID"
+	    ) |>
+	    ## TODO: warn about how many removed here:
+	    filter(!is.na(PPP_index), !is.na(Result)) |>
+	    left_join(
+	      combine.mcmc(results, return.samples=mcmc_n, vars="ppp") |>
+	        as_tibble(rownames="Iteration") |>
+	        pivot_longer(-Iteration, names_to="PPP_index", values_to="PPP"),
+	      by = "PPP_index",
+	      relationship = "many-to-many"
+	    ) |>
+	    group_by(Iteration, TestName, Population) |>
+	    reframe(
+	      Se = rbeta(beta_n, sum(PPP[Result=="Positive"])+1, sum(PPP[Result=="Negative"])+1),
+	      Sp = rbeta(beta_n, sum(1-PPP[Result=="Negative"])+1, sum(1-PPP[Result=="Positive"])+1),
+	      .groups="drop"
+	    ) |>
+	    pivot_longer(Se:Sp, names_to="Parameter", values_to="Estimate") |>
+	    group_by(TestName, Population, Parameter) |>
+	    summarise(Mean = mean(Estimate), Median = median(Estimate), Lower95 = coda::HPDinterval(coda::as.mcmc(Estimate))[1], Upper95 = coda::HPDinterval(coda::as.mcmc(Estimate))[2], .groups="drop") |>
+	    mutate(Type = "PostHoc") ->
+	    post_hoc_ci_ctr
+
+    long_data |>
+	    left_join(
+	      indexes$test_data |> select(SampleID, PPP_index),
+	      by="SampleID"
+	    ) |>
+	    filter(!is.na(PPP_index), !is.na(Result)) |>
+	    left_join(
+	      combine.mcmc(results, return.samples=mcmc_n, vars="ppp") |>
+	        as_tibble(rownames="Iteration") |>
+	        pivot_longer(-Iteration, names_to="PPP_index", values_to="PPP"),
+	      by = "PPP_index",
+	      relationship = "many-to-many"
+	    ) |>
+	    group_by(Iteration, TestName) |>
+	    reframe(
+	      Se = rbeta(beta_n, sum(PPP[Result=="Positive"])+1, sum(PPP[Result=="Negative"])+1),
+	      Sp = rbeta(beta_n, sum(1-PPP[Result=="Negative"])+1, sum(1-PPP[Result=="Positive"])+1),
+	      .groups="drop"
+	    ) |>
+	    pivot_longer(Se:Sp, names_to="Parameter", values_to="Estimate") |>
+	    group_by(TestName, Parameter) |>
+	    summarise(Mean = mean(Estimate), Median = median(Estimate), Lower95 = coda::HPDinterval(coda::as.mcmc(Estimate))[1], Upper95 = coda::HPDinterval(coda::as.mcmc(Estimate))[2], .groups="drop") |>
+	    mutate(Type = "PostHoc", Population = "Combined") ->
+	    post_hoc_ci_comb
+
+	  tibble(TestName = indexes$tests) |>
+	    mutate(TestIndex = 1:n()) |>
+	    expand_grid(Parameter = c("Se","Sp")) |>
+	    mutate(Variable = str_c(tolower(Parameter), "[", TestIndex, "]")) |>
+	    left_join(
+	      summary(res_nosvan, vars=c("se[1:5]","sp[1:5]")) |>
+	        as_tibble(rownames="Variable"),
+	      by="Variable"
+	    ) |>
+	    mutate(Population = "Combined", Type = "Model") |>
+	    select(TestName, Population, Type, Parameter, Mean, Median, Lower95, Upper95) |>
+	    bind_rows(
+	      post_hoc_ci_comb
+	    ) |>
+	    bind_rows(
+	      post_hoc_ci_ctr
+	    ) |>
+	    arrange(TestName, Population, Parameter, Type) ->
+	    all_ci
+
+	  return(all_ci)
+	}
+
+	invisible(c(rv, list(add_post_hoc = add_post_hoc)))
 }
 
 
