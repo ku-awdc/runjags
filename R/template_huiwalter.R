@@ -574,7 +574,7 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	    expand_grid(Parameter = c("Se","Sp")) |>
 	    mutate(Variable = str_c(tolower(Parameter), "[", TestIndex, "]")) |>
 	    left_join(
-	      summary(results, vars=c("se[1:5]","sp[1:5]")) |>
+	      summary(results, vars=c("se","sp")) |>
 	        as_tibble(rownames="Variable"),
 	      by="Variable"
 	    ) |>
