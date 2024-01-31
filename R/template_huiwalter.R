@@ -514,14 +514,21 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	  if(!"TestName" %in% names(long_data)) stop("The provided long_data must contain a TestName column")
 	  if(!"Population" %in% names(long_data)) stop("The provided long_data must contain a Population column")
 
+	  if(!"Result" %in% names(long_data) || !is.factor(long_data$Result) || length(levels(long_data$Result))!=2) stop("The provided long_data must contain a Result column as a factor with two levels (first level negative, second level positive)")
+	  rl <- levels(long_data$Result)
+	  stopifnot(length(rl)==2L)
+
 	  long_data <- long_data |> mutate(Population=as.character(Population), TestName=as.character(TestName), SampleID=as.character(SampleID))
 
 	  long_data |>
 	    left_join(
 	      indexes$test_data |> mutate(SampleID = as.character(SampleID)) |> select(SampleID, PPP_index),
 	      by="SampleID"
-	    ) |>
-	    ## TODO: warn about how many removed here:
+	    ) ->
+	    merged_data
+	  torem <- merged_data |> filter(is.na(PPP_index) | is.na(Result))
+	  if(nrow(torem)) warning(str_c("A total of ", nrow(torem), " observations were removed from the post-hoc calculations due to one or more missing test result"))
+	   merged_data |>
 	    filter(!is.na(PPP_index), !is.na(Result)) |>
 	    left_join(
 	      combine.mcmc(results, return.samples=mcmc_n, vars="ppp") |>
@@ -534,8 +541,8 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	    filter(!is.na(Iteration)) |>
 	    group_by(Iteration, Variable=TestName, Population) |>
 	    reframe(
-	      Se = rbeta(beta_n, sum(PPP[Result=="Positive"])+1, sum(PPP[Result=="Negative"])+1),
-	      Sp = rbeta(beta_n, sum(1-PPP[Result=="Negative"])+1, sum(1-PPP[Result=="Positive"])+1)
+	      Se = rbeta(beta_n, sum(PPP[Result==rl[2]])+1, sum(PPP[Result==rl[1]])+1),
+	      Sp = rbeta(beta_n, sum(1-PPP[Result==rl[1]])+1, sum(1-PPP[Result==rl[2]])+1)
 	    ) |>
 	    pivot_longer(Se:Sp, names_to="Parameter", values_to="Estimate") |>
 	    group_by(Variable, Population, Parameter) |>
@@ -561,8 +568,8 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	    filter(!is.na(Iteration)) |>
 	    group_by(Iteration, Variable=TestName) |>
 	    reframe(
-	      Se = rbeta(beta_n, sum(PPP[Result=="Positive"])+1, sum(PPP[Result=="Negative"])+1),
-	      Sp = rbeta(beta_n, sum(1-PPP[Result=="Negative"])+1, sum(1-PPP[Result=="Positive"])+1)
+	      Se = rbeta(beta_n, sum(PPP[Result==rl[2]])+1, sum(PPP[Result==rl[1]])+1),
+	      Sp = rbeta(beta_n, sum(1-PPP[Result==rl[1]])+1, sum(1-PPP[Result==rl[2]])+1)
 	    ) |>
 	    pivot_longer(Se:Sp, names_to="Parameter", values_to="Estimate") |>
 	    group_by(Variable, Parameter) |>
@@ -651,8 +658,11 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	    left_join(
 	      indexes$test_data |> select(SampleID, PPP_index),
 	      by="SampleID"
-	    ) |>
-	    ## TODO: warn about how many removed here:
+	    ) ->
+	    merged_data
+	  torem <- merged_data |> filter(is.na(PPP_index) | is.na(Continuous))
+	  if(nrow(torem)) warning(str_c("A total of ", nrow(torem), " observations were removed from the post-hoc calculations due to one or more missing test result"))
+	  merged_data |>
 	    filter(!is.na(PPP_index), !is.na(Continuous)) |>
 	    left_join(
 	      combine.mcmc(results, return.samples=mcmc_n, vars="ppp") |>
