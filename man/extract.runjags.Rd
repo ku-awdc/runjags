@@ -23,7 +23,7 @@ Objects of class 'runjags' are produced by \code{\link{run.jags}}, \code{\link{r
 }
 \details{
 The supported options for the 'what' argument are as follows:
-\itemize{
+\describe{
 \item{crosscorr}{ - the cross-correlation matrix}
 \item{summary}{ - the same as the summary method for runjags object}
 \item{model}{ - the model}

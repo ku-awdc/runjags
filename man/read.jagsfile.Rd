@@ -49,17 +49,17 @@ the residuals (optional)
 #fitted# - a single variable name specifying a variable that represents
 the fitted value (optional)
 
-#Rdata# when placed inside a data{ } or inits{ } block, this signifies
+#Rdata# when placed inside a data\{ \} or inits\{ \} block, this signifies
 that any arrays indside are in column major order. This is the default
 for any blocks that are not specified as a list( ).
 
-#BUGSdata# when placed inside a data{ } or inits{ } block, this signifies
+#BUGSdata# when placed inside a data\{ \} or inits\{ \} block, this signifies
 that any arrays indside are in row major order. This is the default
 for any blocks that are specified as a list( ), such as those that
 have been created for use with WinBUGS.
 
-#modeldata# when placed inside a data{ } block, this signifies that
-the code is to be passed to JAGS along with the model{ } block
+#modeldata# when placed inside a data\{ \} block, this signifies that
+the code is to be passed to JAGS along with the model\{ \} block
 }
 \examples{
 # ALL SYNTAX GIVEN BELOW IS EQUIVALENT

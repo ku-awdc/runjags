@@ -2,27 +2,39 @@
 #'
 #' @param testdata the input paired test data, where each column name corresponds to a test result - except possibly "ID" which is ignored, and "Population" indicating a population identifier for that row. Each row must represent test results from the same individual either as logical or a factor with two levels (and where the first level indicates a negative test result). Data may be missing at random (except for Population).
 #' @param outfile the name of the text file to save the model representation
-#' @param covariance should covariance terms be activated or omitted?
+#' @param covariance a data frame specifying which conditional depdendence terms should be included (either activated or deactivated) with columns Test_A, Test_B, Active_Se and Active_Sp. A single logical FALSE is allowed for back-compatibility, and a single logical TRUE is also currently allowed but is deprecated.
 #' @param se_priors the priors to use for sensitivity parameters (can be adjusted in the model once it is generated)
 #' @param sp_priors the priors to use for specificity parameters (can be adjusted in the model once it is generated)
-#' @param cov_as_cor option for the prior for covariance terms to be put on the correlation rather than covariance directly
+#' @param prev_priors the priors to use for prevalence parameters (can be adjusted in the model once it is generated)
+#' @param cov_as_cor option for the prior for covariance terms to be put on the correlation rather than covariance directly (deprecated; currently ignored with a warning)
+#' @param specify_populations option for the active populations to be retrieved from a PopulationsUsing vector in the R environment - this facilitates sensitivity analysis by excluding subsets of populations without re-generating the model
+#' @param outcome_check option to allow the observed tallies to be compared to predicted tallies to assess model fit
+#' @param check_min_obs the minimum number of total observations required before an outcome_check is generated (this prevents e.g. outcome checks being generated for partially missing data)
 #'
 #' @examples
 #' N <- 600
 #' status <- rbinom(N, 1, rep(c(0.25,0.5,0.75), each=N/3))
 #' testdata <- data.frame(Population = rep(1:3, each=N/3),
-#'     FirstTest = rbinom(N, 1, status*0.75 + (1-status)*0.05),
-#'     SecondTest = rbinom(N, 1, status*0.75 + (1-status)*0.05),
-#'     ThirdTest = rbinom(N, 1, status*0.75 + (1-status)*0.05)
+#'     FirstTest = rbinom(N, 1, status*0.95 + (1-status)*0.05),
+#'     SecondTest = rbinom(N, 1, status*0.75 + (1-status)*0.02),
+#'     ThirdTest = rbinom(N, 1, status*0.5 + (1-status)*0.01)
 #' )
-#' template_huiwalter(testdata, outfile="huiwalter_model.txt", covariance=TRUE)
-#' \dontrun{
+#' template_huiwalter(testdata, outfile="huiwalter_model.txt", covariance=data.frame(Test_A="FirstTest", Test_B="SecondTest", Active_Se=TRUE, Active_Sp=FALSE))
+#'
+#' ## Then examine and verify the code manually!
+#' cat(readLines("huiwalter_model.txt"), sep="\n")
+#'
+#' ## Before running the model:
 #' results <- run.jags("huiwalter_model.txt")
-#' }
+#' results
+#'
+#' ## Cleanup:
 #' unlink("huiwalter_model.txt")
 #'
 #' @export
-template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=FALSE, se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)', prev_priors='dbeta(1,1)', cov_as_cor=FALSE, ppp_values=FALSE, specify_populations=FALSE, single_check=FALSE, agreement_check=FALSE, outcome_check=FALSE, check_min_obs=20L){
+template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=data.frame(Test_A=character(0), Test_B=character(0), Active=logical(0)), se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)', prev_priors='dbeta(1,1)', cov_as_cor=FALSE, ppp_values=FALSE, specify_populations=FALSE, single_check=FALSE, agreement_check=FALSE, outcome_check=FALSE, check_min_obs=20L){
+
+  # ppp_values=FALSE, specify_populations=FALSE, single_check=FALSE, agreement_check=FALSE, outcome_check=FALSE, check_min_obs=20L
 
 	stopifnot(is.data.frame(testdata))
 
@@ -115,19 +127,19 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	teststrings <- expand.grid(lapply(dimnames(testarr), paste0, ' '), stringsAsFactors=FALSE)
 
 	if(is.logical(covariance)){
+	  stopifnot(length(covariance)==1L)
 	  if(is.na(covariance)){
 	    covariance <- data.frame(Test_A = character(0), Test_B = character(0), Active_Se = logical(0), Active_Sp = logical(0))
-	  }else if(!covariance){
+	  }else if(isFALSE(covariance)){
 	    covariance <- expand.grid(Test_A = factor(testcols, levels=testcols), Test_B = factor(testcols, levels=testcols), Active_Se=FALSE, Active_Sp=FALSE)[upper.tri(diag(length(testcols))),,drop=FALSE]
 	  }else{
 	    covariance <- expand.grid(Test_A = factor(testcols, levels=testcols), Test_B = factor(testcols, levels=testcols), Active_Se=TRUE, Active_Sp=TRUE)[upper.tri(diag(length(testcols))),,drop=FALSE]
+	    warning("Setting covariance=TRUE is now deprecated; please specify a data frame of desired covariance terms instead (see ?template_huiwalter)")
 	  }
 	}else{
 	  stopifnot(is.data.frame(covariance))
 	  if("Active" %in% names(covariance)){
 	    if(!"ActiveSe" %in% names(covariance)) covariance[["Active_Se"]] <- covariance[["Active"]]
-	  }
-	  if("Active" %in% names(covariance)){
 	    if(!"ActiveSp" %in% names(covariance)) covariance[["Active_Sp"]] <- covariance[["Active"]]
 	  }
 	  stopifnot(c("Test_A","Test_B","Active_Se","Active_Sp") %in% names(covariance))
@@ -157,6 +169,10 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
   datalist <- list(PopulationsUsing = seq_len(npop), AcceptTest=rep(1,ntests), AcceptProb=matrix(1, nrow=ncomb, ncol=npop))
   if(populations_using) datalist[["PopulationsUsing"]] <- NULL
 	datablock <- dump.format(datalist)
+
+	## Check how many covariances are active:
+	nactivecov <- sum(sapply(testpairs[["Active_Se"]], isTRUE)) + sum(sapply(testpairs[["Active_Sp"]], isTRUE))
+	if(nactivecov > (0.34*nrow(testpairs)*2L)) warning("You have specified a lot of active conditional depdendence terms, which is not recommended; if you really need this many conditional depdendence terms then you should probably use an alternative model formulation")
 
 	nsum <- 0
 
@@ -278,7 +294,7 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	pasteargs <- c(pasteargs, lapply(seq_len(nrow(testpairs)), function(x){
 	  if(is.na(testpairs[["Active_Se"]][x])) return("")
 	  ss <- testpairs[["Suffix"]][x]
-	  ifelse(testagree[,paste0('cc',ss)], paste0(' +dse', ss), paste0(' -dse', ss))
+	  ifelse(testagree[,paste0('cc',ss)], paste0(' +covse', ss), paste0(' -covse', ss))
 	 }))
 
 	pasteargs <- c(pasteargs, list('\n\t\t# Probability of observing '), as.list(teststrings), 'from a true negative:')
@@ -290,7 +306,7 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	pasteargs <- c(pasteargs, lapply(seq_len(nrow(testpairs)), function(x){
 	  if(is.na(testpairs[["Active_Sp"]][x])) return("")
 	  ss <- testpairs[["Suffix"]][x]
-	  ifelse(testagree[,paste0('cc',ss)], paste0(' +dsp', ss), paste0(' -dsp', ss))
+	  ifelse(testagree[,paste0('cc',ss)], paste0(' +covsp', ss), paste0(' -covsp', ss))
 	}))
 
 	#pasteargs <- c(pasteargs, list('\n\t\tconstraint_ok[', 1:ncomb, ',p] <- ifelse(se_prob[', 1:ncomb, ',p] >= 0 && se_prob[', 1:ncomb, ',p] <= 1 && sp_prob[', 1:ncomb, ',p] >= 0 && sp_prob[', 1:ncomb, ',p], 1, 0)'))
@@ -335,8 +351,8 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	  # Then use test pair matrix to get covariance names:
 	  agreements=pairns <- matrix(NA_integer_, ncol=npop, nrow=nrow(testpairs))
 	  for(c in seq_len(nrow(testpairs))){
-	    cov_str_se <- if(is.na(testpairs[["Active_Se"]][c])) rep('',4) else paste0(' ', c('+','-','-','+'), 'dse', testpairs[["Suffix"]][c])
-	    cov_str_sp <- if(is.na(testpairs[["Active_Sp"]][c])) rep('',4) else paste0(' ', c('+','-','-','+'), 'dsp', testpairs[["Suffix"]][c])
+	    cov_str_se <- if(is.na(testpairs[["Active_Se"]][c])) rep('',4) else paste0(' ', c('+','-','-','+'), 'covse', testpairs[["Suffix"]][c])
+	    cov_str_sp <- if(is.na(testpairs[["Active_Sp"]][c])) rep('',4) else paste0(' ', c('+','-','-','+'), 'covsp', testpairs[["Suffix"]][c])
 	    catapp(paste('\tprob_pair[', 1:4, ',', c, ',p] <- (prev[p] * ((', c('1-','','1-',''), 'se[', as.numeric(testpairs[["Test_A"]][c]), '])*(', c('1-','1-','',''), 'se[', as.numeric(testpairs[["Test_B"]][c]), '])', cov_str_se, ')) + ((1-prev[p]) * ((', c('','1-','','1-'), 'sp[', as.numeric(testpairs[["Test_A"]][c]), '])*(', c('','','1-','1-'), 'sp[', as.numeric(testpairs[["Test_B"]][c]), '])', cov_str_sp, '))', sep='', collapse='\n\t'), '\n\t')
 
 	    ## By population:
@@ -377,19 +393,27 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 
 	  if(!is.na(testpairs[["Active_Se"]][t])){
 
+	    i1 <- testpairs[["Test_AI"]][t]
+	    i2 <- testpairs[["Test_BI"]][t]
+
 	    catapp('\n\t# Sensitivity delta between ', testpairs[["Test_A"]][t], ' and ', testpairs[["Test_B"]][t], ':\n\t')
 	    if(!testpairs[["Active_Se"]][t]) catapp('# ')
-	    catapp('dse', testpairs[["Suffix"]][t], ' ~ dunif(-1, 1)  ## if the sensitivity of these tests may be correlated\n\t')
+	    ## Note: this code is a bad idea as the middle of the prior is NOT a covariance of zero...!
+	    # catapp('covse', testpairs[["Suffix"]][t], ' ~ dunif( (se[',i1,']-1)*(1-se[',i2,']) , min(se[',i1,'],se[',i2,']) - se[',i1,']*se[',i2,'])  ## if the sensitivity of these tests may be correlated\n\t')
+	    catapp('covse', testpairs[["Suffix"]][t], ' ~ dunif(-1, 1)  ## if the sensitivity of these tests may be correlated\n\t')
 	    if(testpairs[["Active_Se"]][t]) catapp('# ')
-	    catapp('dse', testpairs[["Suffix"]][t], ' <- 0  ## if the sensitivity of these tests can be assumed to be independent\n\t')
+	    catapp('covse', testpairs[["Suffix"]][t], ' <- 0  ## if the sensitivity of these tests can be assumed to be independent\n\t')
+	    catapp('# Calculated relative to the pairwise min/max for ease of interpretation:\n\t', 'corse', testpairs[["Suffix"]][t], ' <- ifelse(covse', testpairs[["Suffix"]][t], ' < 0, -covse', testpairs[["Suffix"]][t], ' / ((se[',i1,']-1)*(1-se[',i2,'])), covse', testpairs[["Suffix"]][t], ' / (min(se[',i1,'],se[',i2,']) - se[',i1,']*se[',i2,']))\n')
 
 	    catapp('\n\t# Specificity delta between ', testpairs[["Test_A"]][t], ' and ', testpairs[["Test_B"]][t], ':\n\t')
 	    if(!testpairs[["Active_Sp"]][t]) catapp('# ')
-	    catapp('dsp', testpairs[["Suffix"]][t], ' ~ dunif(-1, 1)  ## if the specificity of these tests may be correlated\n\t')
+	    ## Note: this code is a bad idea as the middle of the prior is NOT a covariance of zero...!
+	    # catapp('covsp', testpairs[["Suffix"]][t], ' ~ dunif( (sp[',i1,']-1)*(1-sp[',i2,']) , min(sp[',i1,'],sp[',i2,']) - sp[',i1,']*sp[',i2,'])  ## if the specificity of these tests may be correlated\n\t')
+	    catapp('covsp', testpairs[["Suffix"]][t], ' ~ dunif(-1, 1)  ## if the specificity of these tests may be correlated\n\t')
 	    if(testpairs[["Active_Sp"]][t]) catapp('# ')
-	    catapp('dsp', testpairs[["Suffix"]][t], ' <- 0  ## if the specificity of these tests can be assumed to be independent\n\t')
+	    catapp('covsp', testpairs[["Suffix"]][t], ' <- 0  ## if the specificity of these tests can be assumed to be independent\n\t')
+	    catapp('# Calculated relative to the pairwise min/max for ease of interpretation:\n\t', 'corsp', testpairs[["Suffix"]][t], ' <- ifelse(covsp', testpairs[["Suffix"]][t], ' < 0, -covsp', testpairs[["Suffix"]][t], ' / ((sp[',i1,']-1)*(1-sp[',i2,'])), covsp', testpairs[["Suffix"]][t], ' / (min(sp[',i1,'],sp[',i2,']) - sp[',i1,']*sp[',i2,']))\n')
 
-	    ## TODO:  re-add cor/limits based on se/p_prob for all relevant combos
 	  }
 
 	  # if(cov_as_cor){
@@ -416,8 +440,14 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	## Monitors:
 	#cat('\n#monitor# se, sp, prev', apply(expand.grid(c('covse','corse','covsp','corsp'), apply(testcombos,1,paste,collapse='')),1,paste,collapse=''), sep=', ', file=outfile, append=TRUE)
 	catapp('\n#monitor# se, sp, prev')
-	if(any(!is.na(testpairs[["Active_Se"]]))) catapp(paste0(", dse",testpairs[["Suffix"]][!is.na(testpairs[["Active_Se"]])]))
-	if(any(!is.na(testpairs[["Active_Sp"]]))) catapp(paste0(", dsp",testpairs[["Suffix"]][!is.na(testpairs[["Active_Sp"]])]))
+	if(any(!is.na(testpairs[["Active_Se"]]))){
+	  catapp(paste0(", covse",testpairs[["Suffix"]][!is.na(testpairs[["Active_Se"]])]))
+	  catapp(paste0(", corse",testpairs[["Suffix"]][!is.na(testpairs[["Active_Se"]])]))
+	}
+	if(any(!is.na(testpairs[["Active_Sp"]]))){
+	  catapp(paste0(", covsp",testpairs[["Suffix"]][!is.na(testpairs[["Active_Sp"]])]))
+	  catapp(paste0(", corsp",testpairs[["Suffix"]][!is.na(testpairs[["Active_Sp"]])]))
+	}
 	if(residual_check){
     catapp(resid_monitors)
 	}
@@ -442,7 +472,7 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	covinitvals <- as.list(alternate(c(0,0), length(cvn)))
 	names(covinitvals) <- cvn
 	covinits <- c(dump.format(covinitvals), dump.format(lapply(covinitvals, function(x) -x)))
-	if(FALSE && !covon){
+	if(FALSE){
 	  covinits <- gsub('\"cov', '# \"cov', covinits, fixed=TRUE)
 	  covinits <- gsub('\"cor', '# \"cor', covinits, fixed=TRUE)
 	}
@@ -458,7 +488,7 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 
 	cat('The model and data have been written to', outfile, 'in the current working directory\n')
 	if(populations_using) cat('You will need to create a numeric vector of populations to include in the model within your R working environment, e.g.:\n\tPopulationsUsing <- seq_len(', length(levels(testdata$Population)), ')\n', sep='')
-	cat('You should check and alter priors before running the model\n')
+	cat('*** NOTE: The template provided should be examined and modified (including checking ***\n***   priors, covariance terms, and verifying the code) before running the model!   ***\n')
 
 	## Return list of testnames, popnames, covariance/agreement indexes, data invisibly
 
