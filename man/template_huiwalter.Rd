@@ -7,7 +7,8 @@
 template_huiwalter(
   testdata,
   outfile = "huiwalter_model.txt",
-  covariance = FALSE,
+  covariance = data.frame(Test_A = character(0), Test_B = character(0), Active =
+    logical(0)),
   se_priors = "dbeta(1,1)",
   sp_priors = "dbeta(1,1)",
   prev_priors = "dbeta(1,1)",
@@ -25,13 +26,21 @@ template_huiwalter(
 
 \item{outfile}{the name of the text file to save the model representation}
 
-\item{covariance}{should covariance terms be activated or omitted?}
+\item{covariance}{a data frame specifying which conditional depdendence terms should be included (either activated or deactivated) with columns Test_A, Test_B, Active_Se and Active_Sp. A single logical FALSE is allowed for back-compatibility, and a single logical TRUE is also currently allowed but is deprecated.}
 
 \item{se_priors}{the priors to use for sensitivity parameters (can be adjusted in the model once it is generated)}
 
 \item{sp_priors}{the priors to use for specificity parameters (can be adjusted in the model once it is generated)}
 
-\item{cov_as_cor}{option for the prior for covariance terms to be put on the correlation rather than covariance directly}
+\item{prev_priors}{the priors to use for prevalence parameters (can be adjusted in the model once it is generated)}
+
+\item{cov_as_cor}{option for the prior for covariance terms to be put on the correlation rather than covariance directly (deprecated; currently ignored with a warning)}
+
+\item{specify_populations}{option for the active populations to be retrieved from a PopulationsUsing vector in the R environment - this facilitates sensitivity analysis by excluding subsets of populations without re-generating the model}
+
+\item{outcome_check}{option to allow the observed tallies to be compared to predicted tallies to assess model fit}
+
+\item{check_min_obs}{the minimum number of total observations required before an outcome_check is generated (this prevents e.g. outcome checks being generated for partially missing data)}
 }
 \description{
 Create a Hui-Walter model based on paired test data for an arbitrary number of tests and populations
@@ -40,14 +49,20 @@ Create a Hui-Walter model based on paired test data for an arbitrary number of t
 N <- 600
 status <- rbinom(N, 1, rep(c(0.25,0.5,0.75), each=N/3))
 testdata <- data.frame(Population = rep(1:3, each=N/3),
-    FirstTest = rbinom(N, 1, status*0.75 + (1-status)*0.05),
-    SecondTest = rbinom(N, 1, status*0.75 + (1-status)*0.05),
-    ThirdTest = rbinom(N, 1, status*0.75 + (1-status)*0.05)
+    FirstTest = rbinom(N, 1, status*0.95 + (1-status)*0.05),
+    SecondTest = rbinom(N, 1, status*0.75 + (1-status)*0.02),
+    ThirdTest = rbinom(N, 1, status*0.5 + (1-status)*0.01)
 )
-template_huiwalter(testdata, outfile="huiwalter_model.txt", covariance=TRUE)
-\dontrun{
+template_huiwalter(testdata, outfile="huiwalter_model.txt", covariance=data.frame(Test_A="FirstTest", Test_B="SecondTest", Active_Se=TRUE, Active_Sp=FALSE))
+
+## Then examine and verify the code manually!
+cat(readLines("huiwalter_model.txt"), sep="\n")
+
+## Before running the model:
 results <- run.jags("huiwalter_model.txt")
-}
+results
+
+## Cleanup:
 unlink("huiwalter_model.txt")
 
 }
