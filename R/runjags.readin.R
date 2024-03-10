@@ -646,8 +646,6 @@ read.coda.subset <- function (output.file, index.file, start, end, thin, quiet =
 	iterations <- index[1,2]
 	# TODO:  Modify later
 
-    if (is.R()) {
-
 		if(!identical(as.character(vars), as.character(NA))){
 
 			# Indexes of vars will be expanded earlier in runjags code
@@ -733,12 +731,6 @@ read.coda.subset <- function (output.file, index.file, start, end, thin, quiet =
             else old.thin <- 1
             is.regular <- FALSE
         }
-    }
-    else {
-        iter <- seq(from = min(start.vec), to = max(end.vec),
-            by = thin.vec[1])
-        old.thin <- thin.vec[1]
-        is.regular <- TRUE
     }
     if (is.na(start))
         start <- min(start.vec)
