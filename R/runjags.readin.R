@@ -693,16 +693,6 @@ read.coda.subset <- function (output.file, index.file, start, end, thin, quiet =
 			# TODO: index scan to immediately drop thinned chains ... make sure pd thinned later
 		}
 
-
-    }
-    else {
-		stop('Modified function is not S-compatible')
-		# NOT modified as I don't use S...
-		if(!identical(vars, NA)) warning("Argument 'vars' was ignored")
-        temp <- scan(output.file, what = list(iter = 0, val = 0))
-		# TODO: index scan to immediately drop thinned chains ... make sure pd thinned later
-    }
-
 	# Added to allow sub.samples to control thinning indirectly:
 	if(!is.na(sub.samples)){
 		if(sub.samples > iterations) warning('Specified sub.samples was greater than the number of iterations and was ignored', call.=FALSE)
@@ -731,6 +721,12 @@ read.coda.subset <- function (output.file, index.file, start, end, thin, quiet =
             else old.thin <- 1
             is.regular <- FALSE
         }
+    }
+    else {
+        iter <- seq(from = min(start.vec), to = max(end.vec),
+            by = thin.vec[1])
+        old.thin <- thin.vec[1]
+        is.regular <- TRUE
     }
     if (is.na(start))
         start <- min(start.vec)

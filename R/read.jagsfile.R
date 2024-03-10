@@ -30,17 +30,17 @@
 #' #fitted# - a single variable name specifying a variable that represents
 #' the fitted value (optional)
 #'
-#' #Rdata# when placed inside a data{ } or inits{ } block, this signifies
+#' #Rdata# when placed inside a data\{ \} or inits\{ \} block, this signifies
 #' that any arrays indside are in column major order. This is the default
 #' for any blocks that are not specified as a list( ).
 #'
-#' #BUGSdata# when placed inside a data{ } or inits{ } block, this signifies
+#' #BUGSdata# when placed inside a data\{ \} or inits\{ \} block, this signifies
 #' that any arrays indside are in row major order. This is the default
 #' for any blocks that are specified as a list( ), such as those that
 #' have been created for use with WinBUGS.
 #'
-#' #modeldata# when placed inside a data{ } block, this signifies that
-#' the code is to be passed to JAGS along with the model{ } block
+#' #modeldata# when placed inside a data\{ \} block, this signifies that
+#' the code is to be passed to JAGS along with the model\{ \} block
 #'
 #' @param file either a relative or absolute path to a textfile (including the file extension) containing a model in the JAGS language and possibly monitored variable names, data and/or initial values, or a character string of the same.  May also be a vector of paths to different text files, possibly separately containing the model, data and intitial values.  No default.  The model must be started with the string 'model\{' and ended with '\}' on new lines.  Data must be similarly started with 'data\{', monitored variables with 'monitor\{', and initial values as 'inits\{', and all ended with '\}'.  Seperate variables in such blocks must be separated by a line break.  If multiple models are found, all but the first one are ignored with a warning.  Multiple data blocks and monitor blocks are combined, multiple inits blocks are used for different chains.  Monitors may also be given using the phrase '#monitor# variable' within the model block, in which case 'variable' is added to the list of monitored variables found in the monitor block(s).  The use of automatically generated data and initial values is also supported using similar syntax, with '#data# variable' for automatically generated data variables or '#inits# variable' for automatically generated initial value variables in which case 'variable' is used as data or initial values with a value taken by \code{\link{run.jags}} from datalist, initlist or R objects as appropriate.  '#inits#', '#data#' and '#monitor#' statements can appear on the same line as model code, but no more than one of these statements should be used on the same line.  Examples of acceptable model syntax are given below.
 #'
