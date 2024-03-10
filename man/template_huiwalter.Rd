@@ -13,11 +13,8 @@ template_huiwalter(
   sp_priors = "dbeta(1,1)",
   prev_priors = "dbeta(1,1)",
   cov_as_cor = FALSE,
-  ppp_values = FALSE,
   specify_populations = FALSE,
-  single_check = FALSE,
-  agreement_check = FALSE,
-  outcome_check = FALSE,
+  outcome_check = TRUE,
   check_min_obs = 20L
 )
 }
@@ -38,7 +35,7 @@ template_huiwalter(
 
 \item{specify_populations}{option for the active populations to be retrieved from a PopulationsUsing vector in the R environment - this facilitates sensitivity analysis by excluding subsets of populations without re-generating the model}
 
-\item{outcome_check}{option to allow the observed tallies to be compared to predicted tallies to assess model fit}
+\item{outcome_check}{option to facilitate comparing the observed tallies to the predicted tallies in order to assess model fit}
 
 \item{check_min_obs}{the minimum number of total observations required before an outcome_check is generated (this prevents e.g. outcome checks being generated for partially missing data)}
 }
@@ -53,7 +50,13 @@ testdata <- data.frame(Population = rep(1:3, each=N/3),
     SecondTest = rbinom(N, 1, status*0.75 + (1-status)*0.02),
     ThirdTest = rbinom(N, 1, status*0.5 + (1-status)*0.01)
 )
-template_huiwalter(testdata, outfile="huiwalter_model.txt", covariance=data.frame(Test_A="FirstTest", Test_B="SecondTest", Active_Se=TRUE, Active_Sp=FALSE))
+template_huiwalter(testdata, outfile="huiwalter_model.txt",
+    covariance=data.frame(
+      Test_A="FirstTest",
+      Test_B="SecondTest",
+      Active_Se=TRUE, Active_Sp=FALSE
+    )
+)
 
 ## Then examine and verify the code manually!
 cat(readLines("huiwalter_model.txt"), sep="\n")

@@ -29,6 +29,9 @@ NEW FEATURES
 
 Additional options in template_huiwalter for PopulationsUsing, covariance, and outcome check
 
+The cov_as_cor option in template_huiwalter is now deprecated (and ignored with a warning)
+
+
 BUG FIXES
 
 Constraints imposed on se_prob, sp_prob and Youden's J in template_huiwalter
