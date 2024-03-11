@@ -31,8 +31,10 @@
 #' cat(readLines("huiwalter_model.txt"), sep="\n")
 #'
 #' ## Before running the model:
-#' results <- run.jags("huiwalter_model.txt")
-#' results
+#' \dontrun{
+#'   results <- run.jags("huiwalter_model.txt")
+#'   results
+#' }
 #'
 #' ## Cleanup:
 #' unlink("huiwalter_model.txt")
@@ -407,23 +409,23 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	    i1 <- testpairs[["Test_AI"]][t]
 	    i2 <- testpairs[["Test_BI"]][t]
 
-	    catapp('\n\t# Sensitivity delta between ', testpairs[["Test_A"]][t], ' and ', testpairs[["Test_B"]][t], ':\n\t')
+	    catapp('\n\t# Conditional dependence between ', testpairs[["Test_A"]][t], ' and ', testpairs[["Test_B"]][t], ' (sensitivity):\n\t')
 	    if(!testpairs[["Active_Se"]][t]) catapp('# ')
-	    ## Note: this code is a bad idea as the middle of the prior is NOT a covariance of zero...!
-	    # catapp('covse', testpairs[["Suffix"]][t], ' ~ dunif( (se[',i1,']-1)*(1-se[',i2,']) , min(se[',i1,'],se[',i2,']) - se[',i1,']*se[',i2,'])  ## if the sensitivity of these tests may be correlated\n\t')
+	    ## Note: the middle of the prior is NOT a covariance of zero, so inits are needed!
 	    catapp('covse', testpairs[["Suffix"]][t], ' ~ dunif(-1, 1)  ## if the sensitivity of these tests may be correlated\n\t')
+	    catapp('# covse', testpairs[["Suffix"]][t], ' ~ dunif( (se[',i1,']-1)*(1-se[',i2,']) , min(se[',i1,'],se[',i2,']) - se[',i1,']*se[',i2,'])  ## alternative prior (may require setting initial values)\n\t')
 	    if(testpairs[["Active_Se"]][t]) catapp('# ')
 	    catapp('covse', testpairs[["Suffix"]][t], ' <- 0  ## if the sensitivity of these tests can be assumed to be independent\n\t')
-	    catapp('# Calculated relative to the pairwise min/max for ease of interpretation:\n\t', 'corse', testpairs[["Suffix"]][t], ' <- ifelse(covse', testpairs[["Suffix"]][t], ' < 0, -covse', testpairs[["Suffix"]][t], ' / ((se[',i1,']-1)*(1-se[',i2,'])), covse', testpairs[["Suffix"]][t], ' / (min(se[',i1,'],se[',i2,']) - se[',i1,']*se[',i2,']))\n')
+	    catapp('# Calculated relative to the pairwise min/max:\n\t', 'corse', testpairs[["Suffix"]][t], ' <- ifelse(covse', testpairs[["Suffix"]][t], ' < 0, -covse', testpairs[["Suffix"]][t], ' / ((se[',i1,']-1)*(1-se[',i2,'])), covse', testpairs[["Suffix"]][t], ' / (min(se[',i1,'],se[',i2,']) - se[',i1,']*se[',i2,']))\n')
 
-	    catapp('\n\t# Specificity delta between ', testpairs[["Test_A"]][t], ' and ', testpairs[["Test_B"]][t], ':\n\t')
+	    catapp('\n\t# Conditional dependence between ', testpairs[["Test_A"]][t], ' and ', testpairs[["Test_B"]][t], ' (specificity):\n\t')
 	    if(!testpairs[["Active_Sp"]][t]) catapp('# ')
-	    ## Note: this code is a bad idea as the middle of the prior is NOT a covariance of zero...!
-	    # catapp('covsp', testpairs[["Suffix"]][t], ' ~ dunif( (sp[',i1,']-1)*(1-sp[',i2,']) , min(sp[',i1,'],sp[',i2,']) - sp[',i1,']*sp[',i2,'])  ## if the specificity of these tests may be correlated\n\t')
 	    catapp('covsp', testpairs[["Suffix"]][t], ' ~ dunif(-1, 1)  ## if the specificity of these tests may be correlated\n\t')
+	    ## Note: the middle of the prior is NOT a covariance of zero, so inits are needed!
+	    catapp('# covsp', testpairs[["Suffix"]][t], ' ~ dunif( (sp[',i1,']-1)*(1-sp[',i2,']) , min(sp[',i1,'],sp[',i2,']) - sp[',i1,']*sp[',i2,'])  ## alternative prior (may require setting initial values)\n\t')
 	    if(testpairs[["Active_Sp"]][t]) catapp('# ')
 	    catapp('covsp', testpairs[["Suffix"]][t], ' <- 0  ## if the specificity of these tests can be assumed to be independent\n\t')
-	    catapp('# Calculated relative to the pairwise min/max for ease of interpretation:\n\t', 'corsp', testpairs[["Suffix"]][t], ' <- ifelse(covsp', testpairs[["Suffix"]][t], ' < 0, -covsp', testpairs[["Suffix"]][t], ' / ((sp[',i1,']-1)*(1-sp[',i2,'])), covsp', testpairs[["Suffix"]][t], ' / (min(sp[',i1,'],sp[',i2,']) - sp[',i1,']*sp[',i2,']))\n')
+	    catapp('# Calculated relative to the pairwise min/max:\n\t', 'corsp', testpairs[["Suffix"]][t], ' <- ifelse(covsp', testpairs[["Suffix"]][t], ' < 0, -covsp', testpairs[["Suffix"]][t], ' / ((sp[',i1,']-1)*(1-sp[',i2,'])), covsp', testpairs[["Suffix"]][t], ' / (min(sp[',i1,'],sp[',i2,']) - sp[',i1,']*sp[',i2,']))\n')
 
 	  }
 

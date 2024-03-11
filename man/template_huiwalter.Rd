@@ -62,8 +62,10 @@ template_huiwalter(testdata, outfile="huiwalter_model.txt",
 cat(readLines("huiwalter_model.txt"), sep="\n")
 
 ## Before running the model:
-results <- run.jags("huiwalter_model.txt")
-results
+\dontrun{
+  results <- run.jags("huiwalter_model.txt")
+  results
+}
 
 ## Cleanup:
 unlink("huiwalter_model.txt")
