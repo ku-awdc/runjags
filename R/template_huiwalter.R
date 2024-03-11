@@ -42,12 +42,7 @@
 #' @export
 
 
-template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=data.frame(Test_A=character(0), Test_B=character(0), Active=logical(0)), se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)', prev_priors='dbeta(1,1)', cov_as_cor=FALSE, specify_populations=FALSE, outcome_check=TRUE, check_min_obs=20L){
-
-  # ppp_values=FALSE, single_check=FALSE, agreement_check=FALSE
-  ppp_values <- FALSE
-  single_check <- FALSE
-  agreement_check <- FALSE
+template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covariance=data.frame(Test_A=character(0), Test_B=character(0), Active=logical(0)), se_priors='dbeta(1,1)', sp_priors='dbeta(1,1)', prev_priors='dbeta(1,1)', cov_as_cor=FALSE, specify_populations=FALSE, outcome_check=TRUE, check_min_obs=20L, single_check=FALSE, agreement_check=FALSE, ppp_values=FALSE){
 
 	stopifnot(is.data.frame(testdata))
 
@@ -507,6 +502,240 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	cat('The model and data have been written to', outfile, 'in the current working directory\n')
 	if(populations_using) cat('You will need to create a numeric vector of populations to include in the model within your R working environment, e.g.:\n\tPopulationsUsing <- seq_len(', length(levels(testdata$Population)), ')\n', sep='')
 	cat('*** NOTE: The template provided should be examined and modified (including checking ***\n***   priors, covariance terms, and verifying the code) before running the model!   ***\n')
+
+
+
+	add_post_hoc <- function(long_data, results, beta_n=100L, mcmc_n=1000L){
+
+	  if(!is.data.frame(long_data)) stop("The first argument must be a data frame")
+	  if(!inherits(results, "runjags")) stop("The second argument must be a runjags object")
+
+	  indexes <- rv
+	  if(!requireNamespace("tidyverse")) stop("The tidyverse is needed for this function")
+
+	  dn <- dimnames(summary(results))[[1]]
+	  if(!any(str_detect(dn, "^ppp"))) stop("Model must be created with ppp_values=TRUE")
+	  if(!"SampleID" %in% names(indexes$test_data)) stop("The data given to template_huiwalter must contain a SampleID column")
+
+	  if(!"SampleID" %in% names(long_data)) stop("The provided long_data must contain a SampleID column")
+	  if(!"TestName" %in% names(long_data)) stop("The provided long_data must contain a TestName column")
+	  if(!"Population" %in% names(long_data)) stop("The provided long_data must contain a Population column")
+
+	  if(!"Result" %in% names(long_data) || !is.factor(long_data$Result) || length(levels(long_data$Result))!=2) stop("The provided long_data must contain a Result column as a factor with two levels (first level negative, second level positive)")
+	  rl <- levels(long_data$Result)
+	  stopifnot(length(rl)==2L)
+
+	  long_data <- long_data |> mutate(Population=as.character(Population), TestName=as.character(TestName), SampleID=as.character(SampleID))
+
+	  long_data |>
+	    left_join(
+	      indexes$test_data |> mutate(SampleID = as.character(SampleID)) |> select(SampleID, PPP_index),
+	      by="SampleID"
+	    ) ->
+	    merged_data
+	  torem <- merged_data |> filter(is.na(PPP_index) | is.na(Result))
+	  if(nrow(torem)) warning(str_c("A total of ", nrow(torem), " observations were removed from the post-hoc calculations due to one or more missing test result"))
+	  merged_data |>
+	    filter(!is.na(PPP_index), !is.na(Result)) |>
+	    left_join(
+	      combine.mcmc(results, return.samples=mcmc_n, vars="ppp") |>
+	        as_tibble(rownames="Iteration") |>
+	        pivot_longer(-Iteration, names_to="PPP_index", values_to="PPP"),
+	      by = "PPP_index",
+	      relationship = "many-to-many"
+	    ) |>
+	    ## TODO: warn about how many removed here (due to population being dropped):
+	    filter(!is.na(Iteration)) |>
+	    group_by(Iteration, Variable=TestName, Population) |>
+	    reframe(
+	      Se = rbeta(beta_n, sum(PPP[Result==rl[2]])+1, sum(PPP[Result==rl[1]])+1),
+	      Sp = rbeta(beta_n, sum(1-PPP[Result==rl[1]])+1, sum(1-PPP[Result==rl[2]])+1)
+	    ) |>
+	    pivot_longer(Se:Sp, names_to="Parameter", values_to="Estimate") |>
+	    group_by(Variable, Population, Parameter) |>
+	    summarise(Mean = mean(Estimate), Median = median(Estimate), Lower95 = coda::HPDinterval(coda::as.mcmc(Estimate))[1], Upper95 = coda::HPDinterval(coda::as.mcmc(Estimate))[2], .groups="drop") |>
+	    mutate(Type = "PostHoc", Group = "TestPerformance") |>
+	    select(Group, Parameter, Variable, Population, Type, Mean, Median, Lower95, Upper95) ->
+	    post_hoc_ci_ctr
+
+	  long_data |>
+	    left_join(
+	      indexes$test_data |> mutate(SampleID = as.character(SampleID)) |> select(SampleID, PPP_index),
+	      by="SampleID"
+	    ) |>
+	    filter(!is.na(PPP_index), !is.na(Result)) |>
+	    left_join(
+	      combine.mcmc(results, return.samples=mcmc_n, vars="ppp") |>
+	        as_tibble(rownames="Iteration") |>
+	        pivot_longer(-Iteration, names_to="PPP_index", values_to="PPP"),
+	      by = "PPP_index",
+	      relationship = "many-to-many"
+	    ) |>
+	    ## TODO: warn about how many removed here (due to population being dropped):
+	    filter(!is.na(Iteration)) |>
+	    group_by(Iteration, Variable=TestName) |>
+	    reframe(
+	      Se = rbeta(beta_n, sum(PPP[Result==rl[2]])+1, sum(PPP[Result==rl[1]])+1),
+	      Sp = rbeta(beta_n, sum(1-PPP[Result==rl[1]])+1, sum(1-PPP[Result==rl[2]])+1)
+	    ) |>
+	    pivot_longer(Se:Sp, names_to="Parameter", values_to="Estimate") |>
+	    group_by(Variable, Parameter) |>
+	    summarise(Mean = mean(Estimate), Median = median(Estimate), Lower95 = coda::HPDinterval(coda::as.mcmc(Estimate))[1], Upper95 = coda::HPDinterval(coda::as.mcmc(Estimate))[2], .groups="drop") |>
+	    mutate(Type = "PostHoc", Population = "Combined", Group = "TestPerformance") |>
+	    select(Group, Parameter, Variable, Population, Type, Mean, Median, Lower95, Upper95) ->
+	    post_hoc_ci_comb
+
+	  tibble(Population = as.character(indexes$populations)) |>
+	    mutate(Varname = str_c("prev[",1:n(),"]")) |>
+	    left_join(
+	      summary(results, vars="prev") |>
+	        as_tibble(rownames="Varname"),
+	      by="Varname"
+	    ) |>
+	    mutate(Type = "Model", Variable = Population, Population = "Combined", Parameter = "Prevalence", Group = "Prevalence") |>
+	    select(Group, Parameter, Variable, Population, Type, Mean, Median, Lower95, Upper95) ->
+	    prevs
+
+	  if(any(str_detect(dn, "^ds"))){
+	    expand_grid(Test1 = seq_along(indexes$tests), Test2 = seq_along(indexes$tests), Parameter = c("Se","Sp")) |>
+	      mutate(Variable = str_c(indexes$tests[Test1], " & ", indexes$tests[Test2])) |>
+	      mutate(Varname = str_c("ds",str_sub(Parameter,2L,2L),"_",Test1,"_",Test2)) |>
+	      right_join(
+	        summary(results, vars="^ds") |>
+	          as_tibble(rownames="Varname"),
+	        by="Varname"
+	      ) |>
+	      mutate(Type = "Model", Population="Combined", Group="Correlation") |>
+	      select(Group, Parameter, Variable, Population, Type, Mean, Median, Lower95, Upper95) ->
+	      cors
+	  }else{
+	    cors <- tibble()
+	  }
+
+	  tibble(Variable = indexes$tests) |>
+	    mutate(TestIndex = 1:n()) |>
+	    expand_grid(Parameter = c("Se","Sp")) |>
+	    mutate(Varname = str_c(tolower(Parameter), "[", TestIndex, "]")) |>
+	    left_join(
+	      summary(results, vars=c("se","sp")) |>
+	        as_tibble(rownames="Varname"),
+	      by="Varname"
+	    ) |>
+	    mutate(Population = "Combined", Type = "Model", Group = "TestPerformance") |>
+	    select(Group, Parameter, Variable, Population, Type, Mean, Median, Lower95, Upper95) |>
+	    bind_rows(
+	      post_hoc_ci_comb,
+	      post_hoc_ci_ctr,
+	      prevs,
+	      cors
+	    ) |>
+	    mutate(Group = factor(Group, levels=c("TestPerformance","Prevalence","Correlation"))) |>
+	    mutate(Population = factor(Population, levels=c(indexes$populations,"Combined"))) |>
+	    arrange(Group, Parameter, Variable, Population, Parameter, Type) ->
+	    all_ci
+
+	  return(all_ci)
+	}
+
+	add_roc <- function(long_data, results, beta_n=100L, mcmc_n=1000L,
+	  positive_direction = c(">","<"), summarise=TRUE, pb=TRUE){
+
+	  if(!is.data.frame(long_data)) stop("The first argument must be a data frame")
+	  if(!inherits(results, "runjags")) stop("The second argument must be a runjags object")
+
+	  indexes <- rv
+	  if(!requireNamespace("tidyverse")) stop("The tidyverse is needed for this function")
+	  if(!requireNamespace("pbapply")) stop("The pbapply package is needed for this function")
+
+	  dn <- dimnames(summary(results))[[1]]
+	  if(!any(str_detect(dn, "^ppp"))) stop("Model must be created with ppp_values=TRUE")
+
+	  if(!"SampleID" %in% names(indexes$test_data)) stop("The data given to template_huiwalter must contain a SampleID column")
+
+	  if(!"SampleID" %in% names(long_data)) stop("The provided long_data must contain a SampleID column")
+
+	  if(!"Continuous" %in% names(long_data)) stop("The provided long_data must contain a 'Continuous' column holding the continuous test result")
+
+	  if(any(long_data |> count(SampleID) |> distinct(n) |> pull(n) != 1L)) stop("All SampleID must be unique in the long_data provided")
+
+	  direction <- match.arg(positive_direction)
+	  if(pb) applyfun <- pblapply else applyfun <- lapply
+
+	  long_data |>
+	    left_join(
+	      indexes$test_data |> select(SampleID, PPP_index),
+	      by="SampleID"
+	    ) ->
+	    merged_data
+	  torem <- merged_data |> filter(is.na(PPP_index) | is.na(Continuous))
+	  if(nrow(torem)) warning(str_c("A total of ", nrow(torem), " observations were removed from the post-hoc calculations due to one or more missing test result"))
+	  merged_data |>
+	    filter(!is.na(PPP_index), !is.na(Continuous)) |>
+	    left_join(
+	      combine.mcmc(results, return.samples=mcmc_n, vars="ppp") |>
+	        as_tibble(rownames="Iteration") |>
+	        pivot_longer(-Iteration, names_to="PPP_index", values_to="PPP"),
+	      by = "PPP_index",
+	      relationship = "many-to-many"
+	    ) |>
+	    ## TODO: warn about how many removed here (due to population being dropped):
+	    filter(!is.na(Iteration)) |>
+	    select(SampleID, Continuous, Iteration, PPP) ->
+	    mcmc_data
+
+	  if(nrow(mcmc_data)==0L) stop("No matching ppp indices found")
+
+	  long_data |>
+	    count(Continuous) |>
+	    arrange(Continuous) |>
+	    mutate(
+	      Threshold = (Continuous + lag(Continuous, 1L))/2, Lower = lag(Continuous, 1L), Upper = Continuous,
+	      Below = lag(cumsum(n),1L), Above = sum(n)-Below, Total=Below+Above
+	    ) |>
+	    slice(-1) |>
+	    select(-Continuous, -n) |>
+	    rowwise() |>
+	    group_split() |>
+	    applyfun(function(x){
+	      x |>
+	        bind_cols(mcmc_data) |>
+	        mutate(Result = case_when(
+	          direction==">" ~ if_else(Continuous > Threshold, TRUE, FALSE),
+	          direction=="<" ~ if_else(Continuous < Threshold, TRUE, FALSE)
+	        )) |>
+	        group_by(Threshold, Lower, Upper, Below, Above, Iteration) |>
+	        reframe(
+	          Se = rbeta(beta_n, sum(PPP[Result])+1, sum(PPP[!Result])+1),
+	          Sp = rbeta(beta_n, sum(1-PPP[!Result])+1, sum(1-PPP[Result])+1)
+	        ) |>
+	        ungroup() |>
+	        mutate(YoudenIndex = Se+Sp-1) ->
+	        tt
+
+	      if(summarise){
+	        tt |>
+	          pivot_longer(Se:YoudenIndex, names_to="Parameter", values_to="Estimate") |>
+	          group_by(Parameter, Threshold, Lower, Upper, Below, Above) |>
+	          summarise(Mean = mean(Estimate), Median = median(Estimate), Lower95 = coda::HPDinterval(coda::as.mcmc(Estimate))[1], Upper95 = coda::HPDinterval(coda::as.mcmc(Estimate))[2], .groups="drop") ->
+	          tt
+
+	        bind_rows(
+	          tt |> mutate(Point="Mid") |> select(-Lower, -Upper),
+	          tt |> mutate(Threshold=Lower+1e-6, Point="Lower") |> select(-Lower, -Upper),
+	          tt |> mutate(Threshold=Upper-1e-6, Point="Upper") |> select(-Lower, -Upper)
+	        ) |>
+	          mutate(Point = factor(Point, levels=c("Lower","Mid","Upper"))) |>
+	          arrange(Threshold, Point, Parameter) ->
+	          tt
+	      }
+
+	      return(tt)
+
+	    }) |>
+	    bind_rows()
+	}
+
+	invisible(c(rv, list(add_post_hoc = add_post_hoc, add_roc = add_roc)))
 
 }
 
