@@ -504,6 +504,43 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 	cat('*** NOTE: The template provided should be examined and modified (including checking ***\n***   priors, covariance terms, and verifying the code) before running the model!   ***\n')
 
 
+	## Return list of testnames, popnames, covariance/agreement indexes, data invisibly
+
+	datalist <- list.format(gsub("\n", ", ", paste0(gsub("\n$", "", datablock),collapse=", ")))
+	datalist[["PopulationsUsing"]] <- NULL
+	datalist[["AcceptTest"]] <- NULL
+	datalist[["AcceptProb"]] <- NULL
+	datalist[["Tally_single"]] <- NULL
+	datalist[["N_single"]] <- NULL
+	datalist[["Agreement"]] <- NULL
+	datalist[["N_pair"]] <- NULL
+
+	## TODO: switch to tidyverse for all this:
+	names(teststrings) <- gsub("- ","",teststrings[1,])
+	for(i in seq_len(ncol(teststrings))) teststrings[,i] <- gsub(names(teststrings)[i], "", teststrings[,i])
+	teststrings[["String"]] <- gsub(" ", "", apply(teststrings,1,paste,collapse=""))
+	teststrings[["Index"]] <- seq_len(nrow(teststrings))
+	teststrings <- teststrings[,c(ntests+(2:1), seq_len(ntests))]
+
+	stopifnot(nrow(testdata)==nrow(fulltestdata), testdata[["Population"]]==fulltestdata[["Population"]])
+	for(c in testcols) testdata[[c]] <- ifelse(testdata[[c]]=="1", "+", "-")
+	strs <- as.matrix(testdata[,testcols])
+	strs[] <- gsub("1","+",strs)
+	strs[] <- gsub("0","-",strs)
+	strs <- apply(strs,1,paste,collapse="")
+	strs[grepl("NA",strs)] <- NA_character_
+
+	orignames <- names(fulltestdata)
+	fulltestdata[["String"]] <- strs
+	fulltestdata <- merge(fulltestdata, teststrings[,c("String","Index")], by=c("String"), sort=FALSE, all.x=TRUE)
+	fulltestdata[["PPP_index"]] <- ifelse(is.na(fulltestdata[["Index"]]), NA_character_, paste0("ppp[", fulltestdata[["Index"]], ",", as.numeric(fulltestdata[["Population"]]), "]"))
+	fulltestdata <- fulltestdata[,c(orignames,"String","PPP_index")]
+
+	fulltestdata <- fulltestdata[order(fulltestdata[[".order"]]),]
+	rownames(fulltestdata) <- NULL
+	fulltestdata[[".order"]] <- NULL
+
+	rv <- list(combinations=teststrings, pairs=testpairs, tests=testcols, populations=levels(testdata$Population), test_data=fulltestdata, model_data=datalist)
 
 	add_post_hoc <- function(long_data, results, beta_n=100L, mcmc_n=1000L){
 
