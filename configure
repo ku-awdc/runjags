@@ -2140,7 +2140,7 @@ if test  -n "${PKG_CONFIG}"  ; then
          JAGS_LIBS=`${PKG_CONFIG} --libs jags`
          JAGS_CFLAGS=`${PKG_CONFIG} --cflags jags`
          JAGS_LIBDIR=`${PKG_CONFIG} --variable libdir jags`
-         if test  -z "${JAGS_LIBS}" -a -z "${JAGS_CFLAGS}"  ; then
+         if test  -z "${JAGS_LIBS}" || -z "${JAGS_CFLAGS}"  ; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot get information about jags ${PACKAGE_VERSION} from pkg-config" >&5
 $as_echo "$as_me: WARNING: Cannot get information about jags ${PACKAGE_VERSION} from pkg-config" >&2;}
          else
@@ -2154,7 +2154,7 @@ $as_echo "$as_me: Link flags are $JAGS_LIBS" >&6;}
          fi
       else
          jags_installed_version=`${PKG_CONFIG} --modversion jags`
-         as_fn_error $? "pkg-config found JAGS ${jags_installed_version} but rjags requires JAGS >= 3.x.y" "$LINENO" 5
+         as_fn_error $? "pkg-config found JAGS ${jags_installed_version} but runjags requires JAGS >= 3.x.y" "$LINENO" 5
       fi
    else
       { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: pkg-config file for jags unavailable" >&5
@@ -2170,8 +2170,8 @@ fi
 ########################## Begin legacy configuration #####################
 if test "${PKG_CONFIG_OK}" != TRUE; then
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: Attempting legacy configuration of rjags" >&5
-$as_echo "$as_me: Attempting legacy configuration of rjags" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Attempting legacy configuration of runjags" >&5
+$as_echo "$as_me: Attempting legacy configuration of runjags" >&6;}
 
 # Set JAGS_PREFIX
 #

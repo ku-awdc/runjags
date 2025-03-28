@@ -323,7 +323,7 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 
 	cat(do.call('paste', c(pasteargs, list(sep=''))), sep='\n\n', file=outfile, append=TRUE)
 
-	catapp('\n\t\t# Ensure that the covariance terms do not result in an invalid probability:\n\t\tfor(c in 1:', ncomb, '){\n\t\t\tAcceptProb[c,p] ~ dbern(ifelse(se_prob[c,p] >= 0 && se_prob[c,p] <= 1 && sp_prob[c,p] >= 0 && sp_prob[c,p], 1, 0))\n\t\t}\n')
+	catapp('\n\t\t# Ensure that the covariance terms do not result in an invalid probability:\n\t\tfor(c in 1:', ncomb, '){\n\t\t\tAcceptProb[c,p] ~ dbern(ifelse(se_prob[c,p] >= 0 && se_prob[c,p] <= 1 && sp_prob[c,p] >= 0 && sp_prob[c,p] <= 1, 1, 0))\n\t\t}\n')
 
 	## TODO:  incorporate delta terms correctly - I guess the signs should be inverted??
 	if(ppp_values){
