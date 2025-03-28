@@ -31,7 +31,7 @@ if test [ -n "${PKG_CONFIG}" ] ; then
          JAGS_LIBS=`${PKG_CONFIG} --libs jags`
          JAGS_CFLAGS=`${PKG_CONFIG} --cflags jags`
          JAGS_LIBDIR=`${PKG_CONFIG} --variable libdir jags`
-         if test [ -z "${JAGS_LIBS}" -a -z "${JAGS_CFLAGS}" ] ; then
+         if test [ -z "${JAGS_LIBS}" || -z "${JAGS_CFLAGS}" ] ; then
             AC_MSG_WARN([Cannot get information about jags ${PACKAGE_VERSION} from pkg-config])
          else
             AC_MSG_NOTICE([Setting compile and link flags according to pkg-config])
@@ -41,7 +41,7 @@ if test [ -n "${PKG_CONFIG}" ] ; then
          fi
       else
          jags_installed_version=`${PKG_CONFIG} --modversion jags`
-         AC_MSG_ERROR([pkg-config found JAGS ${jags_installed_version} but rjags requires JAGS >= 3.x.y])
+         AC_MSG_ERROR([pkg-config found JAGS ${jags_installed_version} but runjags requires JAGS >= 3.x.y])
       fi
    else 
       AC_MSG_WARN([pkg-config file for jags unavailable])
@@ -54,7 +54,7 @@ fi
 ########################## Begin legacy configuration #####################
 if test "${PKG_CONFIG_OK}" != TRUE; then
 
-AC_MSG_NOTICE([Attempting legacy configuration of rjags])
+AC_MSG_NOTICE([Attempting legacy configuration of runjags])
 
 # Set JAGS_PREFIX
 #
