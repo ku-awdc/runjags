@@ -23,7 +23,7 @@ The runjags packages requires a working installation of [JAGS](https://mcmc-jags
 testjags()
 ```
 
-This should verify that your JAGS installation has been found.  The rjags and modeest packages are not strictly required, but are reccomended packages and should be installed where possible.
+This should verify that your JAGS installation has been found.  The rjags and modeest packages are not strictly required, but are recommended packages and should be installed where possible.
 
 ```{r, echo = FALSE, include=FALSE}
 runjags.options(inits.warning=FALSE, rng.warning=FALSE, blockignore.warning=FALSE, blockcombine.warning=FALSE, silent.jags=TRUE, silent.runjags=TRUE)
@@ -145,7 +145,7 @@ The output of this function can be extended using:
 results <- extend.jags(results, sample=5000)
 ```
 
-This function call takes an additional 5000 samples and combines them with the original simulation.  It is also possible to automatically extend a model until it has converged (as assessed by Gelman and Rubin's convergence diagnostic) using the autorun.jags and autoextend.jags functions, although manual inspection of trace plots is always recommended to ensure chains have really converged.  Note also that each of the functions run.jags, extend.jags, autorun.jags and autoextend.jags allows a method argument to be specified, which allows separate chains to be run on parallel processors where available.  Full details are provided are in the user guide, but the most used options are 'rjags', 'interrputible', 'parallel' and 'background'.  
+This function call takes an additional 5000 samples and combines them with the original simulation.  It is also possible to automatically extend a model until it has converged (as assessed by Gelman and Rubin's convergence diagnostic) using the autorun.jags and autoextend.jags functions, although manual inspection of trace plots is always recommended to ensure chains have really converged.  Note also that each of the functions run.jags, extend.jags, autorun.jags and autoextend.jags allows a method argument to be specified, which allows separate chains to be run on parallel processors where available.  Full details are provided are in the user guide, but the most used options are 'rjags', 'interruptible', 'parallel' and 'background'.  
 
 ## Generating a GLMM template
 
@@ -196,7 +196,7 @@ summary(residuals(lm.D9) - residuals(JAGS.D9, output='mean'))
 
 ## Model evaluation
 
-The Deviance Information Criterion (DIC) is typically used to compare models fit using JAGS and BUGS, and is displayed as part of the print method shwon above.  This can also be extracted from a runjags model using the extract method, along with other information such as the samplers used:
+The Deviance Information Criterion (DIC) is typically used to compare models fit using JAGS and BUGS, and is displayed as part of the print method shown above.  This can also be extracted from a runjags model using the extract method, along with other information such as the samplers used:
 
 ```{r}
 extract(JAGS.D9, what='samplers')
@@ -218,12 +218,12 @@ There are a large number of global options that can be controlled using the runj
 
 There is a [sourceforge repository](https://runjags.sourceforge.net/) associated with the runjags package, which contains additional versions of the package and internal JAGS module.  This page also contains the [extended version of this vignette](https://runjags.sourceforge.net/quickjags.html) which contains additional material and examples not found in the [version hosted on CRAN](https://CRAN.R-project.org/package=runjags).  
 
-This package is in constant development, so if you find any issues or the code does not behave as expected please either email the pacckage developer or visit the [bug-tracker page](https://github.com/ku-awdc/runjags/issues) to report the problem.  General comments and suggestions on how you find using this package are also very welcome.
+This package is in constant development, so if you find any issues or the code does not behave as expected please either email the package developer or visit the [bug-tracker page](https://github.com/ku-awdc/runjags/issues) to report the problem.  General comments and suggestions on how you find using this package are also very welcome.
 
 
 ## Citation
 
-Devleopment of this R package has consumed a great deal of time and energy, and is a somewhat peripheral activity in my current academic position.  In order to justify continued devleopment of the software I need to be able to demonstrate that it is being used within the general research community.  So, if you use this software as part of a publication, please remember to cite the software as follows:
+Development of this R package has consumed a great deal of time and energy, and is a somewhat peripheral activity in my current academic position.  In order to justify continued development of the software I need to be able to demonstrate that it is being used within the general research community.  So, if you use this software as part of a publication, please remember to cite the software as follows:
 
 ```{r}
 citation('runjags')
