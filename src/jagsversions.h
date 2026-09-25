@@ -48,7 +48,7 @@
 #endif // JAGS_MAJOR_ASSUMED
 
 // Check version of JAGS is OK:
-#if JAGS_MAJOR_USED > 4
+#if JAGS_MAJOR_USED > 5
 #warning "Compiling against a later version of JAGS than has been tested for this version of runjags ... you should probably update the runjags package!"
 #endif
 

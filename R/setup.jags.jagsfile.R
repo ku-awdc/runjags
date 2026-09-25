@@ -377,7 +377,7 @@ setup.jagsfile <- function(model, n.chains=NA, data=NA, inits=NA, monitor=NA, mo
 		outdata <- checkdataformat(arg=data, block=maindata, auto=autodata, n.chains=NA, data.type=TRUE, evalscope=NULL)$combined
 	}
 
-	if(all(sapply(inits,class)%in%c('runjagsinits','character'))){
+	if(!is.environment(inits) && all(sapply(inits,class)%in%c('runjagsinits','character'))){
 		if((!identical(maininits, NA) || !identical(autoinits, NA)) && runjags.getOption('blockignore.warning'))
 			warning('Inits specified in the model file or using #inits# are ignored when a character string is given as the argument to inits', call.=FALSE)
 		maininits <- NA

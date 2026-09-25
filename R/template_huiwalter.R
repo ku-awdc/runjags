@@ -480,23 +480,33 @@ template_huiwalter <- function(testdata, outfile='huiwalter_model.txt', covarian
 		x <- rep(x,times=ceiling(len/length(x)))
 		return(x[1:len])
 	}
-	if(cov_as_cor){
-	  cvn <- apply(expand.grid(apply(testcombos,1,paste,collapse=''), c('corse','corsp'))[,2:1],1,paste,collapse='')
-	}else{
-	  cvn <- apply(expand.grid(apply(testcombos,1,paste,collapse=''), c('covse','covsp'))[,2:1],1,paste,collapse='')
+        ## Set initial values for active covariances/correlations
+        tp_se <- !is.na(testpairs[,"Active_Se"]) & testpairs[,"Active_Se"]
+        tp_sp <- !is.na(testpairs[,"Active_Sp"]) & testpairs[,"Active_Sp"]
+        if (cov_as_cor){
+            cvn <- c(paste0("corse", testpairs[,"Suffix"])[tp_se],
+                     paste0("corsp", testpairs[,"Suffix"])[tp_sp])
+	} else{
+            cvn <- c(paste0("covse", testpairs[,"Suffix"])[tp_se],
+                     paste0("covsp", testpairs[,"Suffix"])[tp_sp])
 	}
-	# Fails to initialise with anything other than 0:
-	covinitvals <- as.list(alternate(c(0,0), length(cvn)))
-	names(covinitvals) <- cvn
-	covinits <- c(dump.format(covinitvals), dump.format(lapply(covinitvals, function(x) -x)))
+        if (length(cvn) > 0) {
+            ## Fails to initialise with anything other than 0:
+            covinitvals <- rep(list(0), length(cvn))
+	    names(covinitvals) <- cvn
+	    covinits <- rep(dump.format(covinitvals), 2)
+        }
+        else {
+            covinits <- NULL
+        }
 	if(FALSE){
 	  covinits <- gsub('\"cov', '# \"cov', covinits, fixed=TRUE)
 	  covinits <- gsub('\"cor', '# \"cor', covinits, fixed=TRUE)
 	}
 
-	initblock <- c(dump.format(list(se=alternate(c(0.5,0.99), length(testcols)), sp=alternate(c(0.99,0.75), length(testcols)), prev=alternate(c(0.05,0.95), length(levels(testdata$Population)))))) #, covinits[1])
+	initblock <- c(dump.format(list(se=alternate(c(0.5,0.99), length(testcols)), sp=alternate(c(0.99,0.75), length(testcols)), prev=alternate(c(0.05,0.95), length(levels(testdata$Population))))), covinits[1]) 
 	cat('\n\n## Inits:\ninits{\n', initblock, '}', sep='', file=outfile, append=TRUE)
-	initblock <- c(dump.format(list(se=alternate(c(0.5,0.99)[2:1], length(testcols)), sp=alternate(c(0.99,0.75)[2:1], length(testcols)), prev=alternate(c(0.05,0.95)[2:1], length(levels(testdata$Population)))))) #, covinits[2])
+	initblock <- c(dump.format(list(se=alternate(c(0.5,0.99)[2:1], length(testcols)), sp=alternate(c(0.99,0.75)[2:1], length(testcols)), prev=alternate(c(0.05,0.95)[2:1], length(levels(testdata$Population))))), covinits[2])
 	cat('\ninits{\n', initblock, '}', sep='', file=outfile, append=TRUE)
 
 	## Data:

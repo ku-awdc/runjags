@@ -514,6 +514,7 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 			if(grepl('(', versioncom, fixed=TRUE)){
 				versioncom <- strsplit(versioncom, split='(', fixed=TRUE)[[1]][1]
 			}
+			versioncom <- sub("-beta$", "", versioncom)
 			versioncom <- sub('.',';',versioncom,fixed=TRUE)
 			versioncom <- gsub('.','',versioncom,fixed=TRUE)
 			num.version <- as.numeric(gsub(';','.',versioncom,fixed=TRUE))
@@ -657,7 +658,7 @@ assign("simfolders", character(0), envir=runjagsprivate)
 assign("failedsimfolders", character(0), envir=runjagsprivate)
 assign("defaultsummarypars", list(vars=NA, mutate=NULL, psrf.target = 1.05, normalise.mcmc = TRUE, modeest.opts=list(), confidence=c(0.95), autocorr.lags=c(10), custom=NULL, silent.jags=expression(runjags.getOption('silent.jags')), plots=FALSE, plot.type=c('trace','ecdf','histogram','autocorr','key','crosscorr'), col=NA, summary.iters=10000, trace.iters=1000, separate.chains=FALSE, trace.options=list(), density.options=list(), histogram.options=list(), ecdfplot.options=list(), acplot.options=list()), envir=runjagsprivate)
 assign("minjagsmajor", 3, envir=runjagsprivate)
-assign("maxjagsmajor", 4, envir=runjagsprivate)
+assign("maxjagsmajor", 5, envir=runjagsprivate)
 assign("warned_version_mismatch", FALSE, envir=runjagsprivate)
 assign("warned_macos_lipo", FALSE, envir=runjagsprivate)
 
