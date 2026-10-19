@@ -1,7 +1,7 @@
 Package: runjags
 Title: Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS
-Version: 2.2.2-5
-Date: 2025-04-09
+Version: 2.2.3-10
+Date: 2026-10-19
 Authors@R: c(person("Matthew", "Denwood", role=c("aut","cre"), email="md@sund.ku.dk"),
              person("Martyn", "Plummer", role="cph", 
              comment="Copyright holder of the code in src/distributions/DPar1.*, configure.ac, R/rjags_functions.R, and original copyright holder of some modified code where indicated"))
@@ -39,4 +39,4 @@ Suggests:
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Language: en-GB
-RoxygenNote: 7.3.2
+Config/roxygen2/version: 8.1.0
