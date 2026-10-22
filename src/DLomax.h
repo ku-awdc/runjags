@@ -2,7 +2,7 @@
 	Copyright (C) 2013 Matthew Denwood <matthewdenwood@mac.com>
 	
 	This header is based on the pareto distribution in JAGS version 3.3,
-	and specifies DuMouchel's prior distribution
+	and specifies the Lomax distribution
 	
     This file is part of runjags
 	Original DPar.h file is Copyright (C) 2002-10 Martyn Plummer, 
@@ -23,32 +23,26 @@
 	
  */
 
-#ifndef DMOUCH_H_
-#define DMOUCH_H_
+#ifndef DLOMAX_H_
+#define DLOMAX_H_
 
-// Checks the JAGS version and sets necessary macros:
-#include "../jagsversions.h"
-
-#ifndef INCLUDERSCALARDIST
 #include <distribution/RScalarDist.h>
-namespace jags {
-#else
-#include "jags/RScalarDist.h"
-#endif  /* INCLUDERSCALARDIST */
 
+namespace jags {
 namespace runjags {
 
 /**
  * <pre>
- * x ~ dlompr();
- * f(x) = (1 + x)^-2; x >= 0
+ * x ~ dlomax(alpha, sigma);
+ * f(x|alpha,sigma) = alpha/sigma * (1 + x/sigma)^-(alpha + 1); x >= 0
+	= alpha*sigma^alpha / (x + sigma)^(alpha+1)
  * </pre>
- * @short LomPr distribution
+ * @short Lomax distribution
  */
 
-class DMouchel : public RScalarDist {
+class DLomax : public RScalarDist {
  public:
-  DMouchel();
+  DLomax();
 
   double d(double x, PDFType type,
 	   std::vector<double const *> const &parameters, bool give_log) const;
@@ -62,9 +56,6 @@ class DMouchel : public RScalarDist {
 };
 
 }  // namespace runjags
-
-#ifndef INCLUDERSCALARDIST
 }  // namespace jags
-#endif  /* INCLUDERSCALARDIST */
 
-#endif /* DMOUCH_H_ */
+#endif /* DLOMAX_H_ */

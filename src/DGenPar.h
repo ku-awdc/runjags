@@ -2,7 +2,7 @@
 	Copyright (C) 2013 Matthew Denwood <matthewdenwood@mac.com>
 	
 	This header is based on the pareto distribution in JAGS version 3.3,
-	and specifies the pareto type 2 distribution
+	and specifies the generalised pareto distribution
 	
     This file is part of runjags
 	Original DPar.h file is Copyright (C) 2002-10 Martyn Plummer, 
@@ -23,31 +23,27 @@
 	
  */
 
-#ifndef DPAR2_H_
-#define DPAR2_H_
+#ifndef DGENPAR_H_
+#define DGENPAR_H_
 
-// Checks the JAGS version and sets necessary macros:
-#include "../jagsversions.h"
-
-#ifndef INCLUDERSCALARDIST
 #include <distribution/RScalarDist.h>
-namespace jags {
-#else
-#include "jags/RScalarDist.h"
-#endif  /* INCLUDERSCALARDIST */
 
+namespace jags {
 namespace runjags {
 
 /**
  * <pre>
- * x ~ dpar2(alpha, sigma, mu);
- * f(x|alpha,sigma, mu) = alpha/sigma * ((((sigma+x)-mu)/sigma)^-(alpha + 1)); x >= mu
+ * x ~ dgenpar(sigma, mu, xi);
+	// when xi != 0:
+ * f(x|sigma,mu,xi) = 1/sigma * (1 + xi * (x-mu)/sigma)^-(1/xi +1) ; x >= mu where xi >= 0, mu <= x <= (mu - sigma/xi) for xi < 0
+	// when xi == 0:
+	f(x|sigma,mu,xi) = 1/sigma * exp(-(x-mu)/sigma) ; ; x >= mu where xi >= 0, mu <= x <= (mu - sigma/xi) for xi < 0
  * </pre>
- * @short Pareto type II distribution
+ * @short Generalised Pareto distribution
  */
-class DPar2 : public RScalarDist {
+class DGenPar : public RScalarDist {
  public:
-  DPar2();
+  DGenPar();
 
   double d(double x, PDFType type,
 	   std::vector<double const *> const &parameters, bool give_log) const;
@@ -58,14 +54,11 @@ class DPar2 : public RScalarDist {
   double r(std::vector<double const *> const &parameters, RNG *rng) const;
   double l(std::vector<double const*> const &parameters) const;
   double u(std::vector<double const*> const &parameters) const;
-
   bool checkParameterValue(std::vector<double const *> const &parameters) const;
+  bool isSupportFixed(std::vector<bool> const &fixmask) const;
 };
 
 }  // namespace runjags
-
-#ifndef INCLUDERSCALARDIST
 }  // namespace jags
-#endif  /* INCLUDERSCALARDIST */
 
-#endif /* DPAR2_H_ */
+#endif /* DGENPAR_H_ */

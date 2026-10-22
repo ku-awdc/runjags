@@ -2,7 +2,7 @@
 	Copyright (C) 2013 Matthew Denwood <matthewdenwood@mac.com>
 	
 	This header is based on the pareto distribution in JAGS version 3.3,
-	and specifies the generalised pareto distribution
+	and specifies the half cauchy distribution
 	
     This file is part of runjags
 	Original DPar.h file is Copyright (C) 2002-10 Martyn Plummer, 
@@ -23,35 +23,26 @@
 	
  */
 
-#ifndef DGENPAR_H_
-#define DGENPAR_H_
 
-// Checks the JAGS version and sets necessary macros:
-#include "../jagsversions.h"
+#ifndef DHALFCAUCHY_H_
+#define DHALFCAUCHY_H_
 
-#ifndef INCLUDERSCALARDIST
 #include <distribution/RScalarDist.h>
+
 namespace jags {
-#else
-#include "jags/RScalarDist.h"
-#endif  /* INCLUDERSCALARDIST */
-
-
 namespace runjags {
 
 /**
  * <pre>
- * x ~ dgenpar(sigma, mu, xi);
-	// when xi != 0:
- * f(x|sigma,mu,xi) = 1/sigma * (1 + xi * (x-mu)/sigma)^-(1/xi +1) ; x >= mu where xi >= 0, mu <= x <= (mu - sigma/xi) for xi < 0
-	// when xi == 0:
-	f(x|sigma,mu,xi) = 1/sigma * exp(-(x-mu)/sigma) ; ; x >= mu where xi >= 0, mu <= x <= (mu - sigma/xi) for xi < 0
+ * x ~ dhalfcauchy(alpha);
+ * f(x) = (2*sigma) / (pi * (x^2 + sigma^2)); x >= 0
  * </pre>
- * @short Generalised Pareto distribution
+ * @short Half Cauchy distribution
  */
-class DGenPar : public RScalarDist {
+
+class DHalfCauchy : public RScalarDist {
  public:
-  DGenPar();
+  DHalfCauchy();
 
   double d(double x, PDFType type,
 	   std::vector<double const *> const &parameters, bool give_log) const;
@@ -60,16 +51,11 @@ class DGenPar : public RScalarDist {
   double q(double p, std::vector<double const *> const &parameters, bool lower,
 	   bool log_p) const;
   double r(std::vector<double const *> const &parameters, RNG *rng) const;
-  double l(std::vector<double const*> const &parameters) const;
-  double u(std::vector<double const*> const &parameters) const;
+
   bool checkParameterValue(std::vector<double const *> const &parameters) const;
-  bool isSupportFixed(std::vector<bool> const &fixmask) const;
 };
 
 }  // namespace runjags
-
-#ifndef INCLUDERSCALARDIST
 }  // namespace jags
-#endif  /* INCLUDERSCALARDIST */
 
-#endif /* DGENPAR_H_ */
+#endif /* DHALFCAUCHY_H_ */

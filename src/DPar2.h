@@ -2,7 +2,7 @@
 	Copyright (C) 2013 Matthew Denwood <matthewdenwood@mac.com>
 	
 	This header is based on the pareto distribution in JAGS version 3.3,
-	and specifies the half cauchy distribution
+	and specifies the pareto type 2 distribution
 	
     This file is part of runjags
 	Original DPar.h file is Copyright (C) 2002-10 Martyn Plummer, 
@@ -23,33 +23,24 @@
 	
  */
 
+#ifndef DPAR2_H_
+#define DPAR2_H_
 
-#ifndef DHALFCAUCHY_H_
-#define DHALFCAUCHY_H_
-
-// Checks the JAGS version and sets necessary macros:
-#include "../jagsversions.h"
-
-#ifndef INCLUDERSCALARDIST
 #include <distribution/RScalarDist.h>
-namespace jags {
-#else
-#include "jags/RScalarDist.h"
-#endif  /* INCLUDERSCALARDIST */
 
+namespace jags {
 namespace runjags {
 
 /**
  * <pre>
- * x ~ dhalfcauchy(alpha);
- * f(x) = (2*sigma) / (pi * (x^2 + sigma^2)); x >= 0
+ * x ~ dpar2(alpha, sigma, mu);
+ * f(x|alpha,sigma, mu) = alpha/sigma * ((((sigma+x)-mu)/sigma)^-(alpha + 1)); x >= mu
  * </pre>
- * @short Half Cauchy distribution
+ * @short Pareto type II distribution
  */
-
-class DHalfCauchy : public RScalarDist {
+class DPar2 : public RScalarDist {
  public:
-  DHalfCauchy();
+  DPar2();
 
   double d(double x, PDFType type,
 	   std::vector<double const *> const &parameters, bool give_log) const;
@@ -58,14 +49,13 @@ class DHalfCauchy : public RScalarDist {
   double q(double p, std::vector<double const *> const &parameters, bool lower,
 	   bool log_p) const;
   double r(std::vector<double const *> const &parameters, RNG *rng) const;
+  double l(std::vector<double const*> const &parameters) const;
+  double u(std::vector<double const*> const &parameters) const;
 
   bool checkParameterValue(std::vector<double const *> const &parameters) const;
 };
 
 }  // namespace runjags
-
-#ifndef INCLUDERSCALARDIST
 }  // namespace jags
-#endif  /* INCLUDERSCALARDIST */
 
-#endif /* DHALFCAUCHY_H_ */
+#endif /* DPAR2_H_ */

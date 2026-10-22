@@ -46,6 +46,11 @@ Useful links:
 \author{
 \strong{Maintainer}: Matthew Denwood \email{md@sund.ku.dk}
 
+Authors:
+\itemize{
+  \item Matthew Denwood \email{md@sund.ku.dk}
+}
+
 Other contributors:
 \itemize{
   \item Martyn Plummer (Copyright holder of the code in src/distributions/DPar1.*, configure.ac, R/rjags_functions.R, and original copyright holder of some modified code where indicated) [copyright holder]

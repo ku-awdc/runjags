@@ -18,12 +18,29 @@ Capability to have no valid monitored variables
 
 Implement concurrent trace, mean and variance monitors
 
+The JAGS module will eventually be removed from this package and put into a separate (suggested) package
+
 
 
 VERSION HISTORY
 
 
-Version 2.2.2-2
+Version 2.3.0
+
+NEW FEATURES
+
+runjags now builds using configure flags provided by rjags to ensure runtime compatibility with JAGS 4 and 5 - this means that rjags is now a dependent (not suggested) package
+
+
+BUG FIXES
+
+Fixed an issue checking the version number of JAGS (thanks to Martyn Plummer)
+
+Removed problematic code checking lipo on macOS
+
+
+
+Version 2.2.2
 
 NEW FEATURES
 

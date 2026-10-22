@@ -2,7 +2,7 @@
 	Copyright (C) 2013 Matthew Denwood <matthewdenwood@mac.com>
 	
 	This header is based on the pareto distribution in JAGS version 3.3,
-	and specifies the pareto type 3 distribution
+	and specifies the pareto type 4 distribution
 	
     This file is part of runjags
 	Original DPar.h file is Copyright (C) 2002-10 Martyn Plummer, 
@@ -23,31 +23,24 @@
 	
  */
 
-#ifndef DPAR3_H_
-#define DPAR3_H_
+#ifndef DPAR4_H_
+#define DPAR4_H_
 
-// Checks the JAGS version and sets necessary macros:
-#include "../jagsversions.h"
-
-#ifndef INCLUDERSCALARDIST
 #include <distribution/RScalarDist.h>
-namespace jags {
-#else
-#include "jags/RScalarDist.h"
-#endif  /* INCLUDERSCALARDIST */
 
+namespace jags {
 namespace runjags {
 
 /**
  * <pre>
- * x ~ dpar3(sigma, mu, gamma);
- * f(x|sigma,mu,gamma) = (((x-mu)/sigma)^((1/gamma) -1) * (((x-mu)/sigma)^(1/gamma) + 1)^(-2)) / (gamma*sigma); x >= mu
+ * x ~ dpar3(alpha, sigma, mu, gamma);
+ * f(x|sigma,mu,gamma) = (alpha * ((x-mu)/sigma)^((1/gamma) -1) * (((x-mu)/sigma)^(1/gamma) + 1)^(-(alpha+1))) / (gamma*sigma); x >= mu
  * </pre>
- * @short Pareto type III distribution
+ * @short Pareto type IV distribution
  */
-class DPar3 : public RScalarDist {
+class DPar4 : public RScalarDist {
  public:
-  DPar3();
+  DPar4();
 
   double d(double x, PDFType type,
 	   std::vector<double const *> const &parameters, bool give_log) const;
@@ -64,9 +57,6 @@ class DPar3 : public RScalarDist {
 };
 
 }  // namespace runjags
-
-#ifndef INCLUDERSCALARDIST
 }  // namespace jags
-#endif  /* INCLUDERSCALARDIST */
 
-#endif /* DPAR3_H_ */
+#endif /* DPAR4_H_ */

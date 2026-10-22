@@ -2,7 +2,7 @@
 	Copyright (C) 2013 Matthew Denwood <matthewdenwood@mac.com>
 	
 	This header is based on the pareto distribution in JAGS version 3.3,
-	and specifies the Lomax distribution
+	and specifies the pareto type 3 distribution
 	
     This file is part of runjags
 	Original DPar.h file is Copyright (C) 2002-10 Martyn Plummer, 
@@ -23,33 +23,24 @@
 	
  */
 
-#ifndef DLOMAX_H_
-#define DLOMAX_H_
+#ifndef DPAR3_H_
+#define DPAR3_H_
 
-// Checks the JAGS version and sets necessary macros:
-#include "../jagsversions.h"
-
-#ifndef INCLUDERSCALARDIST
 #include <distribution/RScalarDist.h>
-namespace jags {
-#else
-#include "jags/RScalarDist.h"
-#endif  /* INCLUDERSCALARDIST */
 
+namespace jags {
 namespace runjags {
 
 /**
  * <pre>
- * x ~ dlomax(alpha, sigma);
- * f(x|alpha,sigma) = alpha/sigma * (1 + x/sigma)^-(alpha + 1); x >= 0
-	= alpha*sigma^alpha / (x + sigma)^(alpha+1)
+ * x ~ dpar3(sigma, mu, gamma);
+ * f(x|sigma,mu,gamma) = (((x-mu)/sigma)^((1/gamma) -1) * (((x-mu)/sigma)^(1/gamma) + 1)^(-2)) / (gamma*sigma); x >= mu
  * </pre>
- * @short Lomax distribution
+ * @short Pareto type III distribution
  */
-
-class DLomax : public RScalarDist {
+class DPar3 : public RScalarDist {
  public:
-  DLomax();
+  DPar3();
 
   double d(double x, PDFType type,
 	   std::vector<double const *> const &parameters, bool give_log) const;
@@ -58,14 +49,14 @@ class DLomax : public RScalarDist {
   double q(double p, std::vector<double const *> const &parameters, bool lower,
 	   bool log_p) const;
   double r(std::vector<double const *> const &parameters, RNG *rng) const;
+  double l(std::vector<double const*> const &parameters) const;
+  double u(std::vector<double const*> const &parameters) const;
 
   bool checkParameterValue(std::vector<double const *> const &parameters) const;
+  bool isSupportFixed(std::vector<bool> const &fixmask) const;
 };
 
 }  // namespace runjags
-
-#ifndef INCLUDERSCALARDIST
 }  // namespace jags
-#endif  /* INCLUDERSCALARDIST */
 
-#endif /* DLOMAX_H_ */
+#endif /* DPAR3_H_ */

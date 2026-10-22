@@ -1,39 +1,21 @@
-######################################################################################################
-###
-###  This file is based on that in the rjags package (version 4-10)
-###  Original file is Copyright (C) Martyn Plummer, licensed under GPL-2
-###
-###  This file allows compilation between JAGS 3 and 4 (or later) without modifying runjags.
-###  To force the package to compile assuming a given JAGS version is installed, use the 
-###  JAGS_MAJOR_FORCED environmental variable.  This should not be necessary on unix.
-###  
-###  Once JAGS version 3 is obsolete, the module will be simplified to be dependent on JAGS >= 4
-###  
-###  Matthew Denwood, 24th February 2021
-###
-######################################################################################################
+#  R package JAGSmodule file src/Makevars
+#  Copyright (C) 2026 Matt Denwood
+#
+#  This file can be used (unmodified) by any R package wishing to implement
+#  an inbuilt JAGS module.
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License version
+#  2 as published by the Free Software Foundation.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  A copy of the GNU General Public License is available at
+#  http://www.r-project.org/Licenses/
 
-
-###############
-###  Flags
-###  Prepending 0 to JAGS_MAJOR_VERSION prevents it being set as blank (the C++ code requires a number)
-###  JAGS_MAJOR_ASSUMED is not needed (always 0) on unix
-###############
-
-PKG_CPPFLAGS=-I/usr/local/include/JAGS -D JAGS_MAJOR_FORCED=0$(JAGS_MAJOR_VERSION) -D JAGS_MAJOR_ASSUMED=0
-PKG_LIBS=-L/usr/local/lib -ljags 
-
-###############
-
-
-###############
-###  LIBS and objects to be compiled
-###  NB: the objects in distributions/jags are only necessary for JAGS <=3, and are excluded by the sources when compiling against JAGS >= 4
-###############
-
-OBJECTS = distributions/jags/DFunction.o distributions/jags/DPQFunction.o distributions/jags/PFunction.o distributions/jags/QFunction.o distributions/jags/RScalarDist.o distributions/DPar1.o distributions/DPar2.o distributions/DPar3.o distributions/DPar4.o distributions/DLomax.o distributions/DMouchel.o distributions/DGenPar.o distributions/DHalfCauchy.o init.o runjags.o testrunjags.o
-
-###############
-
-
-
+PKG_LIBS = `"$(R_HOME)/bin$(R_ARCH_BIN)/Rscript" -e "rjags::pkg.compile.flags('LIBS')"`
+PKG_CXXFLAGS = `"$(R_HOME)/bin$(R_ARCH_BIN)/Rscript" -e "rjags::pkg.compile.flags('CXXFLAGS')"`
+PKG_CPPFLAGS = `"$(R_HOME)/bin$(R_ARCH_BIN)/Rscript" -e "rjags::pkg.compile.flags('CPPFLAGS')"`

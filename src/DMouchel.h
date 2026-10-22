@@ -2,7 +2,7 @@
 	Copyright (C) 2013 Matthew Denwood <matthewdenwood@mac.com>
 	
 	This header is based on the pareto distribution in JAGS version 3.3,
-	and specifies the pareto type 4 distribution
+	and specifies DuMouchel's prior distribution
 	
     This file is part of runjags
 	Original DPar.h file is Copyright (C) 2002-10 Martyn Plummer, 
@@ -23,31 +23,25 @@
 	
  */
 
-#ifndef DPAR4_H_
-#define DPAR4_H_
+#ifndef DMOUCH_H_
+#define DMOUCH_H_
 
-// Checks the JAGS version and sets necessary macros:
-#include "../jagsversions.h"
-
-#ifndef INCLUDERSCALARDIST
 #include <distribution/RScalarDist.h>
-namespace jags {
-#else
-#include "jags/RScalarDist.h"
-#endif  /* INCLUDERSCALARDIST */
 
+namespace jags {
 namespace runjags {
 
 /**
  * <pre>
- * x ~ dpar3(alpha, sigma, mu, gamma);
- * f(x|sigma,mu,gamma) = (alpha * ((x-mu)/sigma)^((1/gamma) -1) * (((x-mu)/sigma)^(1/gamma) + 1)^(-(alpha+1))) / (gamma*sigma); x >= mu
+ * x ~ dlompr();
+ * f(x) = (1 + x)^-2; x >= 0
  * </pre>
- * @short Pareto type IV distribution
+ * @short LomPr distribution
  */
-class DPar4 : public RScalarDist {
+
+class DMouchel : public RScalarDist {
  public:
-  DPar4();
+  DMouchel();
 
   double d(double x, PDFType type,
 	   std::vector<double const *> const &parameters, bool give_log) const;
@@ -56,17 +50,11 @@ class DPar4 : public RScalarDist {
   double q(double p, std::vector<double const *> const &parameters, bool lower,
 	   bool log_p) const;
   double r(std::vector<double const *> const &parameters, RNG *rng) const;
-  double l(std::vector<double const*> const &parameters) const;
-  double u(std::vector<double const*> const &parameters) const;
 
   bool checkParameterValue(std::vector<double const *> const &parameters) const;
-  bool isSupportFixed(std::vector<bool> const &fixmask) const;
 };
 
 }  // namespace runjags
-
-#ifndef INCLUDERSCALARDIST
 }  // namespace jags
-#endif  /* INCLUDERSCALARDIST */
 
-#endif /* DPAR4_H_ */
+#endif /* DMOUCH_H_ */
