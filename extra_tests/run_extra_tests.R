@@ -1,6 +1,8 @@
 ## Make sure required packages are installed and updated:
 
-# install.packages(c("coda","rjags","modeest","testthat","knitr","rmarkdown","spelling"))
+# install.packages(c("coda","rjags","modeest","testthat","knitr","rmarkdown","spelling","lme4"))
+
+stopifnot(all(c("coda","rjags","modeest","testthat","knitr","rmarkdown","spelling","lme4") %in% installed.packages()[,"Package"]))
 
 library("runjags")
 
