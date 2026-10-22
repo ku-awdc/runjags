@@ -119,18 +119,12 @@ HALF CAUCHY:  dhalfcauchy(sigma)
 For an easier to read version of these PDF equations, see the userguide vignette.
 }
 \examples{
-# Load the module for use with any rjags model:
-available <- load.runjagsmodule(fail=FALSE)
-if(available){
 # A simple model to sample from a Lomax distribution.
 # (Requires the rjags or rjparallel methods)
 m <- "model{
  L ~ dlomax(1,1)
 		}"
-\dontrun{
-results <- run.jags(m, monitor="L", method="rjags", modules="runjags")
-}
-}
+results <- run.jags(m, monitor="L", method="rjags")
 }
 \references{
 Denwood, M.J. 2016. runjags: An R Package Providing Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS. J. Stat. Softw. 71. doi:10.18637/jss.v071.i09.

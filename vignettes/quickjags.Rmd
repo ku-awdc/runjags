@@ -91,7 +91,7 @@ This method displays relevant summary statistics - the effective sample size (SS
 plot(results, layout=c(3,4), file='plots.pdf', height=10, width=8)
 ```
 
-```{r, results='hide'}
+```{r, results='hide', eval=FALSE}
 plot(results, layout=c(3,4))
 ```
 

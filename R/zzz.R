@@ -126,7 +126,6 @@
 .onDetach <- function(libpath){
   ### runjags specific additions:
   # Just in case it is not always safe to try and access an element of an env that is in the process of being deleted (when R quits):
-  if(!is.null(runjagsprivate$dynlibname)) dynunloadmodule()
   all.folders <- try(runjags.getOption('full.cleanup'), silent=TRUE)
   if(inherits(all.folders, 'try-error')) all.folders <- FALSE
   try(cleanup.jags(all.folders=all.folders, silent=TRUE), silent=TRUE)

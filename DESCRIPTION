@@ -34,6 +34,7 @@ Suggests:
     modeest,
     testthat (>= 3.0.0),
     knitr,
+    litedown,
     markdown,
     spelling
 Config/testthat/edition: 3
