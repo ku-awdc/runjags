@@ -46,7 +46,7 @@
   University of Copenhagen\\
   Denmark\\
   E-mail: \email{md@sund.ku.dk}\\
-  URL: \url{http://iph.ku.dk/english/employees/?pure=en/persons/487288/}
+  URL: \url{https://researchprofiles.ku.dk/en/persons/matt-denwood/}
 }
 
 
@@ -101,7 +101,7 @@ This paper describes the \pkg{runjags} package \citep{runjags} for
 \proglang{R} \citep{R2014} which can be used to automate MCMC fitting
 and summarizing procedures for \pkg{JAGS} models and is available
 from the Comprehensive \proglang{R} Archive Network (CRAN) at
-\url{https://CRAN.R-project.org/package=runjags}.  The functions are
+\url{5.0.1-project.org/package=runjags}.  The functions are
 designed to be user-friendly (particularly for those less experienced
 with MCMC analysis), and provide a number of features to make the
 recommended convergence and sample size checks more obvious to the end
@@ -186,8 +186,7 @@ data transformation (see Section 7.0.4 of the \pkg{JAGS} user manual).
 
 As a basic example, we can use the Salmonella example from
 Chapter 6.5.2 of the \proglang{BUGS} book
-\citep[\href{http://www.mrc-bsu.cam.ac.uk/software/bugs/the-bugs-project-the-bugs-book/bugs-book-examples/the-bugs-book-examples-chapter-6-6-5-2/}{\tt
-http://www.mrc-bsu.cam.ac.uk/software/bugs/the-bugs-project-the-bugs-book/\linebreak bugs-book-examples/the-bugs-book-examples-chapter-6-6-5-2/}, with thanks to][for permission to reproduce their
+\citep[with thanks to][for permission to reproduce their
 model]{lunn2012bugs}.  Simulation-specific options can be provided to
 the \code{run.jags} function, which may include the required burn-in
 period, sampling length and thinning interval.  A basic model run with
@@ -630,18 +629,6 @@ density function (PDF) and lower bound for the support of each of the
 distributions provided by the module are shown in
 Table~\ref{tab:pareto}, and an example of how to use the distributions
 in this module is given in Section~\ref{sec:illustration}.
-
-One limitation of the module provided within \pkg{runjags} is that it
-is only made available for the `\code{rjags}' and `\code{rjparallel}'
-methods when loaded within \proglang{R}.  However, a standalone
-\pkg{JAGS} module containing the same functions for use with any
-\pkg{JAGS} installation (independently of \proglang{R}) is available
-from \url{http://runjags.sourceforge.net/}.  This module is named
-`\code{paretoprior}' to avoid naming conflicts with the internal
-\pkg{runjags} module, and should install on a variety of platforms
-using the standard `\code{./configure}', `\code{make}', `\code{make
-  install}' convention.  Binary installers are also provided for some
-platforms.
 
 \begin{table}[t!]
 {
@@ -1313,7 +1300,7 @@ example.
 Bates D, Maechler M, Bolker B, Walker S (2014).
 \newblock \emph{\pkg{lme4}: Linear mixed-effects models using Eigen and S4}.
 \newblock \proglang{R}~package version 1.1-7,
-  \urlprefix\url{http://CRAN.R-project.org/package=lme4}.
+  \urlprefix\url{https://cran.r-project.org/package=lme4}.
 
 \bibitem[{Bolker \emph{et~al.}(2009)Bolker, Brooks, Clark, Geange, Poulsen,
   Stevens, and White}]{Bolker2009}
@@ -1323,7 +1310,7 @@ Bolker BM, Brooks ME, Clark CJ, Geange SW, Poulsen JR, Stevens MHH, White JSS
   Ecology and Evolution.}}
 \newblock \emph{Trends in Ecology \& Evolution}, \textbf{24}(3), 127--35.
 \newblock ISSN 0169-5347.
-\newblock \urlprefix\url{http://dx.doi.org/10.1016/j.tree.2008.10.008}.
+\newblock \urlprefix\url{https://dx.doi.org/10.1016/j.tree.2008.10.008}.
 
 \bibitem[{Brooks and Roberts(1998)}]{Brooks:1998ee}
 Brooks SP, Roberts GO (1998).
@@ -1339,7 +1326,7 @@ Christiansen CL, Morris CN (1997).
 \newblock ISSN 0162-1459.
 \newblock \doi{10.1080/01621459.1997.10474013}.
 \newblock
-  \urlprefix\url{http://www.tandfonline.com/doi/abs/10.1080/01621459.1997.10474013}.
+  \urlprefix\url{https://www.tandfonline.com/doi/abs/10.1080/01621459.1997.10474013}.
 
 \bibitem[{Conti \emph{et~al.}(2011)Conti, Presanis, van Veen, Xiridou,
   Donoghoe, {Rinder Stengaard}, and {De Angelis}}]{Conti2011}
@@ -1349,7 +1336,7 @@ Conti S, Presanis AM, van Veen MG, Xiridou M, Donoghoe MC, {Rinder Stengaard}
   a Multi-Parameter Evidence Synthesis Approach}.}
 \newblock \emph{The Annals of Applied Statistics}, \textbf{5}(4), 2359--2384.
 \newblock ISSN 1932-6157.
-\newblock \urlprefix\url{http://dx.doi.org/10.1214/11-AOAS488}.
+\newblock \urlprefix\url{https://dx.doi.org/10.1214/11-AOAS488}.
 
 \bibitem[{Daniels(1999)}]{Daniels1999}
 Daniels M (1999).
@@ -1358,7 +1345,7 @@ Daniels M (1999).
 \newblock ISSN 03195724.
 \newblock \doi{doi: 10.2307/3316112}.
 \newblock
-  \urlprefix\url{http://onlinelibrary.wiley.com/doi/10.2307/3316112/abstract}.
+  \urlprefix\url{https://onlinelibrary.wiley.com/doi/10.2307/3316112/abstract}.
 
 \bibitem[{Denwood(2016)}]{Denwood:2016ee}
 Denwood, MJ (2016).
@@ -1371,7 +1358,7 @@ Denwood MJ (2010).
 \newblock \emph{{A Quantitative Approach to Improving the Analysis of Faecal
   Worm Egg Count Data}}.
 \newblock Doctoral thesis, University of Glasgow.
-\newblock \urlprefix\url{http://theses.gla.ac.uk/1837/}.
+\newblock \urlprefix\url{https://theses.gla.ac.uk/1837/}.
 
 \bibitem[{Denwood \emph{et~al.}(2010)Denwood, Reid, Love, Nielsen, Matthews,
   McKendrick, and Innocent}]{Denwood:2010fk}
@@ -1381,7 +1368,7 @@ Denwood MJ, Reid SWJ, Love S, Nielsen MK, Matthews L, McKendrick IJ, Innocent
   Equine Faecal egg Count Reduction Test Data}.}
 \newblock \emph{Preventive Veterinary Medicine}, \textbf{93}(4), 316--23.
 \newblock ISSN 1873-1716.
-\newblock \urlprefix\url{http://dx.doi.org/10.1016/j.prevetmed.2009.11.009}.
+\newblock \urlprefix\url{https://dx.doi.org/10.1016/j.prevetmed.2009.11.009}.
 
 \bibitem[{Denwood \emph{et~al.}(2008)Denwood, Stear, Matthews, Reid, Toft, and
   Innocent}]{Denwood:2008rz}
@@ -1390,7 +1377,7 @@ Denwood MJ, Stear MJ, Matthews L, Reid SWJ, Toft N, Innocent GT (2008).
   \textit{Nematodirus battus} in Lambs is Zero-Inflated}.}
 \newblock \emph{Parasitology}, \textbf{135}(10), 1225--1235.
 \newblock ISSN 1469-8161 (Electronic).
-\newblock \urlprefix\url{http://dx.doi.org/10.1017/S0031182008004708}.
+\newblock \urlprefix\url{https://dx.doi.org/10.1017/S0031182008004708}.
 
 \bibitem[{DuMouchel(1994)}]{DuMouchel1994}
 DuMouchel W (1994).
@@ -1398,7 +1385,7 @@ DuMouchel W (1994).
 \newblock \emph{Technical Report~27}, {National Institute of Statistical
   Sciences}.
 \newblock
-  \urlprefix\url{http://www.niss.org/sites/default/files/pdfs/technicalreports/tr27.pdf}.
+  \urlprefix\url{https://www.niss.org/sites/default/files/technicalreports/tr27.pdf}.
 
 \bibitem[{Gelman(2006)}]{Gelman2006}
 Gelman A (2006).
@@ -1411,7 +1398,7 @@ Gelman A, Rubin DB (1992).
 \newblock \enquote{{Inference from Iterative Simulation Using Multiple
   Sequences}.}
 \newblock \emph{Statistical Science}, \textbf{7}(4), 457--472.
-\newblock \urlprefix\url{http://www.jstor.org/stable/2246093}.
+\newblock \urlprefix\url{https://www.jstor.org/stable/2246093}.
 
 \bibitem[{Gilks \emph{et~al.}(1998)Gilks, Richardson, and
   Spiegelhalter}]{Gilks:1998pt}
@@ -1420,14 +1407,14 @@ Gilks WR, Richardson S, Spiegelhalter DJ (1998).
 \newblock Chapman and Hall, Boca Raton, Fla.
 \newblock ISBN 0412055511.
 \newblock
-  \urlprefix\url{http://www.loc.gov/catdir/enhancements/fy0646/98033429-d.html}.
+  \urlprefix\url{https://www.loc.gov/catdir/enhancements/fy0646/98033429-d.html}.
 
 \bibitem[{Hastings(1970)}]{Hastings:1970bi}
 Hastings WK (1970).
 \newblock \enquote{{Monte Carlo Sampling Methods Using Markov Chains and Their
   Applications}.}
 \newblock \emph{Biometrika}, \textbf{57}(1), 97--109.
-\newblock \urlprefix\url{http://dx.doi.org/10.1093/biomet/57.1.97}.
+\newblock \urlprefix\url{https://dx.doi.org/10.1093/biomet/57.1.97}.
 
 \bibitem[{Kass \emph{et~al.}(1998)Kass, Carlin, Gelman, and Neal}]{Kass:1998fu}
 Kass RE, Carlin BP, Gelman A, Neal RM (1998).
@@ -1442,7 +1429,7 @@ Lele SR, Dennis B (2009).
 \newblock \emph{Ecological Applications : a Publication of the Ecological
   Society of America}, \textbf{19}(3), 581--4.
 \newblock ISSN 1051-0761.
-\newblock \urlprefix\url{http://www.ncbi.nlm.nih.gov/pubmed/19425420}.
+\newblock \urlprefix\url{https://pubmed.ncbi.nlm.nih.gov/19425420/}.
 
 \bibitem[{Lunn \emph{et~al.}(2012)Lunn, Jackson, Best, Thomas, and
   Spiegelhalter}]{lunn2012bugs}
@@ -1458,7 +1445,7 @@ Lunn DJ, Thomas A, Best N, Spiegelhalter D (2000).
   Structure, and Extensibility}.}
 \newblock \emph{Statistics and Computing}, \textbf{10}(4), 325--337.
 \newblock ISSN 0960-3174.
-\newblock \urlprefix\url{http://dx.doi.org/10.1023/A:1008929526011}.
+\newblock \urlprefix\url{https://dx.doi.org/10.1023/A:1008929526011}.
 
 \bibitem[{Phillips \emph{et~al.}(2010)Phillips, Tam, Conti, Rodrigues, Brown,
   Iturriza-Gomara, Gray, and Lopman}]{Phillips2010}
@@ -1469,7 +1456,7 @@ Phillips G, Tam CC, Conti S, Rodrigues LC, Brown D, Iturriza-Gomara M, Gray J,
   Norovirus Diagnosis.}}
 \newblock \emph{American Journal of Epidemiology}, \textbf{171}(9), 1014--22.
 \newblock ISSN 1476-6256.
-\newblock \urlprefix\url{http://dx.doi.org/10.1093/aje/kwq021}.
+\newblock \urlprefix\url{https://dx.doi.org/10.1093/aje/kwq021}.
 
 \bibitem[{Plummer(2003)}]{Plummer2003}
 Plummer M (2003).
@@ -1480,8 +1467,6 @@ Plummer M (2003).
   1609--395X.
 \newblock ISSN 1609395X.
 \newblock \doi{10.1.1.13.3406}.
-\newblock
-  \urlprefix\url{http://www.ci.tuwien.ac.at/Conferences/DSC-2003/Drafts/Plummer.pdf}.
 
 \bibitem[{Plummer(2008)}]{Plummer2008}
 Plummer M (2008).
@@ -1494,7 +1479,7 @@ Plummer M (2008).
 Plummer M (2016).
 \newblock \emph{\pkg{rjags}: Bayesian Graphical Models using MCMC}.
 \newblock \proglang{R}~package version 4-6,
-  \urlprefix\url{http://CRAN.R-project.org/package=rjags}.
+  \urlprefix\url{https://cran.r-project.org/package=rjags}.
 
 \bibitem[{Plummer \emph{et~al.}(2006)Plummer, Best, Cowles, and
   Vines}]{Plummer2006}
@@ -1502,20 +1487,20 @@ Plummer M, Best N, Cowles K, Vines K (2006).
 \newblock \enquote{\pkg{CODA}: Convergence Diagnosis and Output Analysis for
   MCMC.}
 \newblock \emph{\proglang{R}~News}, \textbf{6}(1), 7--11.
-\newblock \urlprefix\url{http://CRAN.R-project.org/doc/Rnews/}.
+\newblock \urlprefix\url{https://cran.r-project.org/package=coda}.
 
 \bibitem[{Polson and Scott(2011)}]{Polson2011}
 Polson NG, Scott JG (2011).
 \newblock \enquote{{On the Half-Cauchy Prior for a Global Scale Parameter}.}
 \newblock \emph{Cornell University Library: arXiv.org}.
-\newblock \urlprefix\url{http://arxiv.org/abs/1104.4937}.
+\newblock \urlprefix\url{https://arxiv.org/abs/1104.4937}.
 
 \bibitem[{{\proglang{R}~Core Team}(2015)}]{R2014}
 {\proglang{R}~Core Team} (2015).
 \newblock \emph{\proglang{R}: A Language and Environment for Statistical
   Computing}.
 \newblock \proglang{R}~Foundation for Statistical Computing, Vienna, Austria.
-\newblock \urlprefix\url{http://www.R-project.org/}.
+\newblock \urlprefix\url{https://www.r-project.org}.
 
 \bibitem[{Shaw \emph{et~al.}(1998)Shaw, Grenfell, and Dobson}]{Shaw:1998ty}
 Shaw DJ, Grenfell BT, Dobson AP (1998).
@@ -1531,14 +1516,14 @@ Spiegelhalter DJ, Best NG, Carlin BP, van~der Linde A (2002).
 \newblock \emph{Journal of the Royal Statistical Society B}, \textbf{64}(4),
   583--639.
 \newblock ISSN 13697412.
-\newblock \urlprefix\url{http://www.jstor.org/stable/3088806}.
+\newblock \urlprefix\url{https://www.jstor.org/stable/3088806}.
 
 \bibitem[{Tierney \emph{et~al.}(2013)Tierney, Rossini, Li, and
   Sevcikova}]{Tierney2013}
 Tierney L, Rossini AJ, Li N, Sevcikova H (2013).
 \newblock \emph{{\pkg{snow}: Simple Network of Workstations}}.
 \newblock \proglang{R}~package version 0.3-13,
-  \urlprefix\url{http://cran.r-project.org/package=snow}.
+  \urlprefix\url{https://cran.r-project.org/package=snow}.
 
 \bibitem[{Toft \emph{et~al.}(2007)Toft, Innocent, Gettinby, and
   Reid}]{Toft:2007vl}
@@ -1548,13 +1533,12 @@ Toft N, Innocent GT, Gettinby G, Reid SWJ (2007).
   Standard.}}
 \newblock \emph{Preventive Veterinary Medicine}, \textbf{79}(2-4), 244--256.
 \newblock ISSN 0167-5877.
-\newblock \urlprefix\url{http://dx.doi.org/10.1016/j.prevetmed.2007.01.003}.
+\newblock \urlprefix\url{https://dx.doi.org/10.1016/j.prevetmed.2007.01.003}.
 
 \bibitem[{{Van Hauwermeiren} and Vose(2009)}]{D2009}
 {Van Hauwermeiren} M, Vose D (2009).
 \newblock \emph{{A Compendium of Distributions}}.
 \newblock Vose Software, Ghent, Belgium.
-\newblock \urlprefix\url{http://www.vosesoftware.com/content/ebook.pdf}.
 
 \bibitem[{Wabersich and Vandekerckhove(2014)}]{Wabersich2014}
 Wabersich D, Vandekerckhove J (2014).
@@ -1563,14 +1547,14 @@ Wabersich D, Vandekerckhove J (2014).
 \newblock \emph{Behavior research methods}, \textbf{46}(1), 15--28.
 \newblock ISSN 1554-3528.
 \newblock \doi{10.3758/s13428-013-0369-3}.
-\newblock \urlprefix\url{http://www.ncbi.nlm.nih.gov/pubmed/23959766}.
+\newblock \urlprefix\url{https://pubmed.ncbi.nlm.nih.gov/23959766/}.
 
 \bibitem[{Wilson and Grenfell(1997)}]{Wilson199733}
 Wilson K, Grenfell BT (1997).
 \newblock \enquote{{Generalized Linear Modelling for Parasitologists}.}
 \newblock \emph{Parasitology Today}, \textbf{13}(1), 33--38.
 \newblock ISSN 0169-4758.
-\newblock \urlprefix\url{http://dx.doi.org/10.1016/S0169-4758(96)40009-6}.
+\newblock \urlprefix\url{https://dx.doi.org/10.1016/S0169-4758(96)40009-6}.
 
 \bibitem[{Wilson \emph{et~al.}(1996)Wilson, Grenfell, and Shaw}]{Wilson:1996vm}
 Wilson K, Grenfell BT, Shaw DJ (1996).
@@ -1586,7 +1570,7 @@ Yin Z, Conti S, Desai S, Stafford M, Slater W, Gill ON, Simms I (2013).
   Indices.}}
 \newblock \emph{Sexual Health}, \textbf{10}(2), 102--11.
 \newblock ISSN 1448-5028.
-\newblock \urlprefix\url{http://dx.doi.org/10.1071/SH12057}.
+\newblock \urlprefix\url{https://dx.doi.org/10.1071/SH12057}.
 
 \end{thebibliography}
 
