@@ -53,7 +53,7 @@ Authors:
 
 Other contributors:
 \itemize{
-  \item Martyn Plummer (Copyright holder of the code in src/distributions/DPar1.*, configure.ac, R/rjags_functions.R, and original copyright holder of some modified code where indicated) [copyright holder]
+  \item Martyn Plummer (Copyright holder of the code in R/rjags_functions.R and original copyright holder of some modified code where indicated) [copyright holder]
 }
 
 }

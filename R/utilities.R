@@ -123,7 +123,7 @@ findjags <- function(ostype = .Platform$OS.type, look_in = NA, ...){
 
 		# Test standard 'jags' as well as variable passed and some common install locations:
 		suppressWarnings({
-			paths <- c(from.variable, "jags", "/opt/local/bin/jags", "/opt/local/sbin/jags", "/usr/texbin/jags", "/usr/bin/jags", "/bin/jags", "/usr/sbin/jags", "/sbin/jags", "/usr/local/bin/jags", "/opt/R/arm64/bin/jags", "/usr/X11/bin/jags")
+			paths <- c(from.variable, "jags", "/opt/jags/bin/jags", "/opt/local/bin/jags", "/opt/local/sbin/jags", "/usr/texbin/jags", "/usr/bin/jags", "/bin/jags", "/usr/sbin/jags", "/sbin/jags", "/usr/local/bin/jags", "/opt/R/arm64/bin/jags", "/usr/X11/bin/jags")
 			for(i in 1:length(paths)){
 				jagspath <- system(paste('which ', paths[i], ' 2>&1', sep=""), intern=TRUE)
 				if(length(jagspath)!=0) return(jagspath)
@@ -551,39 +551,9 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 		if(success==-1){
 			if(!silent) suppressWarnings(swcat("JAGS version ", version, " found successfully using the command '", jags, "', but returned the status code '", attributes(returnval)$status, "' - this may indicate a compatibility issue, procede with caution\n", sep=""))
 		}else{
-		  ## Specific output for macOS:
-		  pkt <- .Platform$pkgType
-		  if(grepl("mac", pkt)){
-        ## TODO: remove this code
-		    r_type <- ifelse(grepl("arm64",pkt), "arm64", "x86_64")
-		    c_type <- ifelse(grepl("arm64",Sys.info()["machine"]), "arm64", "x86_64")
-		    j_type <- "universal" #system(paste0("lipo -archs ", gsub("/bin/jags","/libexec/jags-terminal", jags)), intern=TRUE)
-		    ss <- try({
-		      if(j_type=="x86_64 arm64") j_type <- "universal"
-		    }, silent=TRUE)
-		    if(inherits(ss,"try-error")){
-		      ## This may be due to invalid active developer path ... assume universal:
-		      j_type <- "universal"
-		      if(!runjagsprivate[["warned_macos_lipo"]]) warning("Reading the binary type of JAGS failed - do you need to update the Xcode Command Line Tools?")
-		      runjagsprivate[["warned_macos_lipo"]] <- TRUE
-		    }
-		    if(grepl("build",returnval[rightstring])){
-		      bld <- paste0("macOS ", j_type, " build")
-		    }else{
-		      bld <- paste0(j_type, " binary")
-		    }
-		    if(!silent) suppressWarnings(swcat("JAGS version ", version, " (", bld, ") found successfully using the command '", jags, "'\n", sep=""))
-		    if(!j_type=="universal" && (j_type!=r_type)){
-		      warning(paste0("Your R build (", r_type, ") does not match your JAGS build (", j_type, "): you should re-install JAGS and/or R so they match"))
-		    }
-		    if(!silent && !j_type=="universal" && (j_type!=c_type)){
-		      swcat("Your JAGS build (", j_type, ") does not match your CPU architecture (", c_type, "): JAGS will run under Rosetta2 emulation, which will decrease performance")
-		    }
-		  }else{
-		    if(!silent) suppressWarnings(swcat("JAGS version ", version, " found successfully using the command '", jags, "'\n", sep=""))
-		  }
+		  if(!silent) suppressWarnings(swcat("JAGS version ", version, " found successfully using the command '", jags, "'\n", sep=""))
 		}
-		if(!is.na(num.version) & num.version<1){
+		if(!is.na(num.version) & num.version<4){
 			warning(paste("The version of JAGS currently installed on your system is no longer supported.  Please update JAGS from https://mcmc-jags.sourceforge.io/\n"))
 			jags.avail <- FALSE
 		}else{
@@ -604,31 +574,37 @@ testjags <- function(jags=runjags.getOption('jagspath'), silent=FALSE){
 			num.version <- "none found"
 			jags.major <- NA
 		}
-		if(gui %in% c('RStudio', 'AQUA') && !silent)
-			swcat("Note that as of OS X Yosemite, the FULL path must be provided to JAGS as the $PATH global variable is not passed to processes started from within a GUI application\n", sep="")
 
 		jagsfound <- FALSE
 	}
 
 	if(rjags.avail && num.version < Inf){  # If rjags and JAGS are both findable independently
 		if(success!=0 && rjags.major!=floor(num.version)){   # If JAGS is installed and rjags major != JAGS major
-			if(!silent)
-				swcat("The rjags package version ", rjags.major, ".x is installed, but this is not compatible with your installed version of JAGS (version ", floor(num.version), ".x)\n",sep="")
 
-			if(rjags.major > num.version){
-				msg <- paste("You should update to JAGS version ", rjags.major, ".x from https://sourceforge.net/projects/mcmc-jags/files/JAGS/", sep="")
+		  # If we are on macOS and have different JAGS major installations:
+		  if(file.exists(paste0("/opt/jags/versions/jags/current-", rjags.major, "/bin/jags"))){
+        if(!silent){
+          swcat("The rjags package version ", rjags.major, ".x is installed, and linked to an appropriate version of JAGS under /opt/jags/versions/jags\nInstall rjags version ", floor(num.version), " to run rjags models with your default JAGS installation\n",sep="")
+        }
+		  }else{
 
-			}else{
-				msg <- paste("You should update the rjags package to version ", floor(num.version), ".x - if the version on CRAN is not currently up to date, try downloading from https://sourceforge.net/projects/mcmc-jags/files/rjags/ instead", sep="")
-			}
-			if(!silent)
-				swcat(msg,"\n")
+		    if(!silent)
+		      swcat("The rjags package version ", rjags.major, ".x is installed, but this is not compatible with your installed version of JAGS (version ", floor(num.version), ".x)\n",sep="")
 
-			if(!runjagsprivate$warned_version_mismatch){
-				warning(paste(msg, "\n(This warning is given once per R session)"), call. =FALSE)
-				runjagsprivate$warned_version_mismatch <- TRUE
-			}
+		    if(rjags.major > num.version){
+		      msg <- paste("You should update to JAGS version ", rjags.major, ".x from https://sourceforge.net/projects/mcmc-jags/files/JAGS/", sep="")
 
+		    }else{
+		      msg <- paste("You should update the rjags package to version ", floor(num.version), ".x - if the version on CRAN is not currently up to date, try downloading from https://sourceforge.net/projects/mcmc-jags/files/rjags/ instead", sep="")
+		    }
+		    if(!silent)
+		      swcat(msg,"\n")
+
+		    if(!runjagsprivate$warned_version_mismatch){
+		      warning(paste(msg, "\n(This warning is given once per R session)"), call. =FALSE)
+		      runjagsprivate$warned_version_mismatch <- TRUE
+		    }
+		  }
 		}else if(!silent){
 			swcat("The rjags package is installed\n",sep="")
 		}

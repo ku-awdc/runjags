@@ -1,10 +1,10 @@
 Package: runjags
 Title: Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS
-Version: 2.3.0-1
-Date: 2026-10-22
+Version: 2.3.0-2
+Date: 2026-11-10
 Authors@R: c(person("Matthew", "Denwood", role=c("aut","cre"), email="md@sund.ku.dk"),
              person("Martyn", "Plummer", role="cph", 
-             comment="Copyright holder of the code in src/distributions/DPar1.*, configure.ac, R/rjags_functions.R, and original copyright holder of some modified code where indicated"))
+             comment="Copyright holder of the code in R/rjags_functions.R and original copyright holder of some modified code where indicated"))
 Description: User-friendly interface utilities for MCMC models via
     Just Another Gibbs Sampler (JAGS), facilitating the use of parallel
     (or distributed) processors for multiple chains, automated control

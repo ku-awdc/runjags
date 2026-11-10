@@ -1,4 +1,4 @@
-#  R package JAGSmodule file src/Makevars
+#  R package runjags file src/Makevars
 #  Copyright (C) 2026 Matt Denwood
 #
 #  This file can be used (unmodified) by any R package wishing to implement
