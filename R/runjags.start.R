@@ -1489,7 +1489,7 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 
         # for JAGS 5 pD is stat("leverage") and popt is stat("loo_leverage") - see dic.samples
         # TOFIX: thin() gives a syntax error when used in combination with stat() or summary()
-        # TOFIX: we can duplicate monitors with different stats e.g. monitor _observations_, stat(loo_leverage) summary(mean) and monitor _observations_, stat(leverage) summary(mean) but how can we specify a particular one to CODA?
+        # TOFIX: manual "with node name _observed" should be _observations_
         #
         # load dic  # Remove
         # model in "model.txt"
