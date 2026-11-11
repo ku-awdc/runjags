@@ -107,7 +107,7 @@
 #' @param fail deprecated option - now ignored (with a warning) unless TRUE
 #' @param silent option to suppress messages while loading or unloading the module
 #'
-#' @return Invisibly returns TRUE if able to (un)load the module, or FALSE otherwise
+#' @return Invisibly returns TRUE
 #' @keywords methods
 #' @seealso
 #' \code{\link{runjags-class}}, \code{\link[rjags]{load.module}}
@@ -167,17 +167,18 @@ load.runjagsmodule <- function(fail=TRUE, silent=FALSE){
       .jags_pkg_env$dyn_loaded <- TRUE
 
     }, error = function(e) {
-      stop("Loading the package module/dynlib failed with the following error:\n\t", conditionMessage(e), call.=FALSE)
+      stop("Loading the package module/dynlib failed with the following error:\n\t", conditionMessage(e), "\nRe-install both the rjags and ", pkgname, " packages and try again", call.=FALSE)
     })
 
   }
-  invisible()
+  invisible(TRUE)
 }
 
 #' @rdname load.runjagsmodule
 #' @export
 unload.runjagsmodule <- function(silent=FALSE){
   unload.module(.jags_pkg_env$pkgname, quiet=silent)
+  invisible(TRUE)
 }
 
 #' @rdname load.runjagsmodule

@@ -920,8 +920,14 @@ runjags.rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 
 	fullsumpd <- NA
 	if(any(c("pD",'full.pd')%in%names(samples))){
-		fullsumpd <- mcmc(matrix(unlist(samples[names(samples)=='pD']),ncol=1,dimnames=list(NULL,"pD")), start=extra.options$burnin+1, thin=extra.options$thin)
-		dimnames(fullsumpd) <- list(1:niter(fullsumpd), dimnames(fullsumpd)[[2]])
+	  # Behaviour here depends on JAGS 4.x or 5.x
+	  if(packageVersion("rjags") >= "5"){
+	    fullsumpd <- mcmc(matrix(apply(apply(samples[["pD"]],2:3,sum),1,mean),ncol=1,dimnames=list(NULL,"pD")), start=extra.options$burnin+1, thin=extra.options$thin)
+	  }else{
+	    # For rjags 4 the samples$pD is pre-averaged over chains and pre-summed over variables:
+		  fullsumpd <- mcmc(matrix(unlist(samples[names(samples)=='pD']),ncol=1,dimnames=list(NULL,"pD")), start=extra.options$burnin+1, thin=extra.options$thin)
+	  }
+	  dimnames(fullsumpd) <- list(1:niter(fullsumpd), dimnames(fullsumpd)[[2]])
 
 		# We want the mean of the sum pD monitor here:
 		sum.pd <- mean(fullsumpd)
@@ -1476,8 +1482,66 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 				scriptstring <- paste(scriptstring, "update ", ini.runs, "\n", sep="")
 			####
 
-			# trace monitor for deviance is just a standard monitor name (and not used to calculate DIC)
-			scriptstring <- paste(scriptstring, if(any(c("dic","ped")%in%monitor)) paste("monitor deviance, type(mean) thin(", thin, ")\n", "monitor pD, type(mean) thin(", thin, ")\n", "monitor popt, type(mean) thin(", thin, ")\n", sep=""), monitors, if(any(monitor=="full.pd")) paste("monitor pD, thin(", thin, ")\n", sep=""), sep="")
+			# Behaviour depends on JAGS version 4 vs 5
+      if(jags.status$JAGS.major >= 5){
+
+        stop("Need to sort out popt and pD for JAGS 5 and compare to rjags outputs")
+
+        # for JAGS 5 pD is stat("leverage") and popt is stat("loo_leverage") - see dic.samples
+        # TOFIX: thin() gives a syntax error when used in combination with stat() or summary()
+        # TOFIX: we can duplicate monitors with different stats e.g. monitor _observations_, stat(loo_leverage) summary(mean) and monitor _observations_, stat(leverage) summary(mean) but how can we specify a particular one to CODA?
+        #
+        # load dic  # Remove
+        # model in "model.txt"
+        # data in "data.txt"
+        # compile, nchains(3)
+        # parameters in "inits1.txt", chain(1)
+        # parameters in "inits2.txt", chain(2)
+        # parameters in "inits3.txt", chain(3)
+        # initialize
+        # adapt 1000
+        # update 1000
+        # monitor deviance, summary(mean)
+        # monitor pD, summary(mean)
+        # monitor _observations_, stat(leverage) summary(mean)
+        # monitor _observations_, stat(leverage) summary(trace)
+        # monitor _observations_, stat(loo_leverage) summary(mean)
+        # monitor _observations_, stat(loo_leverage) summary(trace)
+        # monitor m, thin(5)
+        # monitor c, thin(5)
+        # monitor pD, thin(5)
+        # update 10000
+        # parameters to "out1.Rdump", chain(1)
+        # parameters to "out2.Rdump", chain(2)
+        # parameters to "out3.Rdump", chain(3)
+        # coda deviance, stem("sim.1/deviance")
+        # coda pD, stem("sim.1/pd")
+        # coda _observations_, stem("sim.1/loo_leverage_mean") stat(loo_leverage) summary(mean)
+        # coda _observations_, stem("sim.1/loo_leverage_trace") stat(loo_leverage) summary(trace)
+        # coda _observations_, stem("sim.1/leverage_mean") stat(leverage) summary(mean)
+        # coda _observations_, stem("sim.1/leverage_trace") stat(leverage) summary(trace)
+        # monitor clear deviance, summary(mean)
+        # monitor clear pD, summary(mean)
+        # coda *, stem(sim.1/CODA)
+        # samplers to sim.1/samplers.csv
+        # update 0
+        # model clear
+        # exit
+        #
+        # From rjags 5 dic.samples:
+        if (pdtype == "popt") {
+          penalty <- 2 * penalty
+        }
+
+        # trace monitor for deviance is just a standard monitor name (and not used to calculate DIC)
+        scriptstring <- paste(scriptstring, if(any(c("dic","ped")%in%monitor)) paste("monitor deviance, summary(mean)\n", "monitor pD, summary(mean)\n", "monitor _observations_, stat(loo_leverage) summary(mean)\n", sep=""), monitors, if(any(monitor=="full.pd")) paste("monitor _observations_, stat(leverage)\n", sep=""), sep="")
+
+        browser()
+
+      }else{
+        # trace monitor for deviance is just a standard monitor name (and not used to calculate DIC)
+        scriptstring <- paste(scriptstring, if(any(c("dic","ped")%in%monitor)) paste("monitor deviance, type(mean) thin(", thin, ")\n", "monitor pD, type(mean) thin(", thin, ")\n", "monitor popt, type(mean) thin(", thin, ")\n", sep=""), monitors, if(any(monitor=="full.pd")) paste("monitor pD, thin(", thin, ")\n", sep=""), sep="")
+      }
 
 			if(real.runs > 0) scriptstring <- paste(scriptstring, "update ", real.runs, "\n", sep="")
 

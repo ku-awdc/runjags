@@ -21,7 +21,7 @@ unload.runJAGSmodule(silent = FALSE)
 \item{silent}{option to suppress messages while loading or unloading the module}
 }
 \value{
-Invisibly returns TRUE if able to (un)load the module, or FALSE otherwise
+Invisibly returns TRUE
 }
 \description{
 The runjags package contains a JAGS extension module that provides several additional distributions for use within JAGS (see details below).  This function is a simple wrapper to load this module.  The version of the module supplied within the runjags package can only be used with the rjags package, or with the rjags or rjparallel methods within runjags.  For a standalone JAGS module for use with any JAGS method (or independent JAGS runs) please see:  https://sourceforge.net/projects/runjags/files/paretoprior/

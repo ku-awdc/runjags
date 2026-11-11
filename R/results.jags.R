@@ -250,7 +250,7 @@ results.jags <- function(foldername, echo=NA, combine=NA, summarise=NA, keep.jag
 		dimnames(newoutput$mcmc[[i]]) <- list(iternames, currentdn[[2]])
 	}
 	if(inherits(newoutput$pd, "mcmc") && !is_na_arg(newoutput$pd)){
-		dimnames(newoutput$pd) <- list(iternames, dimnames(newoutput$pd)[[2]])
+	  dimnames(newoutput$pd) <- list(iternames, dimnames(newoutput$pd)[[2]])
 	}
 
 	# Combine runjags objects if necessary:

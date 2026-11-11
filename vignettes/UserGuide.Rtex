@@ -101,7 +101,7 @@ This paper describes the \pkg{runjags} package \citep{runjags} for
 \proglang{R} \citep{R2014} which can be used to automate MCMC fitting
 and summarizing procedures for \pkg{JAGS} models and is available
 from the Comprehensive \proglang{R} Archive Network (CRAN) at
-\url{5.0.1-project.org/package=runjags}.  The functions are
+\url{https://cran-project.org/package=runjags}.  The functions are
 designed to be user-friendly (particularly for those less experienced
 with MCMC analysis), and provide a number of features to make the
 recommended convergence and sample size checks more obvious to the end
@@ -1343,7 +1343,7 @@ Daniels M (1999).
 \newblock \enquote{{A prior for the variance in hierarchical models}.}
 \newblock \emph{The Canadian Journal of Statistics}, \textbf{27}, 567--578.
 \newblock ISSN 03195724.
-\newblock \doi{doi: 10.2307/3316112}.
+\newblock \doi{doi:10.2307/3316112}.
 \newblock
   \urlprefix\url{https://onlinelibrary.wiley.com/doi/10.2307/3316112/abstract}.
 
@@ -1407,7 +1407,7 @@ Gilks WR, Richardson S, Spiegelhalter DJ (1998).
 \newblock Chapman and Hall, Boca Raton, Fla.
 \newblock ISBN 0412055511.
 \newblock
-  \urlprefix\url{https://www.loc.gov/catdir/enhancements/fy0646/98033429-d.html}.
+  \urlprefix\url{https://lccn.loc.gov/98033429}.
 
 \bibitem[{Hastings(1970)}]{Hastings:1970bi}
 Hastings WK (1970).
@@ -1429,7 +1429,7 @@ Lele SR, Dennis B (2009).
 \newblock \emph{Ecological Applications : a Publication of the Ecological
   Society of America}, \textbf{19}(3), 581--4.
 \newblock ISSN 1051-0761.
-\newblock \urlprefix\url{https://pubmed.ncbi.nlm.nih.gov/19425420/}.
+\newblock \doi{doi:10.1890/08-0549.1}.
 
 \bibitem[{Lunn \emph{et~al.}(2012)Lunn, Jackson, Best, Thomas, and
   Spiegelhalter}]{lunn2012bugs}
@@ -1466,7 +1466,6 @@ Plummer M (2003).
   Statistical Computing (DSC 2003)}, pp. March 20--22,Vienna, Austria. ISSN
   1609--395X.
 \newblock ISSN 1609395X.
-\newblock \doi{10.1.1.13.3406}.
 
 \bibitem[{Plummer(2008)}]{Plummer2008}
 Plummer M (2008).
@@ -1546,8 +1545,7 @@ Wabersich D, Vandekerckhove J (2014).
   distributions to \proglang{JAGS} (with a diffusion model example).}}
 \newblock \emph{Behavior research methods}, \textbf{46}(1), 15--28.
 \newblock ISSN 1554-3528.
-\newblock \doi{10.3758/s13428-013-0369-3}.
-\newblock \urlprefix\url{https://pubmed.ncbi.nlm.nih.gov/23959766/}.
+\newblock \doi{doi:10.3758/s13428-013-0369-3}.
 
 \bibitem[{Wilson and Grenfell(1997)}]{Wilson199733}
 Wilson K, Grenfell BT (1997).
