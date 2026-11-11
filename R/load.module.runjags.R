@@ -104,8 +104,8 @@
 #'
 #' For an easier to read version of these PDF equations, see the userguide vignette.
 #'
-#' @param fail should the function fail using stop() if the module cannot be loaded?
-#' @param silent if !fail, the function will by default print a diagnostic message if the module cannot be loaded - the silent option suppresses this message.
+#' @param fail deprecated option - now ignored (with a warning) unless TRUE
+#' @param silent option to suppress messages while loading or unloading the module
 #'
 #' @return Invisibly returns TRUE if able to (un)load the module, or FALSE otherwise
 #' @keywords methods
@@ -123,16 +123,61 @@
 #' 		}"
 #' results <- run.jags(m, monitor="L", method="rjags")
 
+#' @importFrom rjags load.pkg.module unload.module list.modules
+
 #' @rdname load.runjagsmodule
 #' @export
 load.runjagsmodule <- function(fail=TRUE, silent=FALSE){
-  load.pkg.module(.jags_pkg_env$pkgname, .jags_pkg_env$libname, .jags_pkg_env$pkg_compile_flags)
+
+  if(!isTRUE(fail)){
+    warning("The fail argument is deprecated and will be ignored")
+  }
+
+  if(.jags_pkg_env$dyn_loaded){
+
+    # If we have already loaded everything once just call rjags:
+    load.pkg.module(.jags_pkg_env$pkgname, .jags_pkg_env$libname, .jags_pkg_env$pkg_compile_flags, quiet=silent)
+
+  }else{
+
+    pkgname <- .jags_pkg_env$pkgname
+    libname <- .jags_pkg_env$libname
+
+    # Otherwise first try to load rjags (this sets paths on Windows etc):
+    tryCatch({
+      if(!isNamespaceLoaded("rjags")) loadNamespace("rjags")
+    }, error = function(e) {
+      stop("The following error was obtained when loading rjags:\n\t",
+           conditionMessage(e), call.=FALSE)
+    })
+    # Ensure the version of rjags is compatible with what we need:
+    rjags_version <- utils::packageVersion("rjags")
+    if(rjags_version >= "5" && rjags_version < "5.4"){
+      stop("An incompatible version of rjags (", gsub(".","-",rjags_version,fixed=TRUE), ") is installed\n\tPlease install either rjags 4-18 or rjags >= 5-4", call.=FALSE)
+    }
+
+    tryCatch({
+      # First load the package module, so that rjags can report on any JAGS
+      # version incompatibility:
+      rjags::load.pkg.module(pkgname, libname, .jags_pkg_env$pkg_compile_flags, quiet=silent)
+
+      # Then load the dynamic library:
+      library.dynam(pkgname, pkgname, libname)
+      # And set the dyn_loaded flag to TRUE:
+      .jags_pkg_env$dyn_loaded <- TRUE
+
+    }, error = function(e) {
+      stop("Loading the package module/dynlib failed with the following error:\n\t", conditionMessage(e), call.=FALSE)
+    })
+
+  }
+  invisible()
 }
 
 #' @rdname load.runjagsmodule
 #' @export
-unload.runjagsmodule <- function(){
-  unload.module(.jags_pkg_env$pkgname)
+unload.runjagsmodule <- function(silent=FALSE){
+  unload.module(.jags_pkg_env$pkgname, quiet=silent)
 }
 
 #' @rdname load.runjagsmodule

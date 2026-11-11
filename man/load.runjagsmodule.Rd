@@ -9,16 +9,16 @@
 \usage{
 load.runjagsmodule(fail = TRUE, silent = FALSE)
 
-unload.runjagsmodule()
+unload.runjagsmodule(silent = FALSE)
 
 load.runJAGSmodule(fail = TRUE, silent = FALSE)
 
-unload.runJAGSmodule()
+unload.runJAGSmodule(silent = FALSE)
 }
 \arguments{
-\item{fail}{should the function fail using stop() if the module cannot be loaded?}
+\item{fail}{deprecated option - now ignored (with a warning) unless TRUE}
 
-\item{silent}{if !fail, the function will by default print a diagnostic message if the module cannot be loaded - the silent option suppresses this message.}
+\item{silent}{option to suppress messages while loading or unloading the module}
 }
 \value{
 Invisibly returns TRUE if able to (un)load the module, or FALSE otherwise
