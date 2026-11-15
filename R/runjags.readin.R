@@ -309,6 +309,17 @@ runjags.readin <- function(directory, silent.jags, target.adapt, target.burnin, 
 
 		# At this point everything should be OK to proceed....
 
+		# Work out which version of JAGS created the files:
+		if(file.exists("version_info.rds")){
+		  version_info <- readRDS("version_info.rds")
+		}else{
+		  # Assumption:
+		  version_info <- list(jags=numeric_version("4.3.2"), runjags=numeric_version("2.2.2-5"), api=numeric_version("1.0"))
+		  # NB we ton't have testjags!
+		  # list(jags=jags.status[["JAGS.version"]], runjags=runjagsprivate[["runjagsversion"]], testjags=jags.status)
+		}
+
+
 		for(s in 1:length(simfolders)){
 
 			setwd(simfolders[s])
@@ -426,45 +437,93 @@ runjags.readin <- function(directory, silent.jags, target.adapt, target.burnin, 
 	achieved <- niter(input.data)
 
 	if(any(c("full.pd") %in% monitor)){
-		pd <- try(read.coda.subset('CODAchain0.txt','CODAindex0.txt', start=NA, end=NA, thin=NA, quiet=TRUE, vars=read.monitor, sub.samples=sub.samples), silent=TRUE)
-		if(inherits(pd, "try-error")){
-			swcat("\n")
-			warning("There was an error reading the full sum(pD)")
-		}
+	  if(version_info$jags >= "5"){
+	    fm <- list.files(pattern="pd_tracechain[[:graph:]]*.txt")
+	    ss <- try({
+	      allchains <- lapply(fm, function(ff){
+          apply(read.coda(ff, 'pd_traceindex.txt', quiet=TRUE), 1, sum)
+	      })
+	      # Check for broken leverage_total monitor in JAGS <= 5.0.1:
+	      if(length(readLines("pd_traceindex.txt"))>1){
+          warning("The full.pd option requires JAGS version 5.0.2 or later")
+	        pd <- NA
+	      }else{
+	        pd <- mcmc(matrix(apply(vapply(allchains, identity, numeric(length(allchains[[1]]))), 1, mean), ncol=1, dimnames=list(dimnames(input.data[[1]])[[1]], "pD")), start=start(input.data), end=end(input.data), thin=thin(input.data))
+	      }
+	    })
+	    if(inherits(ss, "try-error")){
+	      pd <- NA
+	      swcat("\n")
+	      warning("There was an error reading the full sum(pD)")
+	    }
+	  }else{
+	    pd <- try(read.coda.subset('CODAchain0.txt','CODAindex0.txt', start=NA, end=NA, thin=NA, quiet=TRUE, vars=read.monitor, sub.samples=sub.samples), silent=TRUE)
+	    if(inherits(pd, "try-error")){
+	      swcat("\n")
+	      warning("There was an error reading the full sum(pD)")
+	    }
+	  }
 	}else{
 		pd <- NA
 	}
 	if(any(monitor=="dic")){
-		dn <- ''
-		pdtab <- try(read.table('pdtable0.txt', header=FALSE), silent=TRUE)
-		if(inherits(pdtab, "try-error")){
-			warning("There was an error reading the mean pD table")
-			mean.pd <- NA
-		}else{
-			mean.pd <- as.matrix(pdtab[,2])
-			dn <- pdtab[,1]
-		}
-		popttab <- try(read.table('popttable0.txt', header=FALSE), silent=TRUE)
-		if(inherits(popttab, "try-error")){
-			warning("There was an error reading the mean pOpt table")
-			mean.popt <- NA
-		}else{
-			mean.popt <- as.matrix(popttab[,2])
-			dn <- popttab[,1]
-		}
-		devtab <- try(read.table('deviancetable0.txt', header=FALSE), silent=TRUE)
-		if(inherits(devtab, "try-error")){
-			warning("There was an error reading the mean deviance table")
-			mean.deviance <- NA
-		}else{
-			mean.deviance <- as.matrix(devtab[,2])
-			dn <- devtab[,1]
-		}
+	  if(version_info$jags >= "5"){
 
-		deviance.table <- cbind(mean.deviance, mean.pd, mean.popt)
-		dimnames(deviance.table) <- list(dn, c('mean.deviance', 'mean.pD', 'mean.pOpt'))
-		deviance.sum <- apply(deviance.table,2,sum)
-		names(deviance.sum) <- c('sum.mean.deviance', 'sum.mean.pD', 'sum.mean.pOpt')
+	    mean_tables <- function(stem){
+	      fm <- list.files(pattern=paste0(stem, "table[[:graph:]]*.txt"))
+	      allchains <- lapply(fm, function(ff){
+	        read.table(ff, header=FALSE)
+	      })
+	      matrix(apply(vapply(allchains, function(x){
+	        as.numeric(x[,2])
+	      }, numeric(nrow(allchains[[1]]))), 1, mean), ncol=1, dimnames=list(allchains[[1]][,1L], stem))
+	    }
+
+	    warning("WRAP IN A TRY")
+	    mean.pd <- mean_tables("pd")
+	    mean.popt <- mean_tables("popt")
+	    if(all(abs(mean.pd - mean.popt) < sqrt(.Machine$double.eps))){
+	      warning("PED (and pOpt) requires JAGS version 5.0.2 or later")
+	      mean.popt <- NA
+	    }else{
+	      mean.popt <- mean.popt * 2.0
+	    }
+	    mean.deviance <- mean_tables("deviance")
+	    dn <- dimnames(mean.pd)[[1]]
+
+	  }else{
+	    dn <- ''
+	    pdtab <- try(read.table('pdtable0.txt', header=FALSE), silent=TRUE)
+	    if(inherits(pdtab, "try-error")){
+	      warning("There was an error reading the mean pD table")
+	      mean.pd <- NA
+	    }else{
+	      mean.pd <- as.matrix(pdtab[,2])
+	      dn <- pdtab[,1]
+	    }
+	    popttab <- try(read.table('popttable0.txt', header=FALSE), silent=TRUE)
+	    if(inherits(popttab, "try-error")){
+	      warning("There was an error reading the mean pOpt table")
+	      mean.popt <- NA
+	    }else{
+	      mean.popt <- as.matrix(popttab[,2])
+	      dn <- popttab[,1]
+	    }
+	    devtab <- try(read.table('deviancetable0.txt', header=FALSE), silent=TRUE)
+	    if(inherits(devtab, "try-error")){
+	      warning("There was an error reading the mean deviance table")
+	      mean.deviance <- NA
+	    }else{
+	      mean.deviance <- as.matrix(devtab[,2])
+	      dn <- devtab[,1]
+	    }
+	  }
+
+	  deviance.table <- cbind(mean.deviance, mean.pd, mean.popt)
+	  dimnames(deviance.table) <- list(dn, c('mean.deviance', 'mean.pD', 'mean.pOpt'))
+	  deviance.sum <- apply(deviance.table,2,sum)
+	  names(deviance.sum) <- c('sum.mean.deviance', 'sum.mean.pD', 'sum.mean.pOpt')
+
 	}else{
 		deviance.table <- NA
 		deviance.sum <- NA

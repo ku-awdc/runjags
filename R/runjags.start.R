@@ -1424,6 +1424,9 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 
 		setwd(temp.directory)
 
+	  version_info <- list(jags=numeric_version(jags.status[["JAGS.version"]]), runjags=numeric_version(runjagsprivate[["runjagsversion"]]), api=numeric_version("1.1"), testjags=jags.status)
+	  saveRDS(version_info, file="version_info.rds")
+
 		cat(model, file="model.txt",sep="")
 		close(file("model.txt"))
 		cat(data, file="data.txt",sep="")
@@ -1442,7 +1445,11 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 
 			if(!identical(modules,"")) for(i in 1:length(modules)){
 				if(modules[[i]][1]=="runjags") stop("The runjags module is only available using the rjags method; to use the functions provided with other methods install (and specify using the module argument) the 'paretoprior' standalone module")
-				scriptstring <- paste(scriptstring, if(modules[[i]][2]=='FALSE') "un", "load ", modules[[i]][1], "\n", sep="")
+
+			  # We don't need dic for JAGS 5:
+			  if(! (jags.status$JAGS.major >= 5 && modules[[i]][1]=="dic" )){
+  				scriptstring <- paste(scriptstring, if(modules[[i]][2]=='FALSE') "un", "load ", modules[[i]][1], "\n", sep="")
+			  }
 			}
 
 			if(!identical(factories,"")) for(i in 1:length(factories)){
@@ -1485,58 +1492,24 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 			# Behaviour depends on JAGS version 4 vs 5
       if(jags.status$JAGS.major >= 5){
 
-        stop("Need to sort out popt and pD for JAGS 5 and compare to rjags outputs")
+        warning("Need to sort out popt and pD for JAGS 5 and compare to rjags outputs")
+        warning("Remember to double loo_leverage to get popt")
 
-        # for JAGS 5 pD is stat("leverage") and popt is stat("loo_leverage") - see dic.samples
-        # TOFIX: thin() gives a syntax error when used in combination with stat() or summary()
-        # TOFIX: manual "with node name _observed" should be _observations_
-        #
-        # load dic  # Remove
-        # model in "model.txt"
-        # data in "data.txt"
-        # compile, nchains(3)
-        # parameters in "inits1.txt", chain(1)
-        # parameters in "inits2.txt", chain(2)
-        # parameters in "inits3.txt", chain(3)
-        # initialize
-        # adapt 1000
-        # update 1000
-        # monitor deviance, summary(mean)
-        # monitor pD, summary(mean)
-        # monitor _observations_, stat(leverage) summary(mean)
-        # monitor _observations_, stat(leverage) summary(trace)
-        # monitor _observations_, stat(loo_leverage) summary(mean)
-        # monitor _observations_, stat(loo_leverage) summary(trace)
-        # monitor m, thin(5)
-        # monitor c, thin(5)
-        # monitor pD, thin(5)
-        # update 10000
-        # parameters to "out1.Rdump", chain(1)
-        # parameters to "out2.Rdump", chain(2)
-        # parameters to "out3.Rdump", chain(3)
-        # coda deviance, stem("sim.1/deviance")
-        # coda pD, stem("sim.1/pd")
-        # coda _observations_, stem("sim.1/loo_leverage_mean") stat(loo_leverage) summary(mean)
-        # coda _observations_, stem("sim.1/loo_leverage_trace") stat(loo_leverage) summary(trace)
-        # coda _observations_, stem("sim.1/leverage_mean") stat(leverage) summary(mean)
-        # coda _observations_, stem("sim.1/leverage_trace") stat(leverage) summary(trace)
-        # monitor clear deviance, summary(mean)
-        # monitor clear pD, summary(mean)
-        # coda *, stem(sim.1/CODA)
-        # samplers to sim.1/samplers.csv
-        # update 0
-        # model clear
-        # exit
-        #
-        # From rjags 5 dic.samples:
-        if (pdtype == "popt") {
-          penalty <- 2 * penalty
-        }
+        # Notes:
+        # For full.pd use leverage_total with thin but be prepared to sum for JAGS 5.0.1
+        # For pd and popt mean use summary(mean)
 
-        # trace monitor for deviance is just a standard monitor name (and not used to calculate DIC)
-        scriptstring <- paste(scriptstring, if(any(c("dic","ped")%in%monitor)) paste("monitor deviance, summary(mean)\n", "monitor pD, summary(mean)\n", "monitor _observations_, stat(loo_leverage) summary(mean)\n", sep=""), monitors, if(any(monitor=="full.pd")) paste("monitor _observations_, stat(leverage)\n", sep=""), sep="")
+        # TOFIX in JAGS:
+        # Can't use thin with all monitor set options
+        # Monitor clear is undocumented monitor options
+        # _observations_ vs _observed_ in manual and parser (and rjags)
+        # leverage_total is the same as leverage
+        # Would be nice to have loo_leverage_total etc
+        # Test covariance
+        # Doesn't work: coda deviance, stem("sim.1/deviance") summary(mean) but coda deviance, stem("sim.1/deviance") stat(value) summary(mean) does
 
-        browser()
+        # pD is stat(leverage), popt is 2 * stat(loo_leverage)
+        scriptstring <- paste(scriptstring, if(any(c("dic","ped")%in%monitor)) paste("monitor _observations_, stat(deviance) summary(mean) thin(", thin, ")\n", "monitor _observations_, stat(leverage) summary(mean) thin(", thin, ")\n", "monitor _observations_, stat(loo_leverage) summary(mean) thin(", thin, ")\n", sep=""), monitors, if(any(monitor=="full.pd")) paste("monitor _observations_, stat(leverage_total) summary(trace) thin(", thin, ")\n", sep=""), sep="")
 
       }else{
         # trace monitor for deviance is just a standard monitor name (and not used to calculate DIC)
@@ -1550,9 +1523,14 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 				scriptstring <- paste(scriptstring, "parameters to \"out", i, ".Rdump\", chain(", c, ")\n", sep="")
 			}
 
-			# Write out the mean pd, popt and deviances and then delete them so they dont get re-written by coda *
 			if(any(c("dic","ped")%in%monitor))
-				scriptstring <- paste(scriptstring, "coda deviance, stem(\"sim.", s, "/deviance\")\n", "coda pD, stem(\"sim.", s, "/pd\")\n", "coda popt, stem(\"sim.", s, "/popt\")\n", "monitor clear deviance, type(mean)\nmonitor clear pD, type(mean)\nmonitor clear popt, type(mean)\n", sep="")
+			  # Behaviour depends on JAGS version 4 vs 5
+			  if(jags.status$JAGS.major >= 5){
+			    scriptstring <- paste(scriptstring, "coda _observations_, stem(\"sim.", s, "/deviance\") stat(deviance) summary(mean)\n", "coda _observations_, stem(\"sim.", s, "/pd\") stat(leverage) summary(mean)\n", "coda _observations_, stem(\"sim.", s, "/popt\") stat(loo_leverage) summary(mean)\n", "monitor clear _observations_, stat(deviance) summary(mean)\nmonitor clear _observations_, stat(leverage) summary(mean)\nmonitor clear _observations_, stat(loo_leverage) summary(mean)\n", if(any(monitor=="full.pd")) paste("coda _observations_, stem(\"sim.", s, "/pd_trace\") stat(leverage_total) summary(trace)\n", sep=""), "monitor clear _observations_, stat(leverage_total) summary(trace)\n", sep="")
+			  }else{
+			    # Write out the mean pd, popt and deviances and then delete them so they dont get re-written by coda *
+			    scriptstring <- paste(scriptstring, "coda deviance, stem(\"sim.", s, "/deviance\")\n", "coda pD, stem(\"sim.", s, "/pd\")\n", "coda popt, stem(\"sim.", s, "/popt\")\n", "monitor clear deviance, type(mean)\nmonitor clear pD, type(mean)\nmonitor clear popt, type(mean)\n", sep="")
+			  }
 
 			scriptstring <- paste(scriptstring, "coda *, stem(sim.", s, "/CODA)\n", sep="")
 
