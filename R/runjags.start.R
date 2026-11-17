@@ -42,6 +42,8 @@ runjags.simple <- function(jags, silent.jags, jags.refresh, batch.jags, os, libp
 
 runjags.rjparallel <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpaths, n.sims, jobname, cl, remote.jags, rjags){
 
+  # Note: this is compatible with rjags 5 but probably not needed
+
 	# Eventually we should compile the model once and then export the compiled model and then change the inits - but we are currently unable to change RNG states on compiled models with rjags 3.x
 	# We also have to destroy the compiled rjags object after calling runjags.start() as we update different compiled objects
 
@@ -866,7 +868,7 @@ runjags.rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 
 	base_monitor <- monitor
 
-	if(rjags::jags.version() < "5.0.0"){
+	if(packageVersion('rjags') < "5"){
 
 	  # For JAGS 4 and rjags_4-18
 
@@ -938,7 +940,7 @@ runjags.rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 	    trace = c(jsamples$value$trace, if(any(c('full.pd') %in% tolower(extra.options$monitor))) list(pD = apply(jsamples$leverage_total$trace$`_observed_`,2,mean))),
 	    mean = list(
 	      pD = if(any(c('pd','dic') %in% tolower(extra.options$monitor))) apply(jsamples$leverage$mean$`_observed_`,1,mean),
-	      popt = if(any(c('ped','popt') %in% tolower(extra.options$monitor))) apply(jsamples$loo_leverage$mean$`_observed_`,1,mean),
+	      popt = if(any(c('ped','popt') %in% tolower(extra.options$monitor))) 2*apply(jsamples$loo_leverage$mean$`_observed_`,1,mean),
 	      deviance = if(any(c('dic','ped') %in% tolower(extra.options$monitor))) apply(jsamples$deviance$mean$`_observed_`,1,mean)
 	    )
 	  )
@@ -1006,7 +1008,7 @@ runjags.rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 	}
 
 	warning("TODO: repeatable methods ignored")
-	warning("TODO: rjparallel method - remove/redirect to rjags with threads for JAGS 5")
+	warning("TODO: rjparallel method - note that we have rjags with threads for JAGS 5")
 
 
 	if(any(c('ped','popt') %in% tolower(extra.options$monitor))){
