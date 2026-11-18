@@ -906,8 +906,8 @@ runjags.rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 	    if('full.pd' %in% extra.options$monitor){
 	      stop("The full.pd monitor requires JAGS 5.0.2 or later", call.=FALSE)
 	    }
-	    if(any(c('popt','ped') %in% extra.options$monitor)){
-	      stop("The popt and ped monitors require JAGS 5.0.2 or later", call.=FALSE)
+	    if(any(c('popt','ped','dic') %in% extra.options$monitor)){
+	      stop("The popt and dic/ped monitors require JAGS 5.0.2 or later", call.=FALSE)
 	    }
 	  }
 
@@ -1403,6 +1403,16 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 	if(length(realmonitor)==0) stop("Cannot run a model with only popt, pd or full.pd monitored - add a named variable (e.g. 'deviance') to the monitors", call.=FALSE)
 	monitorcollapse <- paste(", thin(", thin, ")\nmonitor ", sep="")
 	monitors <- paste("monitor ", paste(realmonitor, collapse=monitorcollapse), ", thin(", thin, ")\n", sep="")
+
+	# Catch bug in JAGS 5.0.0 and 5.0.1:
+	if(jags.status$JAGS.major >= 5 && jags.status$JAGS.version %in% c("5.0.0","5.0.1")){
+	  if('full.pd' %in% monitor){
+	    stop("The full.pd monitor requires JAGS 5.0.2 or later", call.=FALSE)
+	  }
+	  if(any(c('popt','ped','dic') %in% monitor)){
+	    stop("The popt and dic/ped monitors require JAGS 5.0.2 or later", call.=FALSE)
+	  }
+	}
 
 	n.params <- length(monitor)
 	params.names <- monitor

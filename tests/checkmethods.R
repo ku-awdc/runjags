@@ -40,9 +40,18 @@ initfunction <- function(chain) return(switch(chain, "1"=list(m=-10), "2"=list(m
 # Get the JAGS path - rjags adds the JAGS path to the PATH in Windows...
 try(library(rjags))
 jagspath <- findjags()
+jagstest <- testjags(jagspath)
+
+# Workaround for bug in JAGS 5.0.0/5.0.1:
+if(
+  (requireNamespace("rjags") && !(rjags::jags.version() %in% c("5.0.0","5.0.1"))) ||
+  (jagstest$JAGS.major >= 5 && jagstest$JAGS.version %in% c("5.0.0","5.0.1"))
+){
+  model <- model_parallel
+}
 
 # Only run the JAGS methods tests if we have found JAGS and have permission to run it:
-if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
+if(jagspath!="JAGS not found" && jagstest$JAGS.available){
 
 	testnum <- 1
 	cat('Testing the simple method\n')
@@ -76,9 +85,11 @@ if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
 		stopifnot(varnames(as.mcmc.list(results2))[1]=='m' && varnames(as.mcmc.list(results2))[103]=='true.y[100]')
 
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
-		results2 <- extend.jags(results, sample=1000, add.monitor=c("true.y", "dic"), summarise=FALSE)
-		stopifnot(nvar(as.mcmc.list(results2))==(3+N))
-		stopifnot(varnames(as.mcmc.list(results2))[1]=='m' && varnames(as.mcmc.list(results2))[103]=='true.y[100]')
+		if(! (jagstest$JAGS.major >= 5 && jagstest$JAGS.version %in% c("5.0.0","5.0.1"))){
+  		results2 <- extend.jags(results, sample=1000, add.monitor=c("true.y", "dic"), summarise=FALSE)
+  		stopifnot(nvar(as.mcmc.list(results2))==(3+N))
+  		stopifnot(varnames(as.mcmc.list(results2))[1]=='m' && varnames(as.mcmc.list(results2))[103]=='true.y[100]')
+		}
 
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
 		results2 <- extend.jags(results, sample=1000, add.monitor=c("true.y", "deviance"), summarise=FALSE)
@@ -92,9 +103,11 @@ if(jagspath!="JAGS not found" && testjags(jagspath)$JAGS.available){
 		stopifnot(varnames(as.mcmc.list(results2))[1]=='m' && varnames(as.mcmc.list(results2))[103]=='true.y[100]')
 
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
-		results2 <- extend.jags(results, sample=1000, add.monitor=c("true.y", "dic"), summarise=FALSE)
-		stopifnot(nvar(as.mcmc.list(results2))==(3+N))
-		stopifnot(varnames(as.mcmc.list(results2))[1]=='m' && varnames(as.mcmc.list(results2))[103]=='true.y[100]')
+		if(! (jagstest$JAGS.major >= 5 && jagstest$JAGS.version %in% c("5.0.0","5.0.1"))){
+  		results2 <- extend.jags(results, sample=1000, add.monitor=c("true.y", "dic"), summarise=FALSE)
+  		stopifnot(nvar(as.mcmc.list(results2))==(3+N))
+  		stopifnot(varnames(as.mcmc.list(results2))[1]=='m' && varnames(as.mcmc.list(results2))[103]=='true.y[100]')
+		}
 
 		cat('Running method test number', testnum, '\n'); testnum <- testnum+1
 		results2 <- extend.jags(results, sample=1000, add.monitor=c("true.y", "deviance"), summarise=FALSE)

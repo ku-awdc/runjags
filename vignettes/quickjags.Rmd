@@ -164,7 +164,18 @@ model <- template.jags(weight ~ group, D9, n.chains=2, family='gaussian')
 
 The model is written to disk by template.jags, and includes all of the data and initial values necessary to run the model.  Examining this model file is a good way to learn how the BUGS syntax works, as well as some of the options allowed by the runjags package.  To run the models:
 
-```{r, results='hide'}
+```{r include=FALSE}
+if(requireNamespace("rjags") && (rjags::jags.version() %in% c("5.0.0","5.0.1"))){
+ # Work around bug in JAGS 5.0.0-5.0.1
+  JAGS.D9 <- extend.jags(run.jags(model, sample=0), drop.monitor = "dic")
+}else{
+  JAGS.D9 <- run.jags(model)
+}
+lm.D9 <- lm(weight ~ group, data=D9)
+```
+
+
+```{r, eval=FALSE, results='hide'}
 JAGS.D9 <- run.jags(model)
 lm.D9 <- lm(weight ~ group, data=D9)
 ```
@@ -178,7 +189,7 @@ summary(lm.D9)
 Note that lm reports sigma and JAGS the precision - to make them more comparable we could use a mutate function:
 
 ```{r, results='hide'}
-JAGS.D9 <- run.jags(model, mutate=list(prec2sd, 'precision'))
+JAGS.D9 <- add.summary(JAGS.D9, mutate=list(prec2sd, 'precision'))
 ```
 
 And focus on the results from the summary that we are interested in:

@@ -121,9 +121,14 @@ findjags <- function(ostype = .Platform$OS.type, look_in = NA, ...){
 
 	if(ostype=="unix"){
 
-		# Test standard 'jags' as well as variable passed and some common install locations:
+		# Prioritise JAGS install location based on rjags, but fall back to other options:
 		suppressWarnings({
-			paths <- c(from.variable, "jags", "/opt/jags/bin/jags", "/opt/local/bin/jags", "/opt/local/sbin/jags", "/usr/texbin/jags", "/usr/bin/jags", "/bin/jags", "/usr/sbin/jags", "/sbin/jags", "/usr/local/bin/jags", "/opt/R/arm64/bin/jags", "/usr/X11/bin/jags")
+		  rjagspath <- if(nzchar(.Platform$r_arch)){
+		    file.path(rjags::pkg.compile.flags("JAGS_ROOT", print=FALSE), .Platform$r_arch, "bin", "jags")
+		  }else{
+		    file.path(rjags::pkg.compile.flags("JAGS_ROOT", print=FALSE), "bin", "jags")
+		  }
+			paths <- c(from.variable, rjagspath, "jags", "/opt/jags/bin/jags", "/opt/local/bin/jags", "/opt/local/sbin/jags", "/usr/texbin/jags", "/usr/bin/jags", "/bin/jags", "/usr/sbin/jags", "/sbin/jags", "/usr/local/bin/jags", "/opt/R/arm64/bin/jags", "/usr/X11/bin/jags")
 			for(i in 1:length(paths)){
 				jagspath <- system(paste('which ', paths[i], ' 2>&1', sep=""), intern=TRUE)
 				if(length(jagspath)!=0) return(jagspath)
