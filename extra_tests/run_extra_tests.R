@@ -31,7 +31,7 @@ reverse_dependencies_with_maintainers <-
     rdepends <- sort(unique(unlist(rdepends)))
     pos <- match(rdepends, db[, "Package"], nomatch = 0L)
 
-    db[pos, c("Package", "Version", "Maintainer")]
+    db[pos, c("Package", "Version", "Maintainer", "LinkingTo", "NeedsCompilation", "SystemRequirements")]
   }
 
 check_reverse_dependencies <- function(package='runjags', dir=paste0('checkrevdeps_',package), which = c("Depends", "Imports", "LinkingTo", "Suggests")){

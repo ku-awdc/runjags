@@ -37,3 +37,38 @@ for(p in pkgv){
 	print("")
 }
 setwd(wd)
+
+
+## For rjags modules:
+
+pkgs <- reverse_dependencies_with_maintainers('rjags', which=c('Depends','Imports','LinkingTo','Suggests'))
+pkgs[pkgs[,"NeedsCompilation"]=="yes",] |> View()
+# Also for me to worry about but caught from above:
+# BayesTools, neojags, RoBMA, RoBSA
+pkgs <- pkgs[pkgs[,"NeedsCompilation"]=="yes","Package"]
+
+setwd("~/Desktop")
+unlink('totestmodule', recursive=TRUE)
+dir.create('totestmodule')
+pkgv <- download.packages(pkgs, repos="https://cran.rstudio.com/", file.path(getwd(), 'totestmodule'), type='source')[,2]
+save(pkgv, pkgs, file="totestmodule/info.rda")
+
+install.packages(pkgs, repos="https://cran.rstudio.com/", type="binary")
+
+setwd('totestmodule')
+
+load("info.rda")
+remain <- pkgs[file.exists(pkgv)]
+pkgv <- pkgv[file.exists(pkgv)]
+
+Sys.setenv("_R_CHECK_FORCE_SUGGESTS_"=FALSE)
+
+unlink(paste0(pkgs, ".Rcheck"), recursive=TRUE)
+for(p in pkgv){
+  print(p)
+  system(paste0("R CMD check ", p, ""))
+  print("")
+  print("")
+  print("")
+}
+setwd(wd)
