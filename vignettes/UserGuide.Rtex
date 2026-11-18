@@ -1,6 +1,6 @@
 \documentclass[nojss]{jss}
 
-\usepackage[utf8]{inputenc} 
+\usepackage[utf8]{inputenc}
 \usepackage{amsmath,booktabs}
 
 %\VignetteIndexEntry{Using the runjags package}
@@ -28,10 +28,10 @@
   \pkg{parallel}.  A module extension for \pkg{JAGS} is also
   included within \pkg{runjags}, providing the Pareto family of
   distributions and a series of minimally-informative priors including
-  the DuMouchel and half-Cauchy priors. This vignette is taken from the 
-  publication for the \pkg{runjags} package \citep{Denwood:2016ee}.  
-  It outlines the primary functions of this package, and gives an 
-  illustration of a simulation study to assess the performance of 
+  the DuMouchel and half-Cauchy priors. This vignette is taken from the
+  publication for the \pkg{runjags} package \citep{Denwood:2016ee}.
+  It outlines the primary functions of this package, and gives an
+  illustration of a simulation study to assess the performance of
   equivalent model specifications.
 }
 
@@ -101,7 +101,7 @@ This paper describes the \pkg{runjags} package \citep{runjags} for
 \proglang{R} \citep{R2014} which can be used to automate MCMC fitting
 and summarizing procedures for \pkg{JAGS} models and is available
 from the Comprehensive \proglang{R} Archive Network (CRAN) at
-\url{https://cran-project.org/package=runjags}.  The functions are
+\url{https://cran.r-project.org/package=runjags}.  The functions are
 designed to be user-friendly (particularly for those less experienced
 with MCMC analysis), and provide a number of features to make the
 recommended convergence and sample size checks more obvious to the end
@@ -198,11 +198,11 @@ obtained as follows:
 \begin{Sinput}
 R> filestring <- "
 +  The BUGS Book example Chapter 6.5.2
-+  The following example has been modified only to include 
++  The following example has been modified only to include
 +  curly brackets around the Data and Inits specifications
-+  
++
 +  Poisson model...
-+  
++
 +  model {
 +    for (i in 1:6) {
 +      for (j in 1:3) {
@@ -217,13 +217,13 @@ R> filestring <- "
 +    beta ~ dnorm(0, 0.0001)
 +    gamma ~ dnorm(0, 0.0001)
 +  }
-+  
++
 +  Data {
 +    list(y = structure(.Data = c(15, 21, 29, 16, 18, 21, 16, 26, 33,
 +      27, 41, 60, 33, 38, 41, 20, 27, 42), .Dim = c(6, 3)),
 +      x = c(0, 10, 33, 100, 333, 1000))
 +  }
-+  
++
 +  Inits {
 +    list(alpha = 0, beta = 0, gamma = 0)
 +  }
@@ -232,7 +232,7 @@ R> results <- run.jags(filestring, monitor = c("alpha", "beta", "gamma"))
 \end{Sinput}
 \begin{Soutput}
 Warning message:
-Convergence cannot be assessed with only 1 chain 
+Convergence cannot be assessed with only 1 chain
 \end{Soutput}
 \end{Schunk}
 %
@@ -247,12 +247,12 @@ R> results
 \end{Sinput}
 \begin{Soutput}
 JAGS model summary statistics from 10000 samples (adapt+burnin = 5000):
-                                                                        
+
          Lower95      Median     Upper95       Mean         SD      Mode
 alpha     1.8018      2.1899      2.6135     2.1913    0.20439    2.1939
 beta     0.20684     0.31538     0.41891    0.31414   0.053648    0.3157
 gamma -0.0014678 -0.00099063 -0.00053861 -0.0009922 0.00023808 -0.001008
-                                            
+
             MCerr MC%ofSD SSeff   AC.10 psrf
 alpha    0.019523     9.6   110 0.78631   --
 beta    0.0052936     9.9   103 0.81478   --
@@ -267,7 +267,7 @@ The results show similar inference to that provided by
 the effective sample size (\code{SSeff}), auto-correlation at a lag of
 10 (\code{AC.10}), and the potential scale reduction factor
 (\code{psrf}) of the Gelman-Rubin statistic \citep{Gelman1992} for
-models with multiple chains (the latter is sometimes referred to as 
+models with multiple chains (the latter is sometimes referred to as
 `Rhat').  In this case, an insufficient number of
 samples has been taken for this highly auto-correlated model (although
 it is important to note that the auto-correlation is markedly reduced
@@ -362,11 +362,11 @@ chains one and two, ensuring that initial values are over-dispersed.
 \begin{Sinput}
 R> coef <- function(chain)
 +    return(switch(chain, "1" = -10, "2" = 10))
-R> int <- function(chain) 
+R> int <- function(chain)
 +    return(switch(chain, "1" = -10, "2" = 10))
 R> precision <- function(chain)
 +    return(switch(chain, "1" = 0.01, "2" = 100))
-R> .RNG.seed <- function(chain) 
+R> .RNG.seed <- function(chain)
 +    return(switch(chain, "1" = 1, "2" = 2))
 R> .RNG.name <- function(chain)
 +    return(switch(chain, "1" = "base::Super-Duper",
@@ -512,14 +512,14 @@ follows:
 R> results
 \end{Sinput}
 \begin{Soutput}
-JAGS model summary statistics from 30000 samples (chains = 2; 
+JAGS model summary statistics from 30000 samples (chains = 2;
 adapt+burnin = 5000):
-                                                                              
+
           Lower95  Median Upper95    Mean        SD   Mode       MCerr MC%ofSD
 coef       1.9922  1.9995   2.007  1.9996 0.0038115 1.9994 0.000073962     1.9
 int        9.4388  9.8711  10.307  9.8692   0.22139 9.8768   0.0042942     1.9
 precision 0.61225 0.82946  1.0685 0.83515   0.11731  0.826   0.0007013     0.6
-                                
+
           SSeff     AC.10   psrf
 coef       2656   0.16954  1.002
 int        2658   0.16942 1.0018
@@ -573,11 +573,11 @@ R> outcome <- gl(3, 1, 9)
 R> treatment <- gl(3, 3)
 R> d.AD <- data.frame(treatment, outcome, counts)
 R> glm.D93 <- glm(counts ~ outcome + treatment, family = poisson())
-R> template.jags(counts ~ outcome + treatment, data = d.AD, 
+R> template.jags(counts ~ outcome + treatment, data = d.AD,
 +    family = "poisson")
 \end{Sinput}
 \begin{Soutput}
-Your model template was created at "JAGSmodel.txt" - it is highly 
+Your model template was created at "JAGSmodel.txt" - it is highly
 advisable to examine the model syntax to be sure it is as intended
 You can then run the model using run.jags("JAGSmodel.txt")
 \end{Soutput}
@@ -729,7 +729,7 @@ used to call \pkg{JAGS}.
 \addlinespace
 
 \end{tabular}
-\caption{Methods provided by the \pkg{runjags} package to run simulations in \pkg{JAGS}.  
+\caption{Methods provided by the \pkg{runjags} package to run simulations in \pkg{JAGS}.
 Availability of \pkg{JAGS} modules is as follows:\newline
 $^1$Installed in \pkg{JAGS}.  \newline
 $^2$Loadable in the \proglang{R} session. \newline
@@ -751,7 +751,7 @@ the current working directory:
 %
 \begin{Schunk}
 \begin{Sinput}
-R> info <- run.jags(model, n.chains = 2, method = "bgparallel", 
+R> info <- run.jags(model, n.chains = 2, method = "bgparallel",
 +    keep.jags.files = "mysimulation", n.sims = 2)
 \end{Sinput}
 \begin{Soutput}
@@ -850,14 +850,14 @@ R> assessment
 \end{Sinput}
 \begin{Soutput}
 Values obtained from a drop-k study with a total of 5 simulations:
-                                                                      
+
      Target Median   Mean Lower95%CI Upper95%CI Range95%CI Within95%CI
 Y[1] 11.544 11.885 11.879     9.6268     14.055     4.4282           1
 Y[2] 13.051 13.914 13.906     11.549     15.994     4.4445           1
 Y[3] 15.828 15.888 15.878     13.559     18.059     4.5009           1
 Y[4] 18.784 17.832  17.83     15.663      20.12     4.4572           1
 Y[5] 21.398 19.821 19.821     17.657     22.086     4.4285           1
-                    
+
      AutoCorr(Lag10)
 Y[1]        0.010115
 Y[2]        0.014556
@@ -886,20 +886,20 @@ data-points removed from each:
 %
 \begin{Schunk}
 \begin{Sinput}
-R> assessment <- drop.k(results, drop = "Y[1:5]", k = 2, simulations = 100, 
+R> assessment <- drop.k(results, drop = "Y[1:5]", k = 2, simulations = 100,
 +    method = "simple", psrf.target = 1.1)
 R> assessment
 \end{Sinput}
 \begin{Soutput}
 Average values obtained from a drop-k study with a total of 100 simulations:
-                                                                       
+
      Target Av.Median Av.Mean Av.Lower95%CI Av.Upper95%CI Av.Range95%CI
 Y[1] 11.544    11.879  11.874        9.6118        14.079        4.4667
 Y[2] 13.051    13.894  13.899        11.667         16.13        4.4629
 Y[3] 15.828    15.868  15.871        13.636        18.088        4.4516
 Y[4] 18.784    17.847  17.853        15.627        20.036        4.4082
 Y[5] 21.398    19.822  19.827        17.656        22.071        4.4152
-                                                    
+
      Prop.Within95%CI Av.AutoCorr(Lag10) Simulations
 Y[1]                1           0.010223          41
 Y[2]                1          0.0066466          39
@@ -967,12 +967,12 @@ A candidate \pkg{JAGS} Model A (using inline data and monitor statements to be d
 R> ModelA <- "model {
 +    for (i in 1:N) {
 +      Count[i] ~ dpois(lambda[i])
-+      lambda[i] ~ dgamma(shape, rate)	
++      lambda[i] ~ dgamma(shape, rate)
 +    }
 +    shape ~ dmouch(1)
 +    mean ~ dmouch(1)
 +    rate <- shape / mean
-+	
++
 +    #data# N
 +    #modules# runjags
 +    #monitor# mean, shape
@@ -1005,11 +1005,11 @@ R> ModelB <- "model {
 +    for (i in 1:N) {
 +      Count[i] ~ dnegbin(prob, shape)
 +    }
-+	
++
 +    shape ~ dmouch(1)
 +    mean ~ dmouch(1)
 +    prob <- shape / (shape + mean)
-+	
++
 +    #data# N
 +    #modules# runjags
 +    #monitor# mean, shape
@@ -1041,7 +1041,7 @@ parameter in \pkg{JAGS}, this can be calculated more efficiently in
 %
 \begin{Schunk}
 \begin{Sinput}
-R> getcv <- function(x) 
+R> getcv <- function(x)
 +    return(list(cv = sqrt(1 / x[, "shape"])))
 \end{Sinput}
 \end{Schunk}
@@ -1079,7 +1079,7 @@ R> initsfunction <- function(chain) {
 +    mean <- c(10, 0.1)[chain]
 +    .RNG.seed <- c(1, 2)[chain]
 +    .RNG.name <- c("base::Super-Duper", "base::Wichmann-Hill")[chain]
-+    return(list(shape = shape, mean = mean, .RNG.seed = .RNG.seed, 
++    return(list(shape = shape, mean = mean, .RNG.seed = .RNG.seed,
 +      .RNG.name = .RNG.name))
 +  }
 \end{Sinput}
@@ -1095,11 +1095,11 @@ ensure that the model is valid before it is passed to the cluster:
 \begin{Sinput}
 R> library("parallel")
 R> cl <- makeCluster(10)
-R> resultsA <- run.jags.study(S, ModelA, datafunction, 
-+    targets = list(mean = truemean, cv = truecv), cl = cl, 
+R> resultsA <- run.jags.study(S, ModelA, datafunction,
++    targets = list(mean = truemean, cv = truecv), cl = cl,
 +    inits = initsfunction, n.chains = 2, mutate = getcv)
-R> resultsB <- run.jags.study(S, ModelB, datafunction, 
-+    targets = list(mean = truemean, cv = truecv), cl = cl, 
+R> resultsB <- run.jags.study(S, ModelB, datafunction,
++    targets = list(mean = truemean, cv = truecv), cl = cl,
 +    inits = initsfunction, n.chains = 2, mutate = getcv)
 \end{Sinput}
 \end{Schunk}
@@ -1113,11 +1113,11 @@ R> resultsA
 \end{Sinput}
 \begin{Soutput}
 Average values obtained from a JAGS study with a total of 1000 simulations:
-                                                                       
+
      Target Av.Median Av.Mean Av.Lower95%CI Av.Upper95%CI Av.Range95%CI
 mean      2    1.9689  2.0756       0.99815         3.354        2.3559
 cv      1.1    1.0627  1.0909       0.52457        1.6983        1.1737
-                                                    
+
      Prop.Within95%CI Av.AutoCorr(Lag10) Simulations
 mean             0.93           0.043658        1000
 cv              0.926            0.19093        1000
@@ -1131,11 +1131,11 @@ R> resultsB
 \end{Sinput}
 \begin{Soutput}
 Average values obtained from a JAGS study with a total of 1000 simulations:
-                                                                       
+
      Target Av.Median Av.Mean Av.Lower95%CI Av.Upper95%CI Av.Range95%CI
 mean      2    1.9632   2.069        1.0007        3.3294        2.3287
 cv      1.1    1.0625  1.0891       0.52306        1.6905        1.1675
-                                                    
+
      Prop.Within95%CI Av.AutoCorr(Lag10) Simulations
 mean            0.925           0.015783        1000
 cv              0.931           0.040415        1000
@@ -1407,7 +1407,7 @@ Gilks WR, Richardson S, Spiegelhalter DJ (1998).
 \newblock Chapman and Hall, Boca Raton, Fla.
 \newblock ISBN 0412055511.
 \newblock
-  \urlprefix\url{https://lccn.loc.gov/98033429}.
+  \urlprefix\url{https://search.catalog.loc.gov/search?option=lccn&query=98033429}.
 
 \bibitem[{Hastings(1970)}]{Hastings:1970bi}
 Hastings WK (1970).
@@ -1590,24 +1590,24 @@ The compound probability mass function of a Poisson distribution (with mean $\la
 Substituting $\alpha=r$ and $\beta=\frac{1-p}{p}$ into Equation~\ref{eqn:nbgp1} gives Equation~\ref{eqn:nbgp2a}, which can be re-written and simplified to Equation~\ref{eqn:nbgp2b}.
 %
 \begin{align}
-f(x; r, p) &= \int_0^\infty \frac{\lambda^x}{x!} e^{-\lambda} \; . \; \left(\frac{1-p}{p}\right)^r \frac{1}{\Gamma(r)} \lambda^{r-1} e^{-\left(\frac{1-p}{p}\right)\lambda} \; \mathrm{d} \lambda 
+f(x; r, p) &= \int_0^\infty \frac{\lambda^x}{x!} e^{-\lambda} \; . \; \left(\frac{1-p}{p}\right)^r \frac{1}{\Gamma(r)} \lambda^{r-1} e^{-\left(\frac{1-p}{p}\right)\lambda} \; \mathrm{d} \lambda
     \label{eqn:nbgp2a}  \\
 &=   \frac{\left(1-p\right)^r}{x! \; p^r \; \Gamma(r)} \; \int_0^\infty \lambda^{x+r-1} e^{-\lambda} e^{- \frac{\left(1-p\right)\lambda}{p}} \;\mathrm{d}\lambda \\
-&=   \frac{\left(1-p\right)^r}{x! \; p^r \; \Gamma(r)} \; \int_0^\infty \lambda^{x+r-1} e^{- \frac{\lambda}{p}} \;\mathrm{d}\lambda 
+&=   \frac{\left(1-p\right)^r}{x! \; p^r \; \Gamma(r)} \; \int_0^\infty \lambda^{x+r-1} e^{- \frac{\lambda}{p}} \;\mathrm{d}\lambda
     \label{eqn:nbgp2b}
 \end{align}
 %
 Substituting the gamma function $\frac{\Gamma(b+1)}{a^{b+1}} = \int_0^\infty t^b e^{-at} \mathrm{d}t$ for $a=\frac{1}{p}$, $b=x+r-1$ and $t=\lambda$ into Equation~\ref{eqn:nbgp2b} gives Equation~\ref{eqn:nbgp3a}.
 %
 \begin{align}
-f(x; r, p) &=   \frac{\left(1-p\right)^r}{x! \; p^r \; \Gamma(r)} \; \frac{\Gamma(x+r-1+1)}{\left(\frac{1}{p}\right)^{x+r-1+1}} 
+f(x; r, p) &=   \frac{\left(1-p\right)^r}{x! \; p^r \; \Gamma(r)} \; \frac{\Gamma(x+r-1+1)}{\left(\frac{1}{p}\right)^{x+r-1+1}}
     \label{eqn:nbgp3a} \\
 &=   \frac{\left(1-p\right)^r}{x! \; p^r \; \Gamma(r)} \; \Gamma(x+r) \, p^{x+r} \\
 &=   \frac{\Gamma(x+r)}{x!\;\Gamma(r)} \; p^x (1-p)^r
     \label{eqn:nbgp3b}
 \end{align}
 %
-Equation~\ref{eqn:nbgp3b} is the probability mass function of the negative binomial distribution defining the number of successes $x$ before $r$ failures with success probability $p$, which is therefore exactly equivalent to a gamma-Poisson compound distribution with mean $\frac{\alpha}{\beta}=\frac{pr}{1-p}$ and shape $\alpha=r$. 
+Equation~\ref{eqn:nbgp3b} is the probability mass function of the negative binomial distribution defining the number of successes $x$ before $r$ failures with success probability $p$, which is therefore exactly equivalent to a gamma-Poisson compound distribution with mean $\frac{\alpha}{\beta}=\frac{pr}{1-p}$ and shape $\alpha=r$.
 
 \end{appendix}
 

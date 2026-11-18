@@ -4,10 +4,15 @@ if(requireNamespace("rjags") && !(rjags::jags.version() %in% c("5.0.0","5.0.1"))
   library("runjags")
 
   # Get the same JAGS executable as used by rjags:
-  jagspath <- if(nzchar(.Platform$r_arch)){
-    file.path(rjags::pkg.compile.flags("JAGS_ROOT", print=FALSE), .Platform$r_arch, "bin", "jags")
+  if(.Platform$OS.type=="unix"){
+    jagspath <- if(nzchar(.Platform$r_arch)){
+      file.path(rjags::pkg.compile.flags("JAGS_ROOT", print=FALSE), .Platform$r_arch, "bin", "jags")
+    }else{
+      file.path(rjags::pkg.compile.flags("JAGS_ROOT", print=FALSE), "bin", "jags")
+    }
   }else{
-    file.path(rjags::pkg.compile.flags("JAGS_ROOT", print=FALSE), "bin", "jags")
+    # This will use the same version as for rjags:
+    jagspath <- findjags()
   }
   runjags.options(jagspath=jagspath, repeatable.methods=TRUE)
 
