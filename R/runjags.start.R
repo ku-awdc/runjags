@@ -857,6 +857,10 @@ runjags.rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 	monitor <- extra.options$monitor[! extra.options$monitor %in% c("pD","pd","popt","full.pd","dic","ped")]
 	if(length(monitor)==0L) stop("At least 1 standard trace monitor must be set", call.=FALSE)
 
+	# Make it so that dic implies also ped and vice versa:
+	if('dic' %in% extra.options$monitor && !('ped' %in% extra.options$monitor)) extra.options$monitor <- c(extra.options$monitor, 'ped')
+	if('ped' %in% extra.options$monitor && !('dic' %in% extra.options$monitor)) extra.options$monitor <- c(extra.options$monitor, 'dic')
+
 	# TODO: As of rjags_4-18 and later, we can vectorise the type (JAGS 4) or summary (JAGS 5) argument
 	# so we can get DIC/PED stats with the trace variable stats
 	monitor_stat <- rep("value", length(monitor))
@@ -893,11 +897,6 @@ runjags.rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 
 	  # Do this BEFORE our dummy call of 1 iteration
 	  end.state <- sapply(rjags$state(internal=TRUE),dump.format)
-
-	  # This is just a dummy call so that we can get the names of the variables:
-	  suppressWarnings(varnames <- varnames(rjags::coda.samples(rjags,variable.names=base_monitor[!base_monitor=="pD"],n.iter=2,progress.bar="none", thin=1)))
-	  suppressWarnings(obsvarnames <- names(rjags::dic.samples(rjags, n.iter=1, progress.bar="none")$penalty))
-	  flush.console()
 
 	}else{
 
@@ -947,13 +946,24 @@ runjags.rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 
 	  end.state <- sapply(rjags$state(internal=TRUE),dump.format)
 
-	  # TODO: use the newly exported expand.name function
-	  suppressWarnings(varnames <- varnames(rjags::coda.samples(rjags,variable.names=base_monitor[!base_monitor=="pD"],n.iter=2,progress.bar="none", thin=1)))
-	  flush.console()
-
-	  obsvarnames <- rjags::observed.stochastic.nodes(rjags)
+	  # TODO: use the newly exported expand.name function (NOTE: extend.jags recompiles the model for repeatable.methods):
+	  # But we can't here as the following gives a warning with R CMD check against rjags 4 as the conditional branch isn't detected:
+	  # obsvarnames <- rjags::observed.stochastic.nodes(rjags)
 
 	}
+
+	# This is just a dummy call so that we can get the names of the variables (NOTE: extend.jags recompiles the model for repeatable.methods):
+	suppressWarnings(varnames <- varnames(rjags::coda.samples(rjags,variable.names=base_monitor[!base_monitor=="pD"],n.iter=2,progress.bar="none", thin=1)))
+	if(any(c("pd","popt","full.pd","dic","ped") %in% tolower(extra.options$monitor))){
+	  # We may not have any observed stochastic nodes:
+	  ss <- try(suppressWarnings(obsvarnames <- names(rjags::dic.samples(rjags, n.iter=1, progress.bar="none")$penalty)))
+	  if(inherits(ss, "try-error")){
+	    stop("Unable to set dic/ped/pD/popt/full.pd monitors as the model does not contain any observed stochastic variables", call.=FALSE)
+	  }
+	}else{
+	  obsvarnames <- NA
+	}
+	flush.console()
 
 	mcmcout <- lapply(samples$trace[names(samples$trace)!='pD'], as.mcmc.list)
 	## Remove any elements of arrays that are not monitored:
@@ -1006,10 +1016,6 @@ runjags.rjags <- function(jags, silent.jags, jags.refresh, batch.jags, os, libpa
 	    fullsumpd <- NA
 	  }
 	}
-
-	warning("TODO: repeatable methods ignored")
-	warning("TODO: rjparallel method - note that we have rjags with threads for JAGS 5")
-
 
 	if(any(c('ped','popt') %in% tolower(extra.options$monitor))){
 	  stopifnot('popt' %in% names(samples$mean))
@@ -1489,22 +1495,6 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 			# Behaviour depends on JAGS version 4 vs 5
       if(jags.status$JAGS.major >= 5){
 
-        warning("Need to sort out popt and pD for JAGS 5 and compare to rjags outputs")
-        warning("Remember to double loo_leverage to get popt")
-
-        # Notes:
-        # For full.pd use leverage_total with thin but be prepared to sum for JAGS 5.0.1
-        # For pd and popt mean use summary(mean)
-
-        # TOFIX in JAGS:
-        # Can't use thin with all monitor set options
-        # Monitor clear is undocumented monitor options
-        # _observations_ vs _observed_ in manual and parser (and rjags)
-        # leverage_total is the same as leverage
-        # Would be nice to have loo_leverage_total etc
-        # Test covariance
-        # Doesn't work: coda deviance, stem("sim.1/deviance") summary(mean) but coda deviance, stem("sim.1/deviance") stat(value) summary(mean) does
-
         # pD is stat(leverage), popt is 2 * stat(loo_leverage)
         scriptstring <- paste(scriptstring, if(any(c("dic","ped")%in%monitor)) paste("monitor _observations_, stat(deviance) summary(mean) thin(", thin, ")\n", "monitor _observations_, stat(leverage) summary(mean) thin(", thin, ")\n", "monitor _observations_, stat(loo_leverage) summary(mean) thin(", thin, ")\n", sep=""), monitors, if(any(monitor=="full.pd")) paste("monitor _observations_, stat(leverage_total) summary(trace) thin(", thin, ")\n", sep=""), sep="")
 
@@ -1520,14 +1510,14 @@ runjags.start <- function(model, monitor, data, inits, modules, factories, burni
 				scriptstring <- paste(scriptstring, "parameters to \"out", i, ".Rdump\", chain(", c, ")\n", sep="")
 			}
 
-			if(any(c("dic","ped")%in%monitor))
-			  # Behaviour depends on JAGS version 4 vs 5
-			  if(jags.status$JAGS.major >= 5){
-			    scriptstring <- paste(scriptstring, "coda _observations_, stem(\"sim.", s, "/deviance\") stat(deviance) summary(mean)\n", "coda _observations_, stem(\"sim.", s, "/pd\") stat(leverage) summary(mean)\n", "coda _observations_, stem(\"sim.", s, "/popt\") stat(loo_leverage) summary(mean)\n", "monitor clear _observations_, stat(deviance) summary(mean)\nmonitor clear _observations_, stat(leverage) summary(mean)\nmonitor clear _observations_, stat(loo_leverage) summary(mean)\n", if(any(monitor=="full.pd")) paste("coda _observations_, stem(\"sim.", s, "/pd_trace\") stat(leverage_total) summary(trace)\n", sep=""), "monitor clear _observations_, stat(leverage_total) summary(trace)\n", sep="")
-			  }else{
-			    # Write out the mean pd, popt and deviances and then delete them so they dont get re-written by coda *
-			    scriptstring <- paste(scriptstring, "coda deviance, stem(\"sim.", s, "/deviance\")\n", "coda pD, stem(\"sim.", s, "/pd\")\n", "coda popt, stem(\"sim.", s, "/popt\")\n", "monitor clear deviance, type(mean)\nmonitor clear pD, type(mean)\nmonitor clear popt, type(mean)\n", sep="")
-			  }
+			# Behaviour depends on JAGS version 4 vs 5
+			if(jags.status$JAGS.major >= 5){
+			  if(any(c("dic","ped")%in%monitor)) scriptstring <- paste(scriptstring, "coda _observations_, stem(\"sim.", s, "/deviance\") stat(deviance) summary(mean)\n", "coda _observations_, stem(\"sim.", s, "/pd\") stat(leverage) summary(mean)\n", "coda _observations_, stem(\"sim.", s, "/popt\") stat(loo_leverage) summary(mean)\n", "monitor clear _observations_, stat(deviance) summary(mean)\nmonitor clear _observations_, stat(leverage) summary(mean)\nmonitor clear _observations_, stat(loo_leverage) summary(mean)\n", sep="")
+			  if("full.pd" %in% monitor) scriptstring <- paste(scriptstring, "coda _observations_, stem(\"sim.", s, "/pd_trace\") stat(leverage_total) summary(trace)\n", "monitor clear _observations_, stat(leverage_total) summary(trace)\n", sep="")
+			}else{
+			  # Write out the mean pd, popt and deviances and then delete them so they dont get re-written by coda *
+			  if(any(c("dic","ped")%in%monitor)) scriptstring <- paste(scriptstring, "coda deviance, stem(\"sim.", s, "/deviance\")\n", "coda pD, stem(\"sim.", s, "/pd\")\n", "coda popt, stem(\"sim.", s, "/popt\")\n", "monitor clear deviance, type(mean)\nmonitor clear pD, type(mean)\nmonitor clear popt, type(mean)\n", sep="")
+			}
 
 			scriptstring <- paste(scriptstring, "coda *, stem(sim.", s, "/CODA)\n", sep="")
 

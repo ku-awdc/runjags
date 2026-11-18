@@ -459,6 +459,7 @@ runjags.readin <- function(directory, silent.jags, target.adapt, target.burnin, 
 	  }else{
 	    pd <- try(read.coda.subset('CODAchain0.txt','CODAindex0.txt', start=NA, end=NA, thin=NA, quiet=TRUE, vars=read.monitor, sub.samples=sub.samples), silent=TRUE)
 	    if(inherits(pd, "try-error")){
+	      pd <- NA
 	      swcat("\n")
 	      warning("There was an error reading the full sum(pD)")
 	    }
@@ -466,7 +467,9 @@ runjags.readin <- function(directory, silent.jags, target.adapt, target.burnin, 
 	}else{
 		pd <- NA
 	}
-	if(any(monitor=="dic")){
+
+	# Note: if either ped or dic are set, we have both popt and pD
+	if(any(c("ped","dic") %in% monitor)){
 	  if(version_info$jags >= "5"){
 
 	    mean_tables <- function(stem){
@@ -479,17 +482,34 @@ runjags.readin <- function(directory, silent.jags, target.adapt, target.burnin, 
 	      }, numeric(nrow(allchains[[1]]))), 1, mean), ncol=1, dimnames=list(allchains[[1]][,1L], stem))
 	    }
 
-	    warning("WRAP IN A TRY")
-	    mean.pd <- mean_tables("pd")
-	    mean.popt <- mean_tables("popt")
-	    if(all(abs(mean.pd - mean.popt) < sqrt(.Machine$double.eps))){
-	      warning("PED (and pOpt) requires JAGS version 5.0.2 or later")
-	      mean.popt <- NA
+	    dn <- NULL
+
+	    mean.pd <- try(mean_tables("pd"))
+	    if(inherits(mean.pd, "try-error")){
+	      mean.pd <- NA
+	      swcat("\n")
+	      warning("There was an error reading the mean pD")
 	    }else{
-	      mean.popt <- mean.popt * 2.0
+	      dn <- dimnames(mean.pd)[[1]]
 	    }
-	    mean.deviance <- mean_tables("deviance")
-	    dn <- dimnames(mean.pd)[[1]]
+
+	    mean.popt <- try(mean_tables("popt") * 2.0)
+	    if(inherits(mean.popt, "try-error")){
+	      mean.popt <- NA
+	      swcat("\n")
+	      warning("There was an error reading the mean popt")
+	    }else{
+	      dn <- dimnames(mean.popt)[[1]]
+	    }
+
+	    mean.deviance <- try(mean_tables("deviance"))
+	    if(inherits(mean.deviance, "try-error")){
+	      mean.deviance <- NA
+	      swcat("\n")
+	      warning("There was an error reading the mean deviance")
+	    }else{
+	      dn <- dimnames(mean.deviance)[[1]]
+	    }
 
 	  }else{
 	    dn <- ''

@@ -5,6 +5,7 @@ runjags.options(nodata.warning=FALSE)
 
 
 cat('Running module tests\n')
+load.runjagsmodule()
 
 # Required for nchain etc:
 library("coda")

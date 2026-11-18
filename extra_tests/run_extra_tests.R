@@ -75,5 +75,5 @@ check_reverse_dependencies <- function(package='runjags', dir=paste0('checkrevde
 
 
 ## Run extended tests:
-source("~/Documents/GitHub/runjags/extra_tests/ExtendedTests.R")
+source("extra_tests/ExtendedTests.R")
 

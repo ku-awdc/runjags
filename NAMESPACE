@@ -9,7 +9,7 @@ import(
 importFrom("grDevices", "dev.new", "dev.off", "pdf", "rainbow",
            "topo.colors")
 importFrom("stats", "acf", "as.formula", "median", "na.omit",
-           "quantile", "start", "update", "var", "window")
+           "quantile", "start", "end", "update", "var", "window")
 importFrom("utils", "capture.output", "compareVersion", "data", "find",
            "flush.console", "packageVersion", "packageDescription",
 		   "read.csv", "read.table")

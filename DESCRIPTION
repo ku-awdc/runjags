@@ -1,7 +1,7 @@
 Package: runjags
 Title: Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS
 Version: 2.3.0-3
-Date: 2026-11-10
+Date: 2026-11-16
 Authors@R: c(person("Matthew", "Denwood", role=c("aut","cre"), email="md@sund.ku.dk"),
              person("Martyn", "Plummer", role="cph", 
              comment="Copyright holder of the code in R/rjags_functions.R and original copyright holder of some modified code where indicated"))
