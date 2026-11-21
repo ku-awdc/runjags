@@ -49,6 +49,15 @@
 }
 
 .onAttach <- function(libname, pkgname){
+
+  ## Omit a warning if the major version of JAGS doesn't match:
+  ss <- try(rjags::load.pkg.module(.jags_pkg_env$pkgname, .jags_pkg_env$libname, .jags_pkg_env$pkg_compile_flags, quiet=TRUE, check.only=TRUE), silent=TRUE)
+  if(inherits(ss, "try-error")){
+    msg <- gsub("The runjags package.*", "", gsub("Error : ", "", conditionMessage(errorCondition(ss))))
+    warning(msg, "Most runjags functions will work correctly, but the internal\nJAGS module will not load. You should either re-compile\nrunjags or re-install both rjags and runjags from CRAN.", call.=FALSE)
+  }
+  # Note: this will be upgraded to an error if load.runjagsmodule() is called
+
   # Only attempt to load the package module if the dynlib is loaded:
   #if(.jags_pkg_env$dyn_loaded && .jags_pkg_env$pkgname %in% list.modules()){
   #  packageStartupMessage("module ", pkgname, " loaded")
