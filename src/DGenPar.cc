@@ -1,13 +1,13 @@
 /*
 	Copyright (C) 2013 Matthew Denwood <matthewdenwood@mac.com>
-	
+
 	This code is based on the pareto distribution in JAGS version 3.3,
 	and specifies the generalised pareto distribution
 
     This file is part of runjags
-	Original DPar.cc file is Copyright (C) 2002-10 Martyn Plummer, 
+	Original DPar.cc file is Copyright (C) 2002-10 Martyn Plummer,
 	from the source for JAGS version 3.3, licensed under GPL-2
-	
+
     runjags is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -20,15 +20,23 @@
 
     You should have received a copy of the GNU General Public License
     along with runjags  If not, see <http://www.gnu.org/licenses/>.
-	
+
  */
 
 // Ensure JAGS was found:
+#if defined(__has_include)
+  #if __has_include(<jags_version.h>)
+    #include <jags_version.h>
+  #endif
+#endif
+
+// Just in case the above fails:
 #if defined(__has_include)
   #if !__has_include(<version.h>)
     #error "The compiler flags for JAGS were not passed correctly - check rjags is functional"
   #endif
 #endif
+#include <version.h>
 
 #include "DGenPar.h"
 #include <util/nainf.h>
@@ -58,20 +66,20 @@ bool DGenPar::checkParameterValue (vector<double const *> const &par) const
   return (SIGMA(par) > 0);
 }
 
-double 
+double
 DGenPar::d(double x, PDFType type,
 vector<double const *> const &par, bool give_log) const
 {
   double xi = XI(par);
   double sigma = SIGMA(par);
   double mu = MU(par);
-  
-  if (xi < 0){  	
+
+  if (xi < 0){
 	  if (x < mu || (mu - sigma/xi) < x)
-	      return give_log ? JAGS_NEGINF : 0;	
+	      return give_log ? JAGS_NEGINF : 0;
   }else{
 	  if(x < mu)
-	      return give_log ? JAGS_NEGINF : 0;	  		
+	      return give_log ? JAGS_NEGINF : 0;
   }
 
 // Pareto:
@@ -80,8 +88,8 @@ vector<double const *> const &par, bool give_log) const
   else
     return alpha * exp(alpha * log(c) - (alpha + 1) * log(x));
 */
-  
-  // The PDF depends on the value of xi - if 0 then we have a simpler equation not involving xi (http://www.mathwave.com/articles/generalized_pareto_distribution.html):  
+
+  // The PDF depends on the value of xi - if 0 then we have a simpler equation not involving xi (http://www.mathwave.com/articles/generalized_pareto_distribution.html):
   if (std::abs(xi) < 0.000000001){
 	  if (give_log)
 	  	return log(1/sigma) + -(x-mu)/sigma;
@@ -91,25 +99,25 @@ vector<double const *> const &par, bool give_log) const
 	  if (give_log)
 	  	return log(1/sigma) + -(1/xi +1)*log(1 + xi * (x-mu)/sigma);
 	  else
-	    return 1/sigma * pow(1 + xi * (x-mu)/sigma,-(1/xi +1));   
+	    return 1/sigma * pow(1 + xi * (x-mu)/sigma,-(1/xi +1));
   }
-  
+
 }
 
-double 
+double
 DGenPar::p(double x, vector<double const *> const &par, bool lower, bool give_log)
   const
 {
   double xi = XI(par);
   double sigma = SIGMA(par);
   double mu = MU(par);
-  
-  if (xi < 0){  	
+
+  if (xi < 0){
 	  if (x < mu || (mu - sigma/xi) < x)
-	      return give_log ? JAGS_NEGINF : 0;	
+	      return give_log ? JAGS_NEGINF : 0;
   }else{
 	  if(x < mu)
-	      return give_log ? JAGS_NEGINF : 0;	  		
+	      return give_log ? JAGS_NEGINF : 0;
   }
 
 // Pareto:
@@ -137,13 +145,13 @@ DGenPar::p(double x, vector<double const *> const &par, bool lower, bool give_lo
   }
 }
 
-double 
-DGenPar::q(double p, vector<double const *> const &par, bool lower, 
+double
+DGenPar::q(double p, vector<double const *> const &par, bool lower,
 	bool log_p) const
 {
-    if ( (log_p  && p > 0) || (!log_p && (p < 0 || p > 1)) )          
+    if ( (log_p  && p > 0) || (!log_p && (p < 0 || p > 1)) )
 	return JAGS_NAN;
-    
+
     double xi = XI(par);
     double sigma = SIGMA(par);
     double mu = MU(par);
@@ -159,14 +167,14 @@ DGenPar::q(double p, vector<double const *> const &par, bool lower,
     }
     else {
 	if (log_p)
-	    logp = log(1 - exp(p)); 
+	    logp = log(1 - exp(p));
 	else
 	    logp = log(1 - p);
     }
-  	
+
 // Pareto:
 //	x = exp(log(C(par)) - logp/ALPHA(par));
-	
+
     // The survival function depends on the value of xi - if 0 then we have a simpler equation not involving xi:
     if (std::abs(xi) < 0.000000001){
    	  x = mu-(logp*sigma);
@@ -189,12 +197,12 @@ double DGenPar::l(vector<double const*> const &par) const
 
 double DGenPar::u(vector<double const*> const &par) const
 {
-  if (XI(par) < 0){  	
+  if (XI(par) < 0){
   	  return JAGS_POSINF;
   }else{
    	  return (MU(par) - SIGMA(par)/XI(par));
   }
-	
+
 }
 
 bool DGenPar::isSupportFixed(vector<bool> const &fixmask) const
