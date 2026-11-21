@@ -1,13 +1,13 @@
 /*
 	Copyright (C) 2013 Matthew Denwood <matthewdenwood@mac.com>
-	
+
 	This code creates a JAGS module from the distributions provided
 
     This file is part of runjags
 
 	This code is based on the source code for JAGS and the following tutorial:
-	Wabersich, D., Vandekerckhove, J., 2013. Extending JAGS: A tutorial on 
-	adding custom distributions to JAGS (with a diffusion model example). 
+	Wabersich, D., Vandekerckhove, J., 2013. Extending JAGS: A tutorial on
+	adding custom distributions to JAGS (with a diffusion model example).
 	Behavior Research Methods.
 	JAGS is Copyright (C) 2002-10 Martyn Plummer, licensed under GPL-2
 
@@ -16,7 +16,7 @@
 	macro which is defined by makevars if JAGS version 3 is detected.
 	Once JAGS version 3 becomes obsolete the redundant code will be
 	removed from runjags.
-	
+
     runjags is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -29,14 +29,20 @@
 
     You should have received a copy of the GNU General Public License
     along with runjags  If not, see <http://www.gnu.org/licenses/>.
-	
+
  */
 
-// Ensure JAGS was found:
+// Ensure rjags and JAGS have matching versions:
 #if defined(__has_include)
-  #if !__has_include(<version.h>)
+  #if __has_include(<rjags.h>)
+    #include <rjags.h>
+  #elif !__has_include(<version.h>)
     #error "The compiler flags for JAGS were not passed correctly - check rjags is functional"
+  #else
+    #include <version.h>
   #endif
+#else
+  #include <version.h>
 #endif
 
 #include <module/Module.h>
@@ -64,7 +70,7 @@ namespace runjags {
 	  public:
 	    runjagsModule();
 	    ~runjagsModule();
-		
+
 		void Rinsert(RScalarDist *dist);
 	};
 
@@ -73,7 +79,7 @@ runjagsModule::runjagsModule() : Module("runjags")
   // insert is the standard way to add a distribution or function
   // insert(new myfun);
   // insert(new mydist);
-  
+
   // Rinsert (copied from jags) adds the distribution, as well as d,f,q functions simultaneously:
   Rinsert(new DPar1);
   Rinsert(new DPar2);
@@ -90,7 +96,7 @@ runjagsModule::runjagsModule() : Module("runjags")
 // From jags:
 void runjagsModule::Rinsert(RScalarDist *dist)
 {
-	insert(dist);    
+	insert(dist);
 	insert(new DFunction(dist));
 	insert(new PFunction(dist));
 	insert(new QFunction(dist));

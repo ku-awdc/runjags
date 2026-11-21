@@ -23,20 +23,18 @@
 
  */
 
-// Ensure JAGS was found:
+// Ensure rjags and JAGS have matching versions:
 #if defined(__has_include)
-  #if __has_include(<jags_version.h>)
-    #include <jags_version.h>
-  #endif
-#endif
-
-// Just in case the above fails:
-#if defined(__has_include)
-  #if !__has_include(<version.h>)
+  #if __has_include(<rjags.h>)
+    #include <rjags.h>
+  #elif !__has_include(<version.h>)
     #error "The compiler flags for JAGS were not passed correctly - check rjags is functional"
+  #else
+    #include <version.h>
   #endif
+#else
+  #include <version.h>
 #endif
-#include <version.h>
 
 #include "DGenPar.h"
 #include <util/nainf.h>
