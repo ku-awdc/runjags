@@ -1,7 +1,7 @@
 Package: runjags
 Title: Interface Utilities, Model Templates, Parallel Computing Methods and Additional Distributions for MCMC Models in JAGS
 Version: 2.3.1-1
-Date: 2026-11-21
+Date: 2026-11-22
 Authors@R: c(person("Matthew", "Denwood", role=c("aut","cre"), email="md@sund.ku.dk"),
              person("Martyn", "Plummer", role="cph", 
              comment="Copyright holder of the code in R/rjags_functions.R and original copyright holder of some modified code where indicated"))
@@ -23,13 +23,11 @@ Roxygen: list(markdown = TRUE)
 SystemRequirements: JAGS >= 4.3.0 (https://mcmc-jags.sourceforge.io/)
 Depends:
     R (>= 2.14.0)
-LinkingTo:
-    rjags
 Imports:
     parallel,
     lattice (>= 0.20-10),
     coda (>= 0.17-1),
-    rjags (>= 4-18),
+    rjags (>= 5-5),
     stats,
     utils
 Suggests: 

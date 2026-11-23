@@ -37,7 +37,7 @@
   #if __has_include(<rjags.h>)
     #include <rjags.h>
   #elif !__has_include(<version.h>)
-    #error "The compiler flags for JAGS were not passed correctly - check rjags is functional"
+    #error "The compiler flags for JAGS were not passed correctly - check rjags can be loaded"
   #else
     #include <version.h>
   #endif

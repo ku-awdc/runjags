@@ -28,6 +28,20 @@
   .jags_pkg_env$pkgname <- pkgname
   .jags_pkg_env$libname <- libname
 
+  ## Ensure the version of rjags is compatible with what we need:
+  rjags_version <- utils::packageVersion("rjags")
+  if(rjags_version < "4-18" || (rjags_version >= "5" && rjags_version < "5.5")){
+    stop("An incompatible version of rjags (", gsub(".","-",rjags_version,fixed=TRUE), ") is installed\n\tPlease install either rjags 4-18 or rjags >= 5-5", call.=FALSE)
+  }
+
+  ## Omit a warning if the major version of JAGS doesn't match:
+  ss <- try(rjags::load.pkg.module(.jags_pkg_env$pkgname, .jags_pkg_env$libname, .jags_pkg_env$pkg_compile_flags, quiet=TRUE, check.only=TRUE), silent=TRUE)
+  if(inherits(ss, "try-error")){
+    msg <- gsub("The runjags package.*", "", gsub("Error : ", "", conditionMessage(errorCondition(ss))))
+    warning(msg, "Most runjags functions will work correctly, but the internal\nJAGS module will not load. You should either re-compile\nrunjags or re-install both rjags and runjags from CRAN.", call.=FALSE)
+  }
+  # Note: this will be upgraded to an error if load.runjagsmodule() is called
+
   ### runjags specific:
   runjagsprivate$runjagsversion <- utils::packageDescription(pkgname, fields='Version')
 
@@ -49,14 +63,6 @@
 }
 
 .onAttach <- function(libname, pkgname){
-
-  ## Omit a warning if the major version of JAGS doesn't match:
-  ss <- try(rjags::load.pkg.module(.jags_pkg_env$pkgname, .jags_pkg_env$libname, .jags_pkg_env$pkg_compile_flags, quiet=TRUE, check.only=TRUE), silent=TRUE)
-  if(inherits(ss, "try-error")){
-    msg <- gsub("The runjags package.*", "", gsub("Error : ", "", conditionMessage(errorCondition(ss))))
-    warning(msg, "Most runjags functions will work correctly, but the internal\nJAGS module will not load. You should either re-compile\nrunjags or re-install both rjags and runjags from CRAN.", call.=FALSE)
-  }
-  # Note: this will be upgraded to an error if load.runjagsmodule() is called
 
   # Only attempt to load the package module if the dynlib is loaded:
   #if(.jags_pkg_env$dyn_loaded && .jags_pkg_env$pkgname %in% list.modules()){
